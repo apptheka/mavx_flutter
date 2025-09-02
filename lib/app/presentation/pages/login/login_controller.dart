@@ -1,10 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/domain/usecases/login_usecase.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class LoginController extends GetxController {
   // Form key to validate inputs
   final formKey = GlobalKey<FormState>();
+
+  //usecase
+  final LoginUseCase loginUseCase = Get.find<LoginUseCase>();
 
   // Controllers
   final emailController = TextEditingController();
@@ -37,7 +43,8 @@ class LoginController extends GetxController {
     return null;
   }
 
-  void signIn() {
+  void signIn() async{
+
     FocusManager.instance.primaryFocus?.unfocus();
     final form = formKey.currentState;
     if (form == null) return;
@@ -48,14 +55,25 @@ class LoginController extends GetxController {
     }
 
     // Proceed with sign-in
-    isError.value = false;
+   try{
+     isError.value = false;
     isLoading.value = true;
-    // TODO: integrate API/auth here
-    // Simulate request end
-    Future.delayed(const Duration(seconds: 2), () {
-      isLoading.value = false;
+    final res = await loginUseCase.call(emailController.text, passwordController.text);
+    if(res.status == 200){
       Get.offAllNamed(AppRoutes.home);
-    });
+      log(res.message);
+      Get.snackbar('Success', 'Login successful');
+    }else{
+      isError.value = true;
+      log(res.message);
+      Get.snackbar('Error', 'Login failed');
+    }
+   }catch(e){
+    isError.value = true;
+    log(e.toString());
+    Get.snackbar('Error', 'Login failed');
+   }
+    isLoading.value = false;
   }
 
   @override

@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
+import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:mavx_flutter/app/di/dependence_injection.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_theme.dart';
 import 'package:mavx_flutter/app/routes/app_pages.dart';
 
-void main() {
+void main() async{
+  // Ensure Flutter engine & platform channels are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize storage
+  final storage = StorageService();
+  await storage.init();
+
+  // Initialize dependencies
+  await DependenceInjection.init();
+
+
   runApp(const MyApp());
 }
 

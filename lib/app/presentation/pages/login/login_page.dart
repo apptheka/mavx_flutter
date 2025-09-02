@@ -5,6 +5,7 @@ import 'package:mavx_flutter/app/presentation/pages/login/login_controller.dart'
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/app_text_field.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -18,15 +19,22 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildHeader(), 
-              _buildForm(context), 
-              _buildSignInButton(),
-              const SizedBox(height: 24),
-              _buildSocialSection(),
-            ],
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 32),
+                _buildHeader(), 
+                const SizedBox(height: 40),
+                _buildForm(context), 
+                const SizedBox(height: 32),
+                _buildSignInButton(),
+                const SizedBox(height: 24),
+                _buildSocialSection(),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       )
@@ -62,6 +70,7 @@ class LoginPage extends StatelessWidget {
           CommonText("Email or Phone", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
           AppTextField(
+            onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
             controller: controller.emailController,
             validator: controller.validateEmailOrPhone,
             hintText: "Enter email or phone",
@@ -73,6 +82,7 @@ class LoginPage extends StatelessWidget {
           CommonText("Password", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
           AppTextField(
+            onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
             controller: controller.passwordController,
             validator: controller.validatePassword,
             hintText: "Enter your password",
@@ -151,9 +161,11 @@ class LoginPage extends StatelessWidget {
               fontWeight: FontWeight.w400,
               color: AppColors.textSecondaryColor,
             ),
-            const SizedBox(width: 2),
+            const SizedBox(width: 5),
             InkWell(
-              onTap: () {},
+              onTap: () {
+                Get.toNamed(AppRoutes.register);
+              },
               child: CommonText(
                 'Register Now',
                 fontSize: 16,

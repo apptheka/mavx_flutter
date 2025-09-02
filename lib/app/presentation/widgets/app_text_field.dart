@@ -4,7 +4,7 @@ import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
-  final String? hintText;
+  final String? hintText; 
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;
@@ -12,6 +12,7 @@ class AppTextField extends StatelessWidget {
   final bool enabled;
   final bool autofocus;
   final int maxLines;
+  final int? maxLength; 
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
@@ -19,9 +20,9 @@ class AppTextField extends StatelessWidget {
   final TapRegionCallback? onTapOutside;
   final EdgeInsetsGeometry? margin;
 
-  const AppTextField({
+  const AppTextField({  
     super.key,
-    this.controller,
+    this.controller, 
     this.hintText,
     this.keyboardType,
     this.textInputAction,
@@ -30,6 +31,7 @@ class AppTextField extends StatelessWidget {
     this.enabled = true,
     this.autofocus = false,
     this.maxLines = 1,
+    this.maxLength,
     this.prefixIcon,
     this.suffixIcon,
     this.validator,
@@ -47,6 +49,9 @@ class AppTextField extends StatelessWidget {
     return Container(
       margin: margin,
       child: TextFormField(
+        maxLength: maxLength, 
+        
+        textCapitalization: TextCapitalization.sentences,
         controller: controller,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
@@ -55,6 +60,7 @@ class AppTextField extends StatelessWidget {
         enabled: enabled,
         autofocus: autofocus,
         maxLines: obscureText ? 1 : maxLines,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         onChanged: onChanged,
         onTapOutside: onTapOutside,
         validator: validator,
@@ -64,13 +70,15 @@ class AppTextField extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
-          isDense: true,
+          isDense: true, 
           hintText: hintText,
           hintStyle: const TextStyle(
             color: AppColors.textSecondaryColor,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
+          // Hide the default maxLength counter below the TextField
+          counterText: '',
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
