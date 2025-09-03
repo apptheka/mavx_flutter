@@ -9,6 +9,10 @@ class AppConstants {
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';
   static const String checkOtp = '/user/check-otp';
+  static const String getAllSpecification = '/specialisation';
+  static const String getAllIndustries = '/industries';
+  // Absolute URL because upload endpoint is not under baseUrl prefix
+  static const String fileUploading = 'http://192.168.1.30:3001/file-uploading';
 
   // Storage Keys
   static const String tokenKey = 'token';

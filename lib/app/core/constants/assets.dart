@@ -14,4 +14,6 @@ class IconAssets{
    static const String google = "assets/icons/google.png";
    static const String facebook = "assets/icons/facebook.png";
    static const String linkedin = "assets/icons/linkedin.png";
+   static const String downArrow = "assets/icons/downIcon.png";
+   static const String upload = "assets/icons/upload.png";
 }

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
+import 'package:mavx_flutter/app/data/models/register_model.dart';
 import 'package:mavx_flutter/app/data/models/response.dart';
 import 'package:mavx_flutter/app/data/models/user_model.dart';
 import 'package:mavx_flutter/app/data/providers/api_provider.dart';
@@ -14,10 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
 
+  //Login
   @override
   Future<UserModel> login(String email, String password) async {
-    try { 
-      
+    try {
       final payload = {"email": email, "password": password};
       log('login plaintext: ${jsonEncode(payload)}');
 
@@ -26,7 +27,10 @@ class AuthRepositoryImpl implements AuthRepository {
       log('login encrypted payload: $encrypted');
 
       // Send to API (ApiProvider will wrap String as {request: <encrypted>})
-      final respStr = await apiProvider.post(AppConstants.login, request: encrypted);
+      final respStr = await apiProvider.post(
+        AppConstants.login,
+        request: encrypted,
+      );
       log('login API raw response: $respStr');
 
       // Parse response: supports plaintext JSON or encrypted string
@@ -56,7 +60,9 @@ class AuthRepositoryImpl implements AuthRepository {
           // Save user JSON
           await prefs.setString(AppConstants.userKey, jsonEncode(parsed.data));
           await prefs.setBool(AppConstants.isLoggedInKey, true);
-          log('login persisted -> token: ${token != null && token.isNotEmpty}, user saved, flag set');
+          log(
+            'login persisted -> token: ${token != null && token.isNotEmpty}, user saved, flag set',
+          );
         } catch (e, st) {
           log('login persistence failed: $e', stackTrace: st);
         }
@@ -70,14 +76,18 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-    @override
-  Future<CommonResponse> register(Map<String, dynamic> data) async {
+  //Register
+  @override
+  Future<RegisterModel> register(Map<String, dynamic> data) async {
     try {
       String request = data.toJsonRequest().encript();
-      final res = await apiProvider.post(AppConstants.register, request: request);
+      final res = await apiProvider.post(
+        AppConstants.register,
+        request: request,
+      );
       final decriptValue = jsonDecode(res.decrypt());
       log("Decrypted Register ${decriptValue.toString()}");
-      return CommonResponse.fromJson(decriptValue);
+      return RegisterModel.fromJson(decriptValue);
     } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
     }
@@ -97,8 +107,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    try { 
-
+    try {
       // Clear all SharedPreferences data
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
@@ -107,7 +116,6 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('Logout failed: ${e.toString()}');
     }
   }
-
 
   @override
   Future<bool> isLoggedIn() async {
@@ -136,7 +144,7 @@ class AuthRepositoryImpl implements AuthRepository {
     throw UnimplementedError();
   }
 
- @override
+  @override
   Future<UserModel?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString(AppConstants.userKey);

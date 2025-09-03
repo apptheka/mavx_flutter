@@ -53,19 +53,25 @@ class GetStartedPage extends GetView<GetStartedController> {
               ),
             ),
           ),
-          // Skip button (top-right)
+          // Skip button (top-right) - keep Positioned in tree to avoid layout thrash
           Positioned(
             top: MediaQuery.of(context).viewPadding.top,
             right: 16,
-            child: TextButton(
-              onPressed: controller.skipToLast,
-              child: const CommonText(
-                'Skip',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white, 
-              ),
-            ),
+            child: Obx(() => Visibility(
+                  visible: !controller.isLast,
+                  maintainState: true,
+                  maintainAnimation: true,
+                  maintainSize: true,
+                  child: TextButton(
+                    onPressed: controller.skipToLast,
+                    child: const CommonText(
+                      'Skip',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                )),
           ),
 
           // Bottom Card

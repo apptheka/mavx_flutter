@@ -15,9 +15,12 @@ class AppTextField extends StatelessWidget {
   final int? maxLength; 
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextCapitalization? textCapitalization;
   final String? Function(String?)? validator;
-  final void Function(String)? onChanged;
-  final TapRegionCallback? onTapOutside;
+  final void Function(String)? onChanged; 
+  final FocusNode? focusNode;
+  final bool readOnly;
+  final VoidCallback? onTap;
   final EdgeInsetsGeometry? margin;
 
   const AppTextField({  
@@ -34,9 +37,12 @@ class AppTextField extends StatelessWidget {
     this.maxLength,
     this.prefixIcon,
     this.suffixIcon,
+    this.textCapitalization = TextCapitalization.none,
     this.validator,
-    this.onChanged,
-    this.onTapOutside,
+    this.onChanged, 
+    this.focusNode,
+    this.readOnly = false,
+    this.onTap,
     this.margin,
   });
 
@@ -51,18 +57,20 @@ class AppTextField extends StatelessWidget {
       child: TextFormField(
         maxLength: maxLength, 
         
-        textCapitalization: TextCapitalization.sentences,
+        textCapitalization: textCapitalization ?? TextCapitalization.sentences,
         controller: controller,
+        focusNode: focusNode,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
         inputFormatters: inputFormatters,
         obscureText: obscureText,
         enabled: enabled,
         autofocus: autofocus,
-        maxLines: obscureText ? 1 : maxLines,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        readOnly: readOnly,
+        maxLines: obscureText ? 1 : maxLines, 
         onChanged: onChanged,
-        onTapOutside: onTapOutside,
+        onTap: onTap,
+        onTapOutside: (v) => FocusScope.of(context).unfocus(),
         validator: validator,
         style: const TextStyle(
           color: AppColors.textPrimaryColor,

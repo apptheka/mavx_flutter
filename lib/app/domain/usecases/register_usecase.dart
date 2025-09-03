@@ -1,4 +1,4 @@
-import 'package:mavx_flutter/app/data/models/response.dart'; 
+import 'package:mavx_flutter/app/data/models/register_model.dart';
 import '../repositories/auth_repository.dart';
 
 class RegisterUseCase {
@@ -6,7 +6,7 @@ class RegisterUseCase {
 
   RegisterUseCase(this._authRepository);
 
-  Future<CommonResponse> call(Map<String, dynamic> data) async {
+  Future<RegisterModel> call(Map<String, dynamic> data) async {
     return await _authRepository.register(data);
   }
 } 

@@ -44,6 +44,8 @@ dependencies:
   #Otp input
   encrypt: ^5.0.3
   json_annotation: ^4.9.0
+  country_picker: ^2.0.27
+  file_picker: ^10.3.2
 
 dev_dependencies:
   build_runner: ^2.4.0

@@ -8,10 +8,14 @@ class CustomStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildStepper(currentStep: currentStep, totalSteps: totalSteps);
+    return buildStepper(context: context, currentStep: currentStep, totalSteps: totalSteps);
   }
 
-  Widget buildStepper({required int currentStep, required int totalSteps}) {
+  Widget buildStepper({
+    required BuildContext context,
+    required int currentStep,
+    required int totalSteps,
+  }) {
     assert(totalSteps > 1);
     currentStep = currentStep.clamp(1, totalSteps);
 
@@ -71,8 +75,12 @@ class CustomStepper extends StatelessWidget {
       items.add(dot(i));
     }
 
+    final width = MediaQuery.of(context).size.width;
+    // Horizontal padding scales with screen width; clamped for extremes
+    final horizontalPadding = width * 0.1;
+    final clampedPadding = horizontalPadding.clamp(16.0, 80.0);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 80.0),
+      padding: EdgeInsets.symmetric(horizontal: clampedPadding),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: items),
     );
   }

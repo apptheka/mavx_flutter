@@ -85,11 +85,10 @@ class ApiProvider {
   }) async {
     try {
       final response = await _dio.get(path, queryParameters: queryParameters);
-      return response.data['data'];
+      return response.data['response'];
     } on dio.DioException catch (e) {
       log("error: ${e}");
       final responseData = e.response?.data;
-      log("responseData: $responseData");
 
       if (responseData is Map &&
           responseData['response'] != null &&
@@ -197,6 +196,75 @@ class ApiProvider {
         return responseData.toString();
       } else if (responseData is String && responseData.isNotEmpty) {
         print("status: ${responseData.toString()}");
+        return responseData;
+      }
+      throw _handleError(e);
+    }
+  }
+
+  // Multipart/form-data POST helper
+  Future<String> postMultipart(
+    String path, {
+    Map<String, String>? fields,
+    Map<String, String /* filePath */ >? files,
+  }) async {
+    try {
+      final formData = dio.FormData();
+      // Append text fields
+      fields?.forEach((k, v) => formData.fields.add(MapEntry(k, v)));
+      // Append files: map key -> file field name, value -> local file path
+      if (files != null) {
+        for (final entry in files.entries) {
+          final filePath = entry.value;
+          final fileName = filePath.split('/').last;
+          formData.files.add(
+            MapEntry(
+              entry.key,
+              await dio.MultipartFile.fromFile(filePath, filename: fileName),
+            ),
+          );
+        }
+      }
+
+      // Ensure correct headers for multipart: do NOT use application/json
+      final headers = Map<String, dynamic>.from(_dio.options.headers);
+      headers.remove('Content-Type');
+      headers['accept'] = 'application/json';
+
+      final response = await _dio.post(
+        path,
+        data: formData,
+        options: dio.Options(
+          contentType: 'multipart/form-data',
+          headers: headers,
+        ),
+      );
+      final resp = response.data;
+      if (resp is Map) {
+        final dataField = resp['data'];
+        if (dataField is Map && dataField['encryptedData'] is String) {
+          final ed = dataField['encryptedData'] as String;
+          if (ed.isNotEmpty) return ed;
+        }
+        final enc = (resp['data'] ?? resp['response']);
+        if (enc is String && enc.isNotEmpty) return enc;
+        return resp.toString();
+      } else if (resp is String && resp.isNotEmpty) {
+        return resp;
+      }
+      throw Exception('Empty response payload');
+    } on dio.DioException catch (e) {
+      final responseData = e.response?.data;
+      if (responseData is Map) {
+        final dataField = responseData['data'];
+        if (dataField is Map && dataField['encryptedData'] is String) {
+          final ed = dataField['encryptedData'] as String;
+          if (ed.isNotEmpty) return ed;
+        }
+        final enc = (responseData['data'] ?? responseData['response']);
+        if (enc is String && enc.isNotEmpty) return enc;
+        return responseData.toString();
+      } else if (responseData is String && responseData.isNotEmpty) {
         return responseData;
       }
       throw _handleError(e);

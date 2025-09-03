@@ -19,21 +19,33 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                _buildHeader(), 
-                const SizedBox(height: 40),
-                _buildForm(context), 
-                const SizedBox(height: 32),
-                _buildSignInButton(),
-                const SizedBox(height: 24),
-                _buildSocialSection(),
-                const SizedBox(height: 32),
-              ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 32),
+                          _buildHeader(),
+                          const SizedBox(height: 40),
+                          _buildForm(context),
+                          const SizedBox(height: 32),
+                          _buildSignInButton(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildSocialSection(),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),
@@ -69,8 +81,7 @@ class LoginPage extends StatelessWidget {
         children: [
           CommonText("Email or Phone", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
-          AppTextField(
-            onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
+          AppTextField( 
             controller: controller.emailController,
             validator: controller.validateEmailOrPhone,
             hintText: "Enter email or phone",
@@ -81,8 +92,7 @@ class LoginPage extends StatelessWidget {
           const SizedBox(height: 20),
           CommonText("Password", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
-          AppTextField(
-            onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
+          AppTextField( 
             controller: controller.passwordController,
             validator: controller.validatePassword,
             hintText: "Enter your password",
