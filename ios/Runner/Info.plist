@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Permissions for selecting photos/documents -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to let you pick a profile picture and ID images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app may save images to your photo library when needed.</string>
 </dict>
 </plist>
