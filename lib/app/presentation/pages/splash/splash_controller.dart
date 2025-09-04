@@ -23,7 +23,7 @@ class SplashController extends GetxController {
       
       if (isLoggedIn) {
         log('Splash: navigating to ' + AppRoutes.home);
-        Get.offAllNamed(AppRoutes.home);
+        Get.offAllNamed(AppRoutes.dashboard);
       } else {
         log('Splash: navigating to ' + AppRoutes.getStarted);
         Get.offAllNamed(AppRoutes.getStarted);

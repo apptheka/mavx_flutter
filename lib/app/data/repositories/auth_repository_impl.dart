@@ -41,8 +41,9 @@ class AuthRepositoryImpl implements AuthRepository {
       } catch (_) {
         try {
           final decrypted = respStr.decrypt();
+          log('login decrypted response: $decrypted');
           parsed = UserModel.fromJson(jsonDecode(decrypted));
-          log('login parsed (decrypted): ${parsed}');
+          log('login parsed (decrypted): $parsed');
         } catch (e, st) {
           log('login parse failed: $e', stackTrace: st);
           throw Exception('Login failed: unable to parse server response');
@@ -61,7 +62,7 @@ class AuthRepositoryImpl implements AuthRepository {
           await prefs.setString(AppConstants.userKey, jsonEncode(parsed.data));
           await prefs.setBool(AppConstants.isLoggedInKey, true);
           log(
-            'login persisted -> token: ${token != null && token.isNotEmpty}, user saved, flag set',
+            'login persisted -> token: ${token.isNotEmpty}, user saved, flag set',
           );
         } catch (e, st) {
           log('login persistence failed: $e', stackTrace: st);
@@ -80,14 +81,15 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<RegisterModel> register(Map<String, dynamic> data) async {
     try {
-      String request = data.toJsonRequest().encript();
+      String request = jsonEncode(data).encript();
       final res = await apiProvider.post(
         AppConstants.register,
         request: request,
       );
       final decriptValue = jsonDecode(res.decrypt());
       log("Decrypted Register ${decriptValue.toString()}");
-      return RegisterModel.fromJson(decriptValue);
+      RegisterModel registerModel = RegisterModel.fromJson(decriptValue);
+      return registerModel;
     } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
     }
@@ -110,9 +112,13 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       // Clear all SharedPreferences data
       final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      await prefs.remove(AppConstants.tokenKey);
+      await prefs.remove(AppConstants.userKey);
+      await prefs.remove(AppConstants.isLoggedInKey);
+      navigateToLogin();
+      log('logout: cleared token, user data, and login flag');
     } catch (e) {
-      print('Error during logout: $e');
+      log('Error during logout: $e');
       throw Exception('Logout failed: ${e.toString()}');
     }
   }
@@ -148,9 +154,25 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<UserModel?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString(AppConstants.userKey);
-    if (userJson != null) {
-      return UserModel.fromJson(jsonDecode(userJson));
+    if (userJson == null || userJson.isEmpty) return null;
+    try {
+      // Try full UserModel first
+      final decoded = jsonDecode(userJson);
+      if (decoded is Map<String, dynamic> && decoded.containsKey('data')) {
+        return UserModel.fromJson(decoded);
+      }
+      // Otherwise, treat as plain UserData and construct a minimal UserModel
+      final data = UserData.fromJson(decoded as Map<String, dynamic>);
+      final token = prefs.getString(AppConstants.tokenKey) ?? '';
+      return UserModel(
+        status: 200,
+        message: 'OK',
+        token: token,
+        data: data,
+      );
+    } catch (e) {
+      log('getCurrentUser parse error: $e');
+      return null;
     }
-    return null;
   }
 }

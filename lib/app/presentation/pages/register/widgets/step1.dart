@@ -41,16 +41,24 @@ class RegisterStep1 extends StatelessWidget {
               const SizedBox(height: 12),
               CommonText("Password", fontSize: 13, fontWeight: FontWeight.w600),
               const SizedBox(height: 8),
-              AppTextField(
-                hintText: 'Enter Password',
-                controller: c.passwordCtrl,
-                obscureText: true,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Password required';
-                  if (v.length < 6) return 'Min 6 characters';
-                  return null;
-                },
-              ),
+              Obx(() => AppTextField(
+                    hintText: 'Enter Password',
+                    controller: c.passwordCtrl,
+                    obscureText: c.isPasswordHidden.value,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        c.isPasswordHidden.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () => c.isPasswordHidden.toggle(),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Password required';
+                      if (v.length < 6) return 'Min 6 characters';
+                      return null;
+                    },
+                  )),
               const SizedBox(height: 16),
               CommonText(
                 "Date Of Birth",

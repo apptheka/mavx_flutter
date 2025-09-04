@@ -3,16 +3,23 @@ import 'package:mavx_flutter/app/data/providers/api_provider.dart'
     show ApiProvider;
 import 'package:mavx_flutter/app/data/repositories/auth_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/industries_repository_impl.dart';
+import 'package:mavx_flutter/app/data/repositories/projects_repository_impl.dart';
+import 'package:mavx_flutter/app/data/repositories/similar_projects_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/specification_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/file_repository_impl.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/industries_repository.dart';
+import 'package:mavx_flutter/app/domain/repositories/projects_repository.dart';
+import 'package:mavx_flutter/app/domain/repositories/similar_projects_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/specification_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/file_repository.dart';
 import 'package:mavx_flutter/app/domain/usecases/check_auth_status_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_industries_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_specification_usecase.dart';
+import 'package:mavx_flutter/app/domain/usecases/get_similar_projects_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/login_usecase.dart';
+import 'package:mavx_flutter/app/domain/usecases/projects_usecase.dart';
+import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
 
@@ -31,6 +38,8 @@ class DependenceInjection {
     Get.lazyPut<SpecificationRepository>(() => SpecificationRepositoryImpl(), fenix: true);
     Get.lazyPut<IndustriesRepository>(() => IndustriesRepositoryImpl(), fenix: true);
     Get.lazyPut<FileRepository>(() => FileRepositoryImpl(), fenix: true);
+    Get.lazyPut<SimilarProjectsRepository>(() => SimilarProjectsRepositoryImpl(), fenix: true);
+    Get.lazyPut<ProjectsRepository>(() => ProjectsRepositoryImpl(), fenix: true);
 
     //Usecases
     Get.lazyPut(() => LoginUseCase(Get.find()), fenix: true);
@@ -38,5 +47,8 @@ class DependenceInjection {
     Get.lazyPut(() => GetAllSpecificationUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => GetAllIndustriesUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => UploadFileUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => RegisterUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => GetSimilarProjectsUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => ProjectsUseCase(Get.find()), fenix: true);
   }
 }

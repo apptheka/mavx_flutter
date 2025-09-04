@@ -32,11 +32,11 @@ class RegisterStep4 extends StatelessWidget {
               const SizedBox(height: 8),
               AppDropdown<String>(
                 items: controller.industryItems,
-                value: controller.industryCtrl.value.isEmpty
+                value: controller.secondaryFactorCtrl.value.isEmpty
                     ? null
-                    : controller.industryCtrl.value,
+                    : controller.secondaryFactorCtrl.value,
                 hintText: 'Select',
-                onChanged: (v) => controller.industryCtrl.value = v ?? '',
+                onChanged: (v) => controller.secondaryFactorCtrl.value = v ?? '',
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Secondary factor required'
                     : null,

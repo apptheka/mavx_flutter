@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:mavx_flutter/main.dart';
 
 
 extension ToJsonString on Map<String, dynamic> {
@@ -55,9 +56,9 @@ encrypt.Encrypted encryptWithAES(String key, String plainText) {
 }
  
 
-// Future<void> navigateToLogin() async {
-//   navigatorKey.currentState?.pushNamedAndRemoveUntil(
-//     '/login', // or whatever your login route is
-//     (route) => false,
-//   );
-// }
+Future<void> navigateToLogin() async {
+  navigatorKey.currentState?.pushNamedAndRemoveUntil(
+    '/login', // or whatever your login route is
+    (route) => false,
+  );
+}

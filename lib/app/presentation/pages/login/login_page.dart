@@ -87,21 +87,27 @@ class LoginPage extends StatelessWidget {
             hintText: "Enter email or phone",
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            onChanged: (value) => controller.emailController.text = value,
           ),
           const SizedBox(height: 20),
           CommonText("Password", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
-          AppTextField( 
-            controller: controller.passwordController,
-            validator: controller.validatePassword,
-            hintText: "Enter your password",
-            suffixIcon: const Icon(Icons.visibility_off,color: AppColors.textSecondaryColor,),
-            obscureText: true,
-            keyboardType: TextInputType.visiblePassword,
-            textInputAction: TextInputAction.done,
-            onChanged: (value) => controller.passwordController.text = value,
-          ),
+          Obx(() => AppTextField( 
+                controller: controller.passwordController,
+                validator: controller.validatePassword,
+                hintText: "Enter your password",
+                obscureText: controller.isPasswordHidden.value,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.isPasswordHidden.value
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: AppColors.textSecondaryColor,
+                  ),
+                  onPressed: () => controller.isPasswordHidden.toggle(),
+                ),
+                keyboardType: TextInputType.visiblePassword,
+                textInputAction: TextInputAction.done,
+              )),
           const SizedBox(height: 16),
           _buildForgotPassword(),
         ],

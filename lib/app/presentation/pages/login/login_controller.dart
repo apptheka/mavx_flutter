@@ -19,6 +19,7 @@ class LoginController extends GetxController {
   // State
   final isLoading = false.obs;
   final isError = false.obs;
+  final isPasswordHidden = true.obs;
 
   // Validators
   String? validateEmailOrPhone(String? value) {
@@ -60,26 +61,60 @@ class LoginController extends GetxController {
     isLoading.value = true;
     final res = await loginUseCase.call(emailController.text, passwordController.text);
     if(res.status == 200){
-      Get.offAllNamed(AppRoutes.home);
+      final status = res.data.status.toLowerCase();
+      if (status == 'pending') {
+        await _showPendingDialog();
+        // stay on login; user will be able to access after approval
+      } else {
+        Get.offAllNamed(AppRoutes.dashboard);
+        Get.snackbar('Success', 'Login successful');
+      }
       log(res.message);
-      Get.snackbar('Success', 'Login successful');
     }else{
       isError.value = true;
       log(res.message);
-      Get.snackbar('Error', 'Login failed');
+      final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
+      Get.snackbar('Error', msg);
     }
    }catch(e){
     isError.value = true;
-    log(e.toString());
-    Get.snackbar('Error', 'Login failed');
+    final err = e.toString();
+    log(err);
+    String uiMsg = 'Login failed';
+    final lower = err.toLowerCase();
+    if (lower.contains('401') || lower.contains('unauthorized')) {
+      uiMsg = 'Invalid email or password';
+    } else if (lower.contains('timeout')) {
+      uiMsg = 'Connection timeout. Please try again.';
+    }
+    Get.snackbar('Error', uiMsg);
    }
     isLoading.value = false;
+  }
+
+  Future<void> _showPendingDialog() async {
+    return Get.dialog(
+      AlertDialog(
+        title: const Text('Profile Under Review'),
+        content: const Text(
+          'Your profile is under review. You will be notified once approved. You can log in after approval.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
+
     super.onClose();
   }
 }

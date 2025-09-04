@@ -6,6 +6,9 @@ import 'package:mavx_flutter/app/di/dependence_injection.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_theme.dart';
 import 'package:mavx_flutter/app/routes/app_pages.dart';
 
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async{
   // Ensure Flutter engine & platform channels are initialized
   WidgetsFlutterBinding.ensureInitialized();

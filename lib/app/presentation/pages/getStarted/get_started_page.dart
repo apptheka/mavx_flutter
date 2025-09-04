@@ -45,7 +45,7 @@ class GetStartedPage extends GetView<GetStartedController> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.25),
+                      Colors.black.withValues(alpha: 0.25),
                       Colors.transparent,
                     ],
                   ),

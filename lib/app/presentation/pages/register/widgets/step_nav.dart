@@ -11,64 +11,68 @@ class StepNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<RegisterController>();
     return  SafeArea(
-          minimum: const EdgeInsets.only(bottom: 8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isNarrow = constraints.maxWidth < 360;
-                final prevStyle = ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffBDBDBD),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
-                  minimumSize: const Size.fromHeight(52),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                );
-                final nextStyle = ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
-                  minimumSize: const Size.fromHeight(52),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                );
+      minimum: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 360;
+            final prevStyle = ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xffBDBDBD),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
+              minimumSize: const Size.fromHeight(52),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            );
+            final nextStyle = ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
+              minimumSize: const Size.fromHeight(52),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            );
 
-                return Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: controller.isFirstStep ? Get.back : controller.prevStep,
-                        style: prevStyle,
-                        child: CommonText(
-                          controller.isFirstStep ? 'Back' : 'Previous',
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+            return Obx(() {
+              final bool isFirst = controller.isFirstStep;
+              final bool isLast = controller.isLastStep;
+              return Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isFirst ? Get.back : controller.prevStep,
+                      style: prevStyle,
+                      child: CommonText(
+                        isFirst ? 'Back' : 'Previous',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    if (!isNarrow)
-                      Container(
-                        width: 2,
-                        height: 50,
-                        color: const Color(0xffD9D9D9),
-                      ),
-                    if (!isNarrow) const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: controller.nextStep,
-                        style: nextStyle,
-                        child: CommonText(
-                          controller.isLastStep ? 'Submit' : 'Next',
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                  ),
+                  const SizedBox(width: 12),
+                  if (!isNarrow)
+                    Container(
+                      width: 2,
+                      height: 50,
+                      color: const Color(0xffD9D9D9),
+                    ),
+                  if (!isNarrow) const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isLast ? controller.submitRegistration : controller.nextStep,
+                      style: nextStyle,
+                      child: CommonText(
+                        isLast ? 'Submit' : 'Next',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
+                  ),
+                ],
+              );
+            });
+          },
+        ),
+      ),
+    );
   }
 }

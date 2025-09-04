@@ -56,7 +56,6 @@ class AppTextField extends StatelessWidget {
       margin: margin,
       child: TextFormField(
         maxLength: maxLength, 
-        
         textCapitalization: textCapitalization ?? TextCapitalization.sentences,
         controller: controller,
         focusNode: focusNode,

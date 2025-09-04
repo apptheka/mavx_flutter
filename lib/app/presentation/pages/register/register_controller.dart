@@ -6,11 +6,13 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_industries_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_specification_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
+import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
 
 class RegisterController extends GetxController {
   final GetAllSpecificationUseCase getAllSpecificationUseCase = Get.find<GetAllSpecificationUseCase>();
   final GetAllIndustriesUseCase getAllIndustriesUseCase = Get.find<GetAllIndustriesUseCase>();
   final UploadFileUseCase uploadFileUseCase = Get.find<UploadFileUseCase>();
+  final RegisterUseCase registerUseCase = Get.find<RegisterUseCase>();
   // steps
   final int totalSteps = 4;
   final RxInt currentStep = 1.obs;
@@ -33,6 +35,9 @@ class RegisterController extends GetxController {
   final dayCtrl = TextEditingController();
   final monthCtrl = TextEditingController();
   final yearCtrl = TextEditingController();
+
+  // Password visibility
+  final RxBool isPasswordHidden = true.obs;
 
   // Step 1 focus nodes (DOB auto-advance)
   final dayFocus = FocusNode();
@@ -77,6 +82,7 @@ class RegisterController extends GetxController {
 
   // Step 4 controllers (examples)
   final idTypeCtrl = "".obs;
+  final secondaryFactorCtrl = "".obs;
   final idTypeItems = [
     DropdownMenuItem(
       value: 'Aadhar',
@@ -130,6 +136,126 @@ class RegisterController extends GetxController {
 
   // Public wrapper for validation so UI can control when to trigger errors
   bool validateCurrentStep() => _validateCurrentStep();
+
+  // Build registration payload from the collected form fields and uploaded file URLs
+  Map<String, dynamic> registerPayload() {
+    String two(int n) => n.toString().padLeft(2, '0');
+    String? nullIfEmpty(String? v) {
+      final t = v?.trim() ?? '';
+      return t.isEmpty ? null : t;
+    }
+
+    // Compose DOB yyyy-MM-dd if parts are valid
+    final d = int.tryParse(dayCtrl.text);
+    final m = int.tryParse(monthCtrl.text);
+    final y = int.tryParse(yearCtrl.text);
+    final String? dob = (d != null && m != null && y != null)
+        ? '${y.toString().padLeft(4, '0')}-${two(m)}-${two(d)}'
+        : null;
+
+    // Compose phone with dial code
+    final String? phone = nullIfEmpty(mobileCtrl.text) != null
+        ? '${dialCode.value}${mobileCtrl.text.trim()}'
+        : null;
+
+    // Combine city/state for a simple location string
+    final String location = [
+      nullIfEmpty(cityCtrl.text),
+      nullIfEmpty(stateCtrl.text),
+    ].whereType<String>().where((e) => e.isNotEmpty).join(', ');
+
+    // Parse integer fields where required
+    int? parseInt(String? s) => int.tryParse((s ?? '').trim());
+
+    final payload = <String, dynamic>{
+      'fullName': nullIfEmpty(firstNameCtrl.text),
+      'lastName': nullIfEmpty(lastNameCtrl.text),
+      'password': nullIfEmpty(passwordCtrl.text),
+      'dob': dob,
+      'location': nullIfEmpty(location),
+      'country': nullIfEmpty(countryCtrl.text),
+      'continent': nullIfEmpty(continentCtrl.text),
+      'phone': phone,
+      'email': nullIfEmpty(primaryEmailCtrl.text),
+      'alternateEmail': nullIfEmpty(alternateEmailCtrl.text),
+      'experience': parseInt(experienceCtrl.text),
+      'ctc': nullIfEmpty(ctcCtrl.text),
+      'linkedin': nullIfEmpty(linkedInCtrl.text),
+      'roleType': nullIfEmpty(roleTypeCtrl.value),
+      'primaryFunction': parseInt(primaryFunctionCtrl.value),
+      'customPrimaryFunction': nullIfEmpty(otherPrimaryFunctionCtrl.text),
+      'primarySector': parseInt(industryCtrl.value),
+      'customPrimarySector': null, // no UI yet; keep for API compatibility
+      'employer': nullIfEmpty(currentEmployerCtrl.text),
+      'secondaryFunction': parseInt(secondaryFunctionCtrl.value),
+      'secondarySector': null, // not captured in UI currently
+      'achievements': nullIfEmpty(achievementsCtrl.text),
+      // Files: these are uploaded separately; include resulting URLs only
+      'resume': nullIfEmpty(resumeUrl.value),
+      'idType': nullIfEmpty(idTypeCtrl.value),
+      'idFile': nullIfEmpty(idUrl.value),
+      'profile': nullIfEmpty(profileUrl.value),
+    };
+
+    // Remove nulls to avoid sending empty fields
+    payload.removeWhere((key, value) => value == null);
+    return payload;
+  }
+
+  // Submit registration by sending only the JSON payload (files are already uploaded)
+  Future<void> submitRegistration() async {
+    try {
+      // Optionally ensure final step is valid before submit
+      if (!validateCurrentStep()) return;
+
+      final payload = registerPayload();
+      log('register payload: ' + payload.toString());
+      final result = await registerUseCase.call(payload);
+      log('register status: ${result.status}, message: ${result.message}');
+      if (result.status == 200) {
+        final status = result.data?.status?.toLowerCase();
+        if (status == 'pending') {
+          await _showPendingDialog();
+          // After acknowledging, send user to login
+          Get.offAllNamed('/login');
+        } else {
+          // Consider any non-pending as approved
+          Get.offAllNamed('/home');
+        }
+      }else if(result.status == 400){
+        Get.snackbar(
+          'Error',
+          'Email and phone number must be unique',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          barBlur: 20,
+          animationDuration: const Duration(seconds: 2),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e, st) {
+      log('submitRegistration failed: $e', stackTrace: st);
+      rethrow;
+    }
+  }
+
+  Future<void> _showPendingDialog() async {
+    return Get.dialog(
+      AlertDialog(
+        title: const Text('Profile Under Review'),
+        content: const Text(
+          'Your profile is under review. You will be notified once approved. You can log in after approval.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+  }
 
   // Country picker for mobile dial code
   void selectCountry(BuildContext context) {
