@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
+import 'package:get/get.dart';
 
 class ProfileLanguages extends StatelessWidget {
-  const ProfileLanguages({super.key});
+  final ProfileController controller;
+  const ProfileLanguages({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -11,14 +14,34 @@ class ProfileLanguages extends StatelessWidget {
       title: 'Languages',
       subtitle: "Languages you're fluent in for communication",
       onEdit: () {},
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _LangCard(title: 'English', details: 'Read • Write • Speak'),
-          SizedBox(height: 12),
-          _LangCard(title: 'French', details: 'Read • Write • Speak'),
-        ],
-      ),
+      child: Obx(() {
+        final langs = controller.languageList;
+        if (langs.isEmpty) {
+          return const Text(
+            'No languages added yet.',
+            style: TextStyle(color: AppColors.textSecondaryColor),
+          );
+        }
+        String detailsFor(int? r, int? w, int? s) {
+          final parts = <String>[];
+          if (r == 1) parts.add('Read');
+          if (w == 1) parts.add('Write');
+          if (s == 1) parts.add('Speak');
+          return parts.isEmpty ? '-' : parts.join(' • ');
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (int i = 0; i < langs.length; i++) ...[
+              _LangCard(
+                title: langs[i].languageName ?? '-',
+                details: detailsFor(langs[i].canRead, langs[i].canWrite, langs[i].canSpeak),
+              ),
+              if (i != langs.length - 1) const SizedBox(height: 12),
+            ]
+          ],
+        );
+      }),
     );
   }
 } 

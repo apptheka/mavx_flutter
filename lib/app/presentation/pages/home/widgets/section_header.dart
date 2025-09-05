@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -12,21 +13,29 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: Row(
         children: [
-          Text(
+          CommonText(
             title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimaryColor),
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimaryColor,
           ),
           const SizedBox(width: 8),
-          Text("(${total.toString()})", style: const TextStyle(fontSize: 14, color: AppColors.textSecondaryColor)),
+          CommonText(
+            "(${total.toString()})",
+            fontSize: 14,
+            color: AppColors.textSecondaryColor,
+          ),
           const Spacer(),
           GestureDetector(
             onTap: onAction,
-            child: Text(
+            child: CommonText(
               actionText,
-              style: const TextStyle(color: AppColors.textButtonColor, fontWeight: FontWeight.w600),
+              fontSize: 13,
+              color: AppColors.textButtonColor,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

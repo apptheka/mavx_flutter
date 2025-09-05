@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
+import 'package:get/get.dart';
 
 class ProfileSkills extends StatelessWidget {
-  const ProfileSkills({super.key});
+  final ProfileController controller;
+  const ProfileSkills({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -11,39 +14,40 @@ class ProfileSkills extends StatelessWidget {
       title: 'Key Skills',
       subtitle: 'Highlight your strongest areas of expertise',
       onEdit: () {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical:16),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: const [
-            _Chip(
-              text: 'Growth Strategy',
-              bgColor: Color(0xFFF6EAD5), 
+      child: Obx(() {
+        final skills = controller.skillList;
+        if (skills.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'No skills added yet.',
+              style: TextStyle(color: AppColors.textSecondaryColor),
             ),
-            _Chip(
-              text: 'GTM',
-              bgColor: Color(0xFFEFE7DE), 
-            ),
-            _Chip(
-              text: 'Early-Stage Startups',
-              bgColor: Color(0xFFE8E2F7), 
-            ),
-            _Chip(
-              text: 'Retention',
-              bgColor: Color(0xFFDFF2EA), 
-            ),
-            _Chip(
-              text: 'Paid Acquisition',
-              bgColor: Color(0xFFE3F1FF), 
-            ),
-            _Chip(
-              text: 'Marketplace Ops',
-              bgColor: Color(0xFFE7EFF8), 
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+        final chipColors = const [
+          Color(0xFFF6EAD5),
+          Color(0xFFEFE7DE),
+          Color(0xFFE8E2F7),
+          Color(0xFFDFF2EA),
+          Color(0xFFE3F1FF),
+          Color(0xFFE7EFF8),
+        ];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (int i = 0; i < skills.length; i++)
+                _Chip(
+                  text: skills[i].skillName ?? '-',
+                  bgColor: chipColors[i % chipColors.length],
+                ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

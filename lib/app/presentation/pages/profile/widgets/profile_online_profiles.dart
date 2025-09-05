@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:get/get.dart';
 
 class ProfileOnlineProfiles extends StatelessWidget {
-  const ProfileOnlineProfiles({super.key});
+  final ProfileController controller;
+  const ProfileOnlineProfiles({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -13,31 +16,74 @@ class ProfileOnlineProfiles extends StatelessWidget {
       title: 'Online Profiles',
       subtitle: 'Showcase your presence across professional platforms',
       onEdit: () {},
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _ProfileItemCard(
-            color: Color(0xFF0A66C2),
-            label: 'LinkedIn',
-            url: 'linkedin.com/in/brucewayne',
-            icon: IconAssets.linkedin,
-          ),
-          SizedBox(height: 12),
-          _ProfileItemCard(
-            color: Color(0xFF1769FF),
-            label: 'Behance',
-            url: 'behance.net/brucewayne',
-            icon: IconAssets.be,
-          ),
-          SizedBox(height: 12),
-          _ProfileItemCard(
-            color: Color(0xFF181717),
-            label: 'Github',
-            url: 'github.com/smriti-growth',
-            icon: IconAssets.github,
-          ),
-        ],
-      ),
+      child: Obx(() {
+        final items = controller.onlineProfileList;
+        final linkedIn = controller.registeredProfile.value.linkedin;
+        
+        // Create combined list with LinkedIn from registeredProfile if available
+        final allProfiles = <Map<String, dynamic>>[];
+        
+        // Add LinkedIn from registeredProfile if available
+        if (linkedIn != null && linkedIn.trim().isNotEmpty) {
+          allProfiles.add({
+            'platformType': 'linkedin',
+            'profileUrl': linkedIn,
+          });
+        }
+        
+        // Add other profiles from onlineProfileList
+        for (final item in items) {
+          allProfiles.add({
+            'platformType': item.platformType,
+            'profileUrl': item.profileUrl,
+          });
+        }
+        
+        if (allProfiles.isEmpty) {
+          return const Text(
+            'No online profiles added yet.',
+            style: TextStyle(color: AppColors.textSecondaryColor),
+          );
+        }
+        
+        String iconFor(String? platform) {
+          final p = (platform ?? '').toLowerCase();
+          if (p.contains('linkedin')) return IconAssets.linkedin;
+          if (p.contains('github')) return IconAssets.github;
+          if (p.contains('behance') || p.contains('be')) return IconAssets.be;
+          if (p.contains('website') || p.contains('web')) return IconAssets.web;
+          return IconAssets.web;
+        }
+        Color colorFor(String? platform) {
+          final p = (platform ?? '').toLowerCase();
+          if (p.contains('linkedin')) return const Color(0xFF0A66C2);
+          if (p.contains('github')) return const Color(0xFF181717);
+          if (p.contains('behance') || p.contains('be')) return const Color(0xFF1769FF);
+          return AppColors.textPrimaryColor;
+        }
+        String labelFor(String? platform) {
+          final p = (platform ?? '').toLowerCase();
+          if (p.contains('linkedin')) return 'LinkedIn';
+          if (p.contains('github')) return 'Github';
+          if (p.contains('behance') || p.contains('be')) return 'Behance';
+          if (p.contains('website') || p.contains('web')) return 'Website';
+          return platform ?? 'Profile';
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (int i = 0; i < allProfiles.length; i++) ...[
+              _ProfileItemCard(
+                color: colorFor(allProfiles[i]['platformType']),
+                label: labelFor(allProfiles[i]['platformType']),
+                url: allProfiles[i]['profileUrl'] ?? '-',
+                icon: iconFor(allProfiles[i]['platformType']),
+              ),
+              if (i != allProfiles.length - 1) const SizedBox(height: 12),
+            ]
+          ],
+        );
+      }),
     );
   }
 }

@@ -18,7 +18,7 @@ class HeaderWidget extends GetView<HomeController> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B2944),Color(0xFF103A5C) ,Color(0xFF103A5C) ],
+          colors: [Color(0xFF0B2944), Color(0xFF103A5C), Color(0xFF103A5C)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
@@ -34,13 +34,18 @@ class HeaderWidget extends GetView<HomeController> {
             children: [
               Obx(() {
                 final avatar = controller.avatarUrl;
-                return CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  backgroundImage: (avatar != null) ? NetworkImage(avatar) : null,
-                  child: (avatar == null)
-                      ? Image.asset(ImageAssets.userAvatar)
-                      : null,
+                return GestureDetector(
+                  onTap: () => Get.toNamed(AppRoutes.profile),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    backgroundImage: (avatar != null)
+                        ? NetworkImage(avatar)
+                        : null,
+                    child: (avatar == null)
+                        ? Image.asset(ImageAssets.userAvatar)
+                        : null,
+                  ),
                 );
               }),
               const SizedBox(width: 12),
@@ -58,8 +63,8 @@ class HeaderWidget extends GetView<HomeController> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                        Text(
-                        controller.firstName,
+                      Text(
+                        "${controller.user.value?.fullName}",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 26,
@@ -70,17 +75,16 @@ class HeaderWidget extends GetView<HomeController> {
                   ),
                 ),
               ),
+              SearchBarIcon(onTap: () => Get.toNamed(AppRoutes.search)),
               IconButton(
                 onPressed: () {},
-                icon: Image.asset(IconAssets.notification,height: 25,width: 25,)
+                icon: Image.asset(
+                  IconAssets.notification,
+                  height: 25,
+                  width: 25,
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          // Search bar inside the header
-          SearchBarWidget(
-            readOnly: true,
-            onTap: () => Get.toNamed(AppRoutes.search),
           ),
         ],
       ),

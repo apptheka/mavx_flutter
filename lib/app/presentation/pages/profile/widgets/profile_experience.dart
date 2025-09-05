@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
+import 'package:get/get.dart';
 
 class ProfileExperience extends StatelessWidget {
-  const ProfileExperience({super.key});
+  final ProfileController controller;
+  const ProfileExperience({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -12,33 +15,58 @@ class ProfileExperience extends StatelessWidget {
       title: 'Experience',
       subtitle: "Where you've worked and what you achieved",
       onEdit: () {},
-      child: Column(
-        children: const [
-          _ExperienceItem(
-            iconAsset: ImageAssets.ex2,
-            role: 'Senior Growth Consultant',
-            company: 'Intel India Pvt. Ltd.',
-            employmentType: 'Full Time',
-            period: 'Jan 2020 - present',
-            summary:
-                'Advised 15+ startups on paid growth, product loops, and GTM frameworks. Scaled user base...',
-            gradientStart: Color(0xFF7C3AED),
-            gradientEnd: Color(0xFF4F46E5),
-          ),
-          SizedBox(height: 12),
-          _ExperienceItem(
-            iconAsset: ImageAssets.ex1,
-            role: 'Growth Lead',
-            company: 'Earth Resource Technology Pvt. Ltd.',
-            employmentType: 'Full Time',
-            period: 'Mar 2018 - Jan 2020',
-            summary:
-                'Scaled user base from 20K to 300K. Reduced churn by 30%. Advised 15+ startups on paid growth...',
-            gradientStart: Color(0xFF0EA5E9),
-            gradientEnd: Color(0xFF2563EB),
-          ),
-        ],
-      ),
+      child: Obx(() {
+        final exps = controller.experienceList;
+        if (exps.isEmpty) {
+          return const Text(
+            'No experience added yet.',
+            style: TextStyle(color: AppColors.textSecondaryColor),
+          );
+        }
+        Color startFor(int i) => [
+              const Color(0xFF7C3AED),
+              const Color(0xFF0EA5E9),
+              const Color(0xFF10B981),
+              const Color(0xFFF59E0B),
+            ][i % 4];
+        Color endFor(int i) => [
+              const Color(0xFF4F46E5),
+              const Color(0xFF2563EB),
+              const Color(0xFF059669),
+              const Color(0xFFD97706),
+            ][i % 4];
+        String fmt(DateTime? d) {
+          if (d == null) return '';
+          const months = [
+            'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+          ];
+          return '${months[d.month - 1]} ${d.year}';
+        }
+        return Column(
+          children: [
+            for (int i = 0; i < exps.length; i++) ...[
+              _ExperienceItem(
+                iconAsset: i % 2 == 0 ? ImageAssets.ex2 : ImageAssets.ex1,
+                role: exps[i].role ?? '-',
+                company: exps[i].companyName ?? '-',
+                employmentType: exps[i].employmentType ?? '-',
+                period: () {
+                  final s = fmt(exps[i].startDate);
+                  final e = exps[i].isCurrent == 1 ? 'Present' : fmt(exps[i].endDate);
+                  if (s.isEmpty && (e.isEmpty || e == 'Present')) return '-';
+                  return [s, e].where((x) => x.isNotEmpty).join(' - ');
+                }(),
+                summary: exps[i].description?.trim().isNotEmpty == true
+                    ? exps[i].description!.trim()
+                    : '-',
+                gradientStart: startFor(i),
+                gradientEnd: endFor(i),
+              ),
+              if (i != exps.length - 1) const SizedBox(height: 12),
+            ]
+          ],
+        );
+      }),
     );
   }
 }

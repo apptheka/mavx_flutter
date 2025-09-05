@@ -55,17 +55,26 @@ class SearchPage extends StatelessWidget {
                             }
                             final job = items[index];
                             final title = job.projectTitle ?? '';
-                            final company = job.projectType ?? '';
+                            final company = job.projectCoordinator ?? '';
+                            // Clean description by removing HTML tags and extra whitespace
+                            String cleanDescription = job.description ?? '';
+                            cleanDescription = cleanDescription
+                                .replaceAll(RegExp(r'<[^>]*>'), '') // Remove HTML tags
+                                .replaceAll(RegExp(r'&nbsp;'), ' ') // Replace &nbsp; with space
+                                .replaceAll(RegExp(r'\s+'), ' ') // Replace multiple spaces with single space
+                                .trim(); // Remove leading/trailing whitespace
                             // Derive lightweight tags from projectType string if present
                             final tags = (job.projectType != null && job.projectType!.isNotEmpty)
                                 ? [job.projectType!]
                                 : const <String>[];
                             return JobCard(
                               title: title,
+                              description: cleanDescription,
                               company: company, 
                               tags: tags,
                               showApply: true,
-                              compact: false,
+                              compact: false, 
+                              id: job.id!,
                             );
                           },
                         );

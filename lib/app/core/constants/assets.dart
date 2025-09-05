@@ -34,5 +34,6 @@ class IconAssets{
    static const String role = "assets/icons/role.png";
    static const String experience = "assets/icons/experince.png";
    static const String logout = "assets/icons/logout.png";
+   static const String saved = "assets/icons/save.png";
 
 }

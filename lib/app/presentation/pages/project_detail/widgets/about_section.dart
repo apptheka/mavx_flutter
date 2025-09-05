@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mavx_flutter/app/core/constants/image_assets.dart';
-import 'package:mavx_flutter/app/data/models/similar_project_model.dart';
+import 'package:mavx_flutter/app/routes/app_routes.dart';
+import 'package:mavx_flutter/app/core/constants/image_assets.dart'; 
 import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
@@ -13,36 +13,71 @@ class AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'We are seeking an experienced project consultant to guide our digital transformation for the next 6 months. Focus on sales enablement and go-to-market. Remote/On-site hybrid.',
-            style: TextStyle(color: AppColors.textSecondaryColor, height: 1.5),
+    final controller = Get.find<ProjectDetailController>();
+    return Obx(() {
+      if (controller.loading.value && controller.project.isEmpty) {
+        return const _Card(child: Center(child: CircularProgressIndicator()));
+      }
+
+      if (controller.error.isNotEmpty) {
+        return _Card(
+          child: Text(
+            controller.error.value,
+            style: const TextStyle(color: AppColors.textSecondaryColor),
           ),
-          const SizedBox(height: 12),
-          const _SubTitle('Responsibilities'),
-          const _Bullet(text: 'Develop strategy with stakeholders'),
-          const _Bullet(text: 'Lead CRM tooling rollout'),
-          const _Bullet(text: 'Optimize onboarding & marketing'),
-          const _Bullet(text: 'Collaborate with engineering and marketing'),
-          const SizedBox(height: 12),
-          const _SubTitle('Preferred Skills'),
-          const Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _Skill('P&L Analysis'),
-              _Skill('Process Design'),
-              _Skill('Sales Enablement'),
-              _Skill('Change Management'),
-              _Skill('Strategic Communication'),
-            ],
-          ),
-        ],
-      ),
-    );
+        );
+      }
+
+      String cleanDescription = controller.project.isNotEmpty
+          ? controller.project.first.description ?? ''
+          : '';
+      cleanDescription = cleanDescription
+          .replaceAll(RegExp(r'<[^>]*>'), '') // Remove HTML tags
+          .replaceAll(RegExp(r'&nbsp;'), ' ') // Replace &nbsp; with space
+          .replaceAll(
+            RegExp(r'\s+'),
+            ' ',
+          ) // Replace multiple spaces with single space
+          .trim();
+
+      final desc = (cleanDescription.isNotEmpty)
+          ? cleanDescription
+          : 'No description provided.';
+
+      return _Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              desc,
+              style: const TextStyle(
+                color: AppColors.textSecondaryColor,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const _SubTitle('Responsibilities'),
+            const _Bullet(text: 'Develop strategy with stakeholders'),
+            const _Bullet(text: 'Lead CRM tooling rollout'),
+            const _Bullet(text: 'Optimize onboarding & marketing'),
+            const _Bullet(text: 'Collaborate with engineering and marketing'),
+            const SizedBox(height: 12),
+            const _SubTitle('Preferred Skills'),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _Skill('P&L Analysis'),
+                _Skill('Process Design'),
+                _Skill('Sales Enablement'),
+                _Skill('Change Management'),
+                _Skill('Strategic Communication'),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -176,11 +211,18 @@ class GreatFitSection extends StatelessWidget {
 }
 
 class ActionsSection extends StatelessWidget {
-  const ActionsSection({super.key});
+  const ActionsSection({super.key, required this.onTap, required this.text});
+
+  final Function() onTap;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final controller = Get.find<ProjectDetailController>();
+    final int projectId = Get.arguments is int ? Get.arguments as int : 0;
+    return Obx(() {
+      final bool isApplied = controller.appliedIds.contains(projectId);
+      return Column(
       children: [
         SizedBox(
           width: double.infinity,
@@ -192,10 +234,10 @@ class ActionsSection extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            onPressed: () {},
-            child: const Text(
-              'Apply',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            onPressed: isApplied ? null : () { Get.toNamed(AppRoutes.apply, arguments: projectId); },
+            child: Text(
+              isApplied ? 'Applied' : 'Apply',
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -203,9 +245,10 @@ class ActionsSection extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: Center(
-            child: const Text(
-              'Save for Later',
-              style: TextStyle(
+            child: InkWell(
+              onTap: onTap,
+              child: CommonText(
+                text,
                 color: AppColors.textButtonColor,
                 fontWeight: FontWeight.w700,
               ),
@@ -214,77 +257,86 @@ class ActionsSection extends StatelessWidget {
         ),
       ],
     );
+    });
   }
 }
 
 class SimilarProjectsSection extends StatelessWidget {
   const SimilarProjectsSection({super.key});
+ 
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<ProjectDetailController>();
 
-@override
-Widget build(BuildContext context) {
-  final controller = Get.find<ProjectDetailController>();
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const _SectionHeaderRow(
-        title: 'Similar Projects (15)',
-        action: 'View All',
-      ),
-      const SizedBox(height: 8),
-      Obx(() {
-        if (controller.loading.value) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (controller.error.isNotEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              controller.error.value,
-              style: const TextStyle(color: AppColors.textSecondaryColor),
-            ),
-          );
-        }
-        final items = controller.similarProjects;
-        if (items.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              'No similar projects found.',
-              style: TextStyle(color: AppColors.textSecondaryColor),
-            ),
-          );
-        }
-
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.27,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final SimilarProject it = items[index];
-              return SizedBox(
-                width: MediaQuery.of(context).size.width * 0.92,
-                child: JobCard(
-                  title: it.title,
-                  company: it.company, 
-                  tags: [it.tag],
-                  status: it.tag,
-                  compact: true,
-                  showApply: true,
-                ),
-              );
-            },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Obx(
+          () => _SectionHeaderRow(
+            title: 'Similar Projects (${controller.similarProjects.length })',
+            action: 'View All',
           ),
-        );
-      }),
-    ],
-  );
-}
+        ),
+        const SizedBox(height: 8),
+        Obx(() {
+          if (controller.loading.value) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (controller.error.isNotEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                controller.error.value,
+                style: const TextStyle(color: AppColors.textSecondaryColor),
+              ),
+            );
+          }
+          final items = controller.similarProjects;
+          if (items.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                'No similar projects found.',
+                style: TextStyle(color: AppColors.textSecondaryColor),
+              ),
+            );
+          }
+
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.27,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final it = controller.similarProjects[index];
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.92,
+                  child: JobCard(
+                    title: it.projectTitle ?? '',
+                    description: it.description ?? '',
+                    company: it.projectType ?? '',
+                    tags: [it.projectType ?? ''],
+                    status: it.projectType ?? '',
+                    compact: true,
+                    id: it.id ?? 0,  
+                    applied: it.id != null && controller.appliedIds.contains(it.id!),
+                    onTap: () {
+                      // Replace current detail page with the selected similar project's detail
+                      Get.offNamed(AppRoutes.projectDetail, arguments: it.id);
+                    },
+                  ),
+                );
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
 }
 
 // UI building blocks
@@ -367,9 +419,11 @@ class _Skill extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-         Icon(Icons.check_circle, color: AppColors.green, size: 16),
+          Icon(Icons.check_circle, color: AppColors.green, size: 16),
           const SizedBox(width: 8),
-          Expanded(child: CommonText(text, fontSize: 13,fontWeight: FontWeight.w400,)),
+          Expanded(
+            child: CommonText(text, fontSize: 13, fontWeight: FontWeight.w400),
+          ),
         ],
       ),
     );
@@ -453,11 +507,7 @@ class _LinkRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          width: 2,
-          height: 16,
-          color: AppColors.greyColor,
-        ),
+        Container(width: 2, height: 16, color: AppColors.greyColor),
         const SizedBox(width: 8),
         Text(
           right,

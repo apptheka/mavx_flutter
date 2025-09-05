@@ -27,6 +27,7 @@ class ApiProvider {
     _dio.options.receiveTimeout = const Duration(seconds: 10);
     _dio.options.headers = {
       'Content-Type': 'application/json', 
+      'accept': 'application/json',
       'train' : 'sdlkfj',
       'area' : 'ANDROID',
       'x-api-key' : 'mavxsecretkey_admin12335545',
@@ -41,7 +42,8 @@ class ApiProvider {
           if (!isLogin && !isEncrypt) {
             final token = await getToken();
             if (token != null) {
-              options.headers['Authorization'] = 'Bearer $token';
+              // Backend expects Authorization header to be the raw token (no 'Bearer ' prefix)
+              options.headers['Authorization'] = token;
             }
           }
           return handler.next(options);
@@ -85,22 +87,43 @@ class ApiProvider {
   }) async {
     try {
       final response = await _dio.get(path, queryParameters: queryParameters);
-      return response.data['response'];
+      final resp = response.data;
+      if (resp is Map) {
+        // 1) Prefer nested encrypt payload: {data: {encryptedData: <base64>}}
+        final dataField = resp['data'];
+        if (dataField is Map && dataField['encryptedData'] is String) {
+          final ed = dataField['encryptedData'] as String;
+          if (ed.isNotEmpty) return ed;
+        }
+        // 2) Support both {data: ...} and {response: ...} as plain strings
+        final enc = (resp['data'] ?? resp['response']);
+        if (enc is String && enc.isNotEmpty) return enc;
+        // 3) Fallback: return raw JSON string
+        return resp.toString();
+      } else if (resp is String && resp.isNotEmpty) {
+        return resp;
+      }
+      throw Exception('Empty response payload');
     } on dio.DioException catch (e) {
       log("error: ${e}");
       final responseData = e.response?.data;
-
-      if (responseData is Map &&
-          responseData['response'] != null &&
-          responseData['response'].toString().isNotEmpty) {
-        print("status: ${responseData['response'].toString()}");
-        return responseData['response'].toString();
-      } else if (responseData != null && responseData.toString().isNotEmpty) {
+      if (responseData is Map) {
+        final dataField = responseData['data'];
+        if (dataField is Map && dataField['encryptedData'] is String) {
+          final ed = dataField['encryptedData'] as String;
+          if (ed.isNotEmpty) return ed;
+        }
+        final enc = (responseData['data'] ?? responseData['response']);
+        if (enc is String && enc.isNotEmpty) {
+          print("status: ${responseData.toString()}");
+          return enc;
+        }
+        return responseData.toString();
+      } else if (responseData is String && responseData.isNotEmpty) {
         print("status: ${responseData.toString()}");
-        return responseData['response'].toString();
-      } else {
-        throw _handleError(e);
+        return responseData;
       }
+      throw _handleError(e);
     }
   }
 
@@ -114,7 +137,8 @@ class ApiProvider {
       // Add authorization header
       final token = await getToken();
       if (token != null) {
-        _dio.options.headers['Authorization'] = 'Bearer $token';
+        // Use raw token to match backend expectations
+        _dio.options.headers['Authorization'] = token;
       }
 
       print('PATCH request to: ${_dio.options.baseUrl}$path');
@@ -122,6 +146,7 @@ class ApiProvider {
 
       // Make sure content type is set correctly
       _dio.options.headers['Content-Type'] = 'application/json';
+      _dio.options.headers['accept'] = 'application/json';
 
       // Send the request
       final response = await _dio.patch(

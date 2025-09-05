@@ -2,13 +2,58 @@ import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
+import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
 
 class HeaderSection extends StatelessWidget {
   const HeaderSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final controller = Get.find<ProjectDetailController>();
+    return Obx(() {
+      if (controller.loading.value && controller.project.isEmpty) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      if (controller.error.isNotEmpty) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            controller.error.value,
+            style: const TextStyle(color: AppColors.textSecondaryColor),
+          ),
+        );
+      }
+
+      final it = controller.project.isNotEmpty ? controller.project.first : null;
+
+      return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(16),
@@ -37,23 +82,23 @@ class HeaderSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Digital Transformation Advisor',
-                      style: TextStyle(
+                    Text(
+                      (it?.projectTitle?.isNotEmpty ?? false)
+                          ? it!.projectTitle!
+                          : 'Project',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimaryColor,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: const [
-                        Text(
-                          'Vatrix Global',
-                          style: TextStyle(color: AppColors.textSecondaryColor),
-                        ),
-                      ],
-                    ),
+                    Row(children: [
+                      Text(
+                        it?.projectType ?? '—',
+                        style: const TextStyle(color: AppColors.textSecondaryColor),
+                      ),
+                    ]),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -64,17 +109,11 @@ class HeaderSection extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: const [
-              _Chip(
-                text: 'Strategy',
-                color: Color(0xFFF7E7D6),
-              ),
-              _Chip(text: 'SaaS', color: Color(0xFFF6DFDF)),
-              _Chip(text: 'Remote', color: Color(0xFFDCEFE2)),
-              _Chip(
-                text: 'High Priority',
-                color: Color(0xFFD7E6F4),
-              ),
+            children: [
+              if ((it?.projectStatus?.isNotEmpty ?? false))
+                _Chip(text: it!.projectStatus!, color: Color(0xFFD7E6F4)),
+              if ((it?.duration != null) || (it?.durationType?.isNotEmpty ?? false))
+                _Chip(text: '${it!.duration} ${it.durationType}', color: Color(0xFFF7E7D6)),
             ],
           ),
           const SizedBox(height: 12),
@@ -82,9 +121,9 @@ class HeaderSection extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text(
-                'On Site',
-                style: TextStyle(
+              Text(
+                it?.projectType ?? '—',
+                style: const TextStyle(
                   color: Color(0xff4fbace),
                   fontWeight: FontWeight.w700,
                 ),
@@ -93,7 +132,7 @@ class HeaderSection extends StatelessWidget {
               _VSep(),
               const SizedBox(width: 10),
               const Text(
-                'New York, USA',
+                '-',
                 style: TextStyle(
                   color: AppColors.textSecondaryColor,
                   fontSize: 13,
@@ -102,10 +141,14 @@ class HeaderSection extends StatelessWidget {
               const SizedBox(width: 10),
               _VSep(),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '\$45K – \$55K/month',
-                  style: TextStyle(
+                  (it?.budget != null)
+                      ? 'Budget: ${it!.budget!.toStringAsFixed(0)}'
+                      : (it?.projectCost != null)
+                          ? 'Cost: ${it!.projectCost!.toStringAsFixed(0)}'
+                          : '-',
+                  style: const TextStyle(
                     color: AppColors.textPrimaryColor,
                     fontWeight: FontWeight.w700,
                   ),
@@ -115,21 +158,27 @@ class HeaderSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'For 6 Months',
-            style: TextStyle(
+          Text(
+            (it?.duration != null)
+                ? 'For ${it!.duration} ${it.durationType ?? ''}'.trim()
+                : '',
+            style: const TextStyle(
               color: AppColors.textPrimaryColor,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const _IconText(text: 'Posted: 1 hour ago'),
+          _IconText(
+            text: it?.creationDate != null
+                ? 'Posted: ${it!.creationDate!.toLocal().toIso8601String().split('T').first}'
+                : 'Posted: —',
+          ),
           const SizedBox(height: 10),
           Divider(height: 2,color: AppColors.textTertiaryColor.withValues(alpha: 0.4),thickness: 1,),
           const SizedBox(height: 12),
           Row(
             children: [
-              _Badge(text: '92% Match', color: AppColors.lightGreen.withValues(alpha: 0.4),textColor: AppColors.green,),
+              _Badge(text:'Active', color: AppColors.lightGreen.withValues(alpha: 0.4),textColor: AppColors.green,),
               Spacer(),
               Row(
                 children: [
@@ -143,6 +192,7 @@ class HeaderSection extends StatelessWidget {
         ],
       ),
     );
+    });
   }
 }
 

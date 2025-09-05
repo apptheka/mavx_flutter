@@ -82,7 +82,7 @@ class _BottomBar extends StatelessWidget {
           items: [
             _item(IconAssets.home, 'Home'),
             _item(IconAssets.search, 'Search'),
-            _item(IconAssets.application, 'Applications'),
+            _item(IconAssets.application, 'Applied'),
             _item(IconAssets.profile, 'Profile'),
           ],
         ),

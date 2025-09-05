@@ -2,45 +2,60 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart'; 
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class JobCard extends StatelessWidget {
   final String title;
+  final String description;
   final String company; 
   final List<String> tags;
   final String? status; // e.g., 'Applied'
   final bool showApply;
   final bool compact;
+  final int id;
+  final VoidCallback? onTap;
+  final bool applied;
 
   const JobCard({
     super.key,
     required this.title,
+    required this.description,
     required this.company, 
     this.tags = const [],
     this.status,
     this.showApply = true,
     this.compact = false,
+    required this.id,
+    this.onTap,
+    this.applied = false,
   });
 
-  Color _getTagColor(String tag) {
-    switch (tag.toLowerCase()) {
-      case 'remote':
-        return const Color(0xFFc5b29a);
-      case 'hybrid':
-        return const Color(0xFF5856d6);
-      case 'on site':
-        return const Color(0xFF4ab0c7);
+   Color _getProjectTypeColor(String projectType) {
+    switch (projectType.toLowerCase()) {
+      case 'consulting':
+        return Colors.blue ;
+      case 'recruitment':
+        return Colors.green;
+      case 'full time':
+        return Colors.purple;
+      case 'contract placement':
+        return Colors.orange;
+      case 'contract':
+        return Colors.teal;
+      case 'internal':
+        return Colors.pink;
       default:
-        return const Color(0xFF64c3d5);
+        return Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final isMediumScreen = screenWidth < 600;
+    final isSmallScreen = screenWidth < 360; 
+    final controller = Get.find<HomeController>();
     
     // Responsive sizing
     final cardPadding = isSmallScreen ? 8.0 : 12.0;
@@ -52,7 +67,11 @@ class JobCard extends StatelessWidget {
     
     return InkWell(
       onTap: () {
-        Get.toNamed(AppRoutes.projectDetail);
+        if (onTap != null) {
+          onTap!();
+        } else {
+          Get.toNamed(AppRoutes.projectDetail, arguments: id);
+        }
       },
       child: Container( 
         padding: EdgeInsets.all(cardPadding),
@@ -128,20 +147,28 @@ class JobCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
-                  constraints: BoxConstraints(
-                    minWidth: isSmallScreen ? 32 : 40,
-                    minHeight: isSmallScreen ? 32 : 40,
-                  ),
-                  icon: Image.asset(
-                    IconAssets.clipboard, 
-                    color: const Color(0xFF0B2944), 
-                    width: isSmallScreen ? 16 : 20, 
-                    height: isSmallScreen ? 16 : 20
-                  ),
-                ),
+                Obx(() {
+                  final isBookmarked = controller.bookmarkedIds.contains(id);
+                  return IconButton(
+                    onPressed: () {
+                      controller.toggleBookmark(id);
+                    },
+                    padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
+                    constraints: BoxConstraints(
+                      minWidth: isSmallScreen ? 32 : 40,
+                      minHeight: isSmallScreen ? 32 : 40,
+                    ),
+                    icon: isBookmarked? Image.asset(
+                      IconAssets.saved,
+                      width: isSmallScreen ? 16 : 20,
+                      height: isSmallScreen ? 16 : 20,
+                    ) : Image.asset(
+                      IconAssets.clipboard,
+                      width: isSmallScreen ? 16 : 20,
+                      height: isSmallScreen ? 16 : 20,
+                    ),
+                  );
+                }),
               ],
             ),
             SizedBox(height: compact ? 6 : spacingSmall),
@@ -159,7 +186,7 @@ class JobCard extends StatelessWidget {
                         Text(
                           tags.first,
                           style: TextStyle(
-                            color: _getTagColor(tags.first),
+                            color: _getProjectTypeColor(tags.first),
                             fontWeight: FontWeight.w700,
                             fontSize: isSmallScreen ? 12 : 14,
                           ),
@@ -177,7 +204,7 @@ class JobCard extends StatelessWidget {
                       Text(
                         tags.first,
                         style: TextStyle(
-                          color: _getTagColor(tags.first),
+                          color: _getProjectTypeColor(tags.first),
                           fontWeight: FontWeight.w700,
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
@@ -216,14 +243,14 @@ class JobCard extends StatelessWidget {
                         SizedBox(
                           height: buttonHeight,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: applied ? null : () {},
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF0B2944),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
                             ),
                             child: CommonText(
-                              'Apply', 
+                              applied ? 'Applied' : 'Apply', 
                               fontSize: isSmallScreen ? 12 : 14, 
                               fontWeight: FontWeight.w700
                             ),
@@ -240,7 +267,11 @@ class JobCard extends StatelessWidget {
                         width: isSmallScreen ? 80 : 100,
                         height: compact ? (isSmallScreen ? 32 : 35) : buttonHeight,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: applied
+                              ? null
+                              : () {
+                                  Get.toNamed(AppRoutes.apply, arguments: id);
+                                },
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(isSmallScreen ? 80 : 100, isSmallScreen ? 32 : 35),
                             backgroundColor: const Color(0xFF0B2944),
@@ -248,7 +279,7 @@ class JobCard extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
                           ),
                           child: CommonText(
-                            'Apply', 
+                            applied ? 'Applied' : 'Apply', 
                             fontSize: isSmallScreen ? 12 : 14, 
                             fontWeight: FontWeight.w700
                           ),

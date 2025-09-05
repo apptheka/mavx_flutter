@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/domain/usecases/check_auth_status_usecase.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart'; 
@@ -18,18 +17,14 @@ class SplashController extends GetxController {
     
     // Check if user is logged in
     try {
-      final bool isLoggedIn = await checkAuthStatusUseCase.call();
-      log('Splash: isLoggedIn = ' + isLoggedIn.toString());
+      final bool isLoggedIn = await checkAuthStatusUseCase.call(); 
       
-      if (isLoggedIn) {
-        log('Splash: navigating to ' + AppRoutes.home);
+      if (isLoggedIn) { 
         Get.offAllNamed(AppRoutes.dashboard);
-      } else {
-        log('Splash: navigating to ' + AppRoutes.getStarted);
+      } else { 
         Get.offAllNamed(AppRoutes.getStarted);
       }
-    } catch (e) { 
-      log('Splash: auth check failed, navigating to get-started. Error: ' + e.toString());
+    } catch (e) {  
       Get.offAllNamed(AppRoutes.getStarted);
     }
   }

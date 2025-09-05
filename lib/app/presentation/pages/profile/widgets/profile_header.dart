@@ -3,11 +3,13 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final ProfileController controller;
+  const ProfileHeader({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +84,7 @@ class ProfileHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(child: _NameAndStatus()),
+                  Expanded(child: _NameAndStatus(controller: controller)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -91,65 +93,30 @@ class ProfileHeader extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
-                  children: const [
+                  children: [
                     _IconText(
                       iconAsset: IconAssets.experience,
-                      text: '5+ Years of experience',
+                      text: '${controller.registeredProfile.value.experience} Years of experience',
                     ),
                     SizedBox(width: 18),
                     _IconText(
                       iconAsset: IconAssets.location,
-                      text: 'New York, USA',
+                      text: '${controller.registeredProfile.value.location}',
                     ),
                   ],
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 12),
-        // Profile completion notice bar
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Expanded(
-                child: CommonText(
-                  'Your profile is 78% complete',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                child: const CommonText(
-                  'Update Profile',
-                  color: Colors.blue,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ), 
       ],
     );
   }
 }
 
 class _NameAndStatus extends StatelessWidget {
-  const _NameAndStatus();
+  final ProfileController controller;
+  const _NameAndStatus({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -158,12 +125,21 @@ class _NameAndStatus extends StatelessWidget {
       children: [
         Row(
           children: [
-            const CommonText(
-              'Parsa Woozie',
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
+            Obx(() {
+              final rp = controller.registeredProfile.value;
+              final first = (rp.fullName ?? '').trim();
+              final last = (rp.lastName ?? '').trim();
+              final hasAny = first.isNotEmpty || last.isNotEmpty;
+              final displayName = hasAny
+                  ? [first, last].where((s) => s.isNotEmpty).join(' ')
+                  : 'Your Name';
+              return CommonText(
+                displayName,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              );
+            }),
             const Spacer(),
             Image.asset(
               IconAssets.edit,
@@ -174,17 +150,19 @@ class _NameAndStatus extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Row(
-          children: [
-            Image.asset(IconAssets.role, height: 15, width: 15),
-            const SizedBox(width: 8),
-            const CommonText(
-              'Senior Product Consultant',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
-            ),
-          ],
+        Obx(
+          () => Row(
+            children: [
+              Image.asset(IconAssets.role, height: 15, width: 15),
+              const SizedBox(width: 8),
+              CommonText(
+                '${controller.preferences.value.lookingFor}'.replaceAll("1", ""),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ],
+          ),
         ),
       ],
     );

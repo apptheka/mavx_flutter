@@ -5,8 +5,8 @@ import 'package:flutter/widgets.dart';
 
 class SearchController extends GetxController {
   final ProjectsUseCase projectsUseCase = Get.find<ProjectsUseCase>();
-  final isLoading = false.obs; // initial page loading
-  final isLoadingMore = false.obs; // next pages loading
+  final isLoading = false.obs; // loading for search
+  final isLoadingMore = false.obs; // reserved for future pagination
   final isError = false.obs;
   final RxList<ProjectModel> jobs = <ProjectModel>[].obs;
   // Query text
@@ -16,28 +16,22 @@ class SearchController extends GetxController {
   final availableWorkTypes = const ['Remote', 'Hybrid', 'On Site'];
   final selectedWorkTypes = <String>{}.obs; // empty -> all
 
- 
-
   // Derived filtered list
   late final RxList<ProjectModel> filteredJobs;
 
-  // Pagination state
-  final int limit = 10;
-  int _page = 1;
-  final hasMore = true.obs;
+  // Reserved for future pagination if backend supports it on search
   final ScrollController scrollController = ScrollController();
 
   @override
   void onInit() {
     super.onInit();
     filteredJobs = <ProjectModel>[].obs;
-    // Attach scroll listener for infinite scroll
-    scrollController.addListener(_onScroll);
-    // Fetch first page
-    fetchProjects(reset: true);
-
-    // React to changes
-    everAll([query, selectedWorkTypes], (_) => _recompute());
+    // Debounce query and trigger server-side search
+    debounce(query, (_) => _performSearch(), time: const Duration(milliseconds: 400));
+    // React to filter changes and re-search
+    ever(selectedWorkTypes, (_) => _performSearch());
+    // Initial load: show all projects by default
+    _performSearch();
   }
 
   void toggleWorkType(String type) {
@@ -56,75 +50,41 @@ class SearchController extends GetxController {
     selectedWorkTypes.clear();
   }
 
-  void _recompute() {
-    final q = query.value.trim().toLowerCase();
-    final Set<String> activeTypes = selectedWorkTypes.toSet();
-    // final Set<String> activeTypesNorm = activeTypes.map(_norm).toSet();
-
-    final result = jobs.where((job) {
-      // Backend doesn't provide a work type list yet; treat as pass-through unless user selected filters
-      final matchesType = activeTypes.isEmpty;
-
-      // Text query filter over title, company, location
-      final title = (job.projectTitle ?? '').toLowerCase();
-      final company = (job.projectType ?? '').toLowerCase();
-      final location = (job.industry?.toString() ?? '').toLowerCase();
-
-      final matchesQuery = q.isEmpty ||
-          title.contains(q) ||
-          company.contains(q) ||
-          location.contains(q);
-
-      return matchesType && matchesQuery;
-    }).toList();
-
-    filteredJobs.assignAll(result);
+  // Map local work type label to backend 'type' query
+  String _mapTypeForApi() {
+    if (selectedWorkTypes.isEmpty) return '';
+    // If multiple selected, pass the first (or adapt if API supports comma separated)
+    final first = selectedWorkTypes.first.toLowerCase();
+    // Normalize to API expectations if needed
+    // Example mapping can be adjusted as backend requires
+    if (first.contains('remote')) return 'Remote';
+    if (first.contains('hybrid')) return 'Hybrid';
+    if (first.contains('on site') || first.contains('onsite')) return 'On Site';
+    return '';
   }
 
-  void _onScroll() {
-    if (!hasMore.value || isLoadingMore.value || isLoading.value) return;
-    if (!scrollController.hasClients) return;
-    final threshold = 200.0; // px to start prefetching
-    final maxScroll = scrollController.position.maxScrollExtent;
-    final current = scrollController.position.pixels;
-    if (maxScroll - current <= threshold) {
-      fetchProjects();
-    }
-  }
-
-  // Fetch projects (initial or next page)
-  Future<void> fetchProjects({bool reset = false}) async {
+  Future<void> _performSearch() async {
     try {
-      if (reset) {
-        _page = 1;
-        hasMore.value = true;
-        jobs.clear();
-        filteredJobs.clear();
-        isLoading.value = true;
-      } else {
-        isLoadingMore.value = true;
-      }
-
-      final resp = await projectsUseCase.projects(page: _page, limit: limit);
-      final List<ProjectModel> incoming = resp.data ?? <ProjectModel>[];
-
-      // Append results
-      jobs.addAll(incoming);
-      // Show unfiltered list by default (then reactive filters may reduce it)
-      _recompute();
-
-      // Determine if there are more pages
-      if (incoming.length < limit) {
-        hasMore.value = false;
-      } else {
-        _page += 1;
-      }
+      final q = query.value.trim();
+      isLoading.value = true;
+      isError.value = false;
+      final resp = (q.isEmpty && selectedWorkTypes.isEmpty)
+          // No query or filters -> load all projects
+          ? await projectsUseCase.projects()
+          // Otherwise do server-side search
+          : await projectsUseCase.search(
+              search: q,
+              type: _mapTypeForApi(),
+              industry: '',
+            );
+      final results = resp.data ?? <ProjectModel>[];
+      jobs.assignAll(results);
+      filteredJobs.assignAll(results);
     } catch (e) {
       isError.value = true;
       Get.snackbar('Error', e.toString());
     } finally {
       isLoading.value = false;
-      isLoadingMore.value = false;
     }
   }
 

@@ -3,12 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
 
 class DetailHeader extends StatelessWidget {
   const DetailHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Use HomeController as the single source of truth for bookmarks
+    final homeCtrl = Get.find<HomeController>();
+    final int projectId = Get.arguments is int ? Get.arguments as int : 0;
+    
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -44,10 +50,33 @@ class DetailHeader extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: Image.asset(IconAssets.clipboard, height: 25, width: 25,color: Colors.white,),
-          ),
+          Obx(() {
+            final isApplied = ProjectDetailController().appliedIds.contains(projectId);
+            final isBookmarked = homeCtrl.bookmarkedIds.contains(projectId);
+            if(isApplied){
+              return const SizedBox.shrink();
+            }
+            return Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    homeCtrl.toggleBookmark(projectId);
+                  },
+                  icon: isBookmarked ? Image.asset(
+                    IconAssets.saved,
+                    height: 25,
+                    width: 25,
+                    color: Colors.white,
+                  ) : Image.asset(
+                    IconAssets.clipboard,
+                    height: 25,
+                    width: 25,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );

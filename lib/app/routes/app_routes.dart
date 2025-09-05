@@ -7,4 +7,7 @@ class AppRoutes {
   static const dashboard = '/dashboard';
   static const projectDetail = '/project-detail';
   static const search = '/search';
+  static const profile = '/profile';
+  static const saved = '/saved';
+  static const apply = '/apply';
 }

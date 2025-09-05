@@ -5,8 +5,14 @@ class ProjectsUseCase {
  final ProjectsRepository projectsRepository; 
  ProjectsUseCase(this.projectsRepository);
 
- Future<ProjectResponse> projects({int page = 1, int limit = 10}) async {
+ Future<ProjectResponse> projects({int page = 1, int? limit}) async {
   return await projectsRepository.getProjects(page: page, limit: limit);
  }
-  
+  Future<ProjectResponse> projectById(int id) async {
+    return await projectsRepository.projectById(id);
+  }
+
+  Future<ProjectResponse> search({required String search, String type = '', String industry = ''}) async {
+    return await projectsRepository.searchProjects(search: search, type: type, industry: industry);
+  }
 }
