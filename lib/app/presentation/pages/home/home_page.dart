@@ -29,51 +29,56 @@ class HomePage extends GetView<HomeController> {
                 const HeaderWidget(),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                  child: RefreshIndicator(
+                    onRefresh: ()async{
+                      controller.refreshPage();
+                    },
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.06),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ProfileCompletionCard(), 
+                                StatsRow(padding: EdgeInsets.zero, controller: Get.find<HomeController>()),
+                              ],
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ProfileCompletionCard(), 
-                              StatsRow(padding: EdgeInsets.zero, controller: Get.find<HomeController>()),
-                            ],
+                    
+                          Obx(
+                            () => SectionHeader(
+                              title: 'Top Matches for You',
+                              total: controller.topMatches.length,
+                            ),
                           ),
-                        ),
-
-                        Obx(
-                          () => SectionHeader(
-                            title: 'Top Matches for You',
-                            total: controller.topMatches.length,
+                          const _TopMatchesList(),
+                          Obx(
+                            () => SectionHeader(
+                              title: 'Other Projects',
+                              total: controller.filteredProjects.length,
+                              onAction: () {
+                                Get.toNamed(AppRoutes.search);
+                              },
+                            ),
                           ),
-                        ),
-                        const _TopMatchesList(),
-                        Obx(
-                          () => SectionHeader(
-                            title: 'Other Projects',
-                            total: controller.filteredProjects.length,
-                            onAction: () {
-                              Get.toNamed(AppRoutes.search);
-                            },
-                          ),
-                        ),
-                        const _RecommendedList(),
-                        const SizedBox(height: 24),
-                      ],
+                          const _RecommendedList(),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -191,6 +196,8 @@ class _TopMatchesList extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           itemBuilder: (context, index) {
             final p = items[index];
+            // touch appliedIds to rebuild when it changes
+            final applied = Get.find<HomeController>().appliedIds.contains(p.id ?? -1);
             return SizedBox(
               width: itemWidth,
               child: JobCard(
@@ -201,6 +208,7 @@ class _TopMatchesList extends StatelessWidget {
                 showApply: true,
                 compact: true,
                 id: p.id ?? index,
+                applied: applied,
               ),
             );
           },
@@ -217,6 +225,7 @@ class _RecommendedList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final filters = const ['All', 'On Site', 'Remote', 'Hybrid'];
     final controller = Get.find<HomeController>();
     return Padding(
@@ -227,7 +236,7 @@ class _RecommendedList extends StatelessWidget {
           SizedBox(
             height: 40,
             child: Obx(() {
-              // Touch Rx to register dependency for this Obx
+              // Touch Rx to register dependency for this Obx 
               final selectedIndex = controller.selectedFilter.value;
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -275,7 +284,7 @@ class _RecommendedList extends StatelessWidget {
                 ),
               );
             }
-            final items = controller.filteredProjects;
+            final items = controller.filteredProjects; 
             if (items.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -298,6 +307,7 @@ class _RecommendedList extends StatelessWidget {
                     tags: [controller.chipFor(items[i])],
                     showApply: true,
                     id: items[i].id ?? i,
+                    applied: controller.appliedIds.contains(items[i].id ?? -1),
                   ),
                   if (i != items.length - 1) const SizedBox(height: 12),
                 ],

@@ -2,7 +2,7 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  static const String baseUrl = 'http://192.168.1.14:3001/v1/api'; 
+  static const String baseUrl = 'http://192.168.1.23:3001/v1/api'; 
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';
@@ -20,6 +20,14 @@ class AppConstants {
   static const String applyJob = '/user/apply-job';
   static const String getApplyJob = '/user/get-apply-job';
   static const String getUserApplyProjects = '/user/get-user-apply-projects';
+  static const String preferences = '/profile/preferences';
+  static const String experience = '/profile/experience';
+  static const String education = '/profile/education';
+  static const String aboutMe = '/profile/about-me';
+  static const String languages = '/profile/languages';
+  static const String onlineProfiles = '/profile/online-profiles';
+  static const String basicDetails = '/profile/basic-details';
+  static const String skills = '/profile/skills';
 
   // Storage Keys
   static const String tokenKey = 'token';

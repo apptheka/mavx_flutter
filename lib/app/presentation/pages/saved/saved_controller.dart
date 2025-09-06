@@ -3,25 +3,30 @@ import 'package:mavx_flutter/app/data/models/bookmarks_model.dart' as bm;
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_bookmarks_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/delete_bookmark_usecase.dart';
+import 'package:mavx_flutter/app/domain/repositories/apply_job_repository.dart';
 
 class SavedController extends GetxController {
   SavedController({
     GetAllBookmarksUseCase? getAllBookmarksUseCase,
     AuthRepository? authRepository,
     DeleteBookmarkUseCase? deleteBookmarkUseCase,
+    ApplyJobRepository? applyRepo,
   }) : _getAllBookmarksUseCase =
            getAllBookmarksUseCase ?? Get.find<GetAllBookmarksUseCase>(),
        _authRepository = authRepository ?? Get.find<AuthRepository>(),
-       _deleteBookmarkUseCase = deleteBookmarkUseCase ?? Get.find<DeleteBookmarkUseCase>();
+       _deleteBookmarkUseCase = deleteBookmarkUseCase ?? Get.find<DeleteBookmarkUseCase>(),
+       _applyRepo = applyRepo ?? Get.find<ApplyJobRepository>();
 
   final GetAllBookmarksUseCase _getAllBookmarksUseCase;
   final AuthRepository _authRepository;
   final DeleteBookmarkUseCase _deleteBookmarkUseCase;
+  final ApplyJobRepository _applyRepo;
 
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
   final RxList<bm.Project> saved = <bm.Project>[].obs;
   final RxInt total = 0.obs;
+  final RxSet<int> appliedIds = <int>{}.obs;
 
   @override
   void onInit() {
@@ -42,6 +47,17 @@ class SavedController extends GetxController {
         final resp = await _getAllBookmarksUseCase.call(uid);
         saved.assignAll(resp.projects ?? []);
         total.value = resp.total ?? saved.length;
+        // Remove any projects that are already applied
+        try {
+          final ids = await _applyRepo.getAppliedProjectIdsForCurrentUser();
+          appliedIds
+            ..clear()
+            ..addAll(ids);
+          saved.removeWhere((p) => p.id != null && appliedIds.contains(p.id!));
+          total.value = saved.length;
+        } catch (_) {
+          // ignore filtering on failure
+        }
       }
     } catch (e) {
       error.value = 'Failed to load saved projects';

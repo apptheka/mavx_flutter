@@ -13,7 +13,89 @@ class ProfileSkills extends StatelessWidget {
     return SectionCard(
       title: 'Key Skills',
       subtitle: 'Highlight your strongest areas of expertise',
-      onEdit: () {},
+      onEdit: () {
+        // Prefill from existing skills
+        final existing = controller.skillList.map((e) => e.skillName ?? '').where((e) => e.isNotEmpty).toList();
+        final namesCtrl = TextEditingController(text: existing.isNotEmpty ? existing.join(', ') : '');
+        String category = 'Technical';
+        Get.bottomSheet(
+          SafeArea(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Skills', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
+                  const Text('Add your professional skills - separate multiple skills with commas', style: TextStyle(color: AppColors.textSecondaryColor)),
+                  const SizedBox(height: 12),
+                  const Text('Skill Names *', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: namesCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'e.g., JavaScript, React, SQL',
+                      filled: true,
+                      fillColor: const Color(0xFFF5F6FA),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Skill Category *', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: const Color(0xFFF5F6FA), borderRadius: BorderRadius.circular(12)),
+                    child: DropdownButton<String>(
+                      value: category,
+                      isExpanded: true,
+                      underline: const SizedBox.shrink(),
+                      items: const ['Technical', 'Soft', 'Other']
+                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                          .toList(),
+                      onChanged: (v) => category = v ?? category,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+                      const Spacer(),
+                      SizedBox(
+                        width: 140,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final raw = namesCtrl.text.trim();
+                            if (raw.isEmpty) {
+                              Get.snackbar('Required', 'Please enter at least one skill');
+                              return;
+                            }
+                            final names = raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+                            await controller.saveSkills({
+                              'skillCategory': category,
+                              'skills': names,
+                            });
+                            Get.back();
+                          },
+                          child: const Text('Save Changes'),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+          isScrollControlled: true,
+        );
+      },
       child: Obx(() {
         final skills = controller.skillList;
         if (skills.isEmpty) {

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart'; 
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
-import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart'
-    as search;
+import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart' as search;
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/app_text_field.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
@@ -67,6 +66,7 @@ class SearchPage extends StatelessWidget {
                             final tags = (job.projectType != null && job.projectType!.isNotEmpty)
                                 ? [job.projectType!]
                                 : const <String>[];
+                            final applied = controller.appliedIds.contains(job.id ?? -1);
                             return JobCard(
                               title: title,
                               description: cleanDescription,
@@ -75,6 +75,7 @@ class SearchPage extends StatelessWidget {
                               showApply: true,
                               compact: false, 
                               id: job.id!,
+                              applied: applied,
                             );
                           },
                         );
@@ -99,97 +100,148 @@ class SearchPage extends StatelessWidget {
     BuildContext context,
     search.SearchController controller,
   ) {
+    // Prepare staged selections so the sheet reflects current applied filters
+    controller.startStaging();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Filter Jobs',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      builder: (context) {
+        final bottom = MediaQuery.of(context).padding.bottom;
+        return Obx(
+          () => Container(
+            height: MediaQuery.of(context).size.height * 0.72,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Work Type',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Obx(
-              () => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: controller.availableWorkTypes.map((type) {
-                  final isSelected = controller.selectedWorkTypes.contains(
-                    type,
-                  );
-                  return FilterChip(
-                    selected: isSelected,
-                    onSelected: (_) => controller.toggleWorkType(type),
-                    label: Text(type),
-                    selectedColor: AppColors.primaryColor.withValues(
-                      alpha: 0.2,
-                    ),
-                    checkmarkColor: const Color(0xFF0B2944),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Filters',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    onPressed: () {
-                      controller.clearFilters();
-                      Get.back();
-                    },
-                    child: const CommonText(
-                      'Clear All',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Get.back(),
+                      )
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const Divider(height: 1),
+                // Body: left menu + right list
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40),
+                  child: Row(
+                    children: [
+                      // Left vertical menu
+                      Container(
+                        width: 140,
+                        color: const Color(0xFFF1F3F6),
+                        child: ListView(
+                          children: [
+                            _LeftMenuItem(
+                              title: 'Project Type',
+                              selected: controller.leftMenuIndex.value == 0,
+                              onTap: () => controller.leftMenuIndex.value = 0,
+                            ),
+                            _LeftMenuItem(
+                              title: 'Industry',
+                              selected: controller.leftMenuIndex.value == 1,
+                              onTap: () => controller.leftMenuIndex.value = 1,
+                            ),
+                          ],
+                        ),
                       ),
-                      backgroundColor: AppColors.primaryColor,
-                    ),
-                    child: const CommonText(
-                      'Apply',
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                      // Right content
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Category',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: controller.filtersLoading.value
+                                    ? const Center(child: CircularProgressIndicator())
+                                    : const _RightOptionsList(),
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: () {},
+                                  child: const Text('Show More'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Bottom apply button similar to screenshot
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 8 + bottom),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                          ),
+                          onPressed: () {
+                            controller.clearFilters();
+                            Get.back();
+                          },
+                          child: const Text('Clear All'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0B2944),
+                              shape: const StadiumBorder(),
+                            ),
+                            onPressed: () {
+                              controller.applyStagedFilters();
+                              Get.back();
+                            },
+                            child: const Text(
+                              'Apply Filter',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: MediaQuery.of(context).padding.bottom),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -253,5 +305,92 @@ class _SearchInput extends GetView<search.SearchController> {
         ),
       ),
     );
+  }
+}
+
+class _LeftMenuItem extends StatelessWidget {
+  final String title;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _LeftMenuItem({
+    required this.title,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = selected ? const Color(0xFF0B2944) : Colors.transparent;
+    final fg = selected ? Colors.white : const Color(0xFF0B2944);
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(8),
+            bottomRight: Radius.circular(8),
+          ),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.w600, color: fg),
+        ),
+      ),
+    );
+  }
+}
+
+class _RightOptionsList extends StatelessWidget {
+  const _RightOptionsList();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetX<search.SearchController>(builder: (controller) {
+      final isType = controller.leftMenuIndex.value == 0;
+      if (isType) {
+        final items = controller.projectTypes;
+        // touch length to create a reactive dependency on the set
+        final _ = controller.stagedProjectTypeIds.length;
+        return ListView.separated(
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            final selected = controller.stagedProjectTypeIds.contains(item.id);
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              title: Text(item.title),
+              trailing: selected
+                  ? const Icon(Icons.check_circle, color: Color(0xFF0B2944))
+                  : const SizedBox.shrink(),
+              onTap: () => controller.toggleProjectType(item.id),
+            );
+          },
+        );
+      } else {
+        final items = controller.industries;
+        // touch length to create a reactive dependency on the set
+        final _ = controller.stagedIndustryIds.length;
+        return ListView.separated(
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            final selected = controller.stagedIndustryIds.contains(item.id);
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              title: Text(item.title),
+              trailing: selected
+                  ? const Icon(Icons.check_circle, color: Color(0xFF0B2944))
+                  : const SizedBox.shrink(),
+              onTap: () => controller.toggleIndustry(item.id),
+            );
+          },
+        );
+      }
+    });
   }
 }

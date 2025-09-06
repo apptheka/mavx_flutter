@@ -43,12 +43,13 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
   }
 
   @override
-  Future<ProjectResponse> searchProjects({required String search, String type = '', String industry = ''}) async {
+  Future<ProjectResponse> searchProjects({required String search, String type = '', String industry = '', String specialisation = ''}) async {
     try {
       final params = <String, dynamic>{
         'search': search,
         'type': type,
         'industry': industry,
+        'specialisation': specialisation,
       };
       final res = await apiProvider.get(
         AppConstants.projectSearch,

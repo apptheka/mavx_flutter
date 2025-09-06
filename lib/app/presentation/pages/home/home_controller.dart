@@ -8,6 +8,7 @@ import 'package:mavx_flutter/app/domain/usecases/delete_bookmark_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_bookmarks_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/projects_usecase.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/domain/repositories/apply_job_repository.dart';
 
 class HomeController extends GetxController {
   HomeController({
@@ -16,18 +17,20 @@ class HomeController extends GetxController {
     BookmarkUseCase? bookmarkUseCase,
     DeleteBookmarkUseCase? deleteBookmarkUseCase,
     GetAllBookmarksUseCase? getAllBookmarksUseCase,
+    ApplyJobRepository? applyJobRepository,
   }) : _authRepository = authRepository ?? Get.find<AuthRepository>(),
        _projectsUseCase = projectsUseCase ?? Get.find<ProjectsUseCase>(),
        _bookmarkUseCase = bookmarkUseCase ?? Get.find<BookmarkUseCase>(),
        _deleteBookmarkUseCase = deleteBookmarkUseCase ?? Get.find<DeleteBookmarkUseCase>(),
-       _getAllBookmarksUseCase = getAllBookmarksUseCase ?? Get.find<GetAllBookmarksUseCase>();
-       
+       _getAllBookmarksUseCase = getAllBookmarksUseCase ?? Get.find<GetAllBookmarksUseCase>(),
+       _applyRepo = applyJobRepository ?? Get.find<ApplyJobRepository>();
 
   final AuthRepository _authRepository;
   final ProjectsUseCase _projectsUseCase;
   final BookmarkUseCase _bookmarkUseCase;
   final DeleteBookmarkUseCase _deleteBookmarkUseCase;
   final GetAllBookmarksUseCase _getAllBookmarksUseCase;
+  final ApplyJobRepository _applyRepo;
 
   // Reactive user data for header
   final RxBool isLoadingBookmarks = false.obs;
@@ -44,6 +47,7 @@ class HomeController extends GetxController {
   final RxList<ProjectModel> filteredProjects = <ProjectModel>[].obs;
   final RxInt selectedFilter =
       0.obs; // 0: All, 1: On Site, 2: Remote, 3: Hybrid
+  final RxSet<int> appliedIds = <int>{}.obs;
 
   @override
   void onInit() {
@@ -52,6 +56,18 @@ class HomeController extends GetxController {
     loadUser();
     fetchProjects();
     _initBookmarks();
+    refreshAppliedIds();
+  }
+
+  Future<void> refreshAppliedIds() async {
+    try {
+      final ids = await _applyRepo.getAppliedProjectIdsForCurrentUser();
+      appliedIds
+        ..clear()
+        ..addAll(ids);
+    } catch (_) {
+      // ignore errors
+    }
   }
 
   Future<void> _initBookmarks() async {
@@ -210,5 +226,11 @@ class HomeController extends GetxController {
     final scheme = uri.scheme.toLowerCase();
     if (scheme != 'http' && scheme != 'https') return null;
     return p;
+  }
+
+  void refreshPage(){
+    fetchProjects();
+    _initBookmarks();
+    refreshAppliedIds();
   }
 }

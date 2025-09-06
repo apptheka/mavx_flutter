@@ -141,11 +141,14 @@ class _NameAndStatus extends StatelessWidget {
               );
             }),
             const Spacer(),
-            Image.asset(
-              IconAssets.edit,
-              height: 20,
-              width: 20,
-              color: Colors.white,
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Image.asset(
+                IconAssets.edit,
+                height: 20,
+                width: 20,
+                color: Colors.white,
+              ),
             ),
           ],
         ),

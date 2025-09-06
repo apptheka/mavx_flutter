@@ -14,7 +14,160 @@ class ProfileExperience extends StatelessWidget {
     return SectionCard(
       title: 'Experience',
       subtitle: "Where you've worked and what you achieved",
-      onEdit: () {},
+      onEdit: () {
+        final first = controller.experienceList.isNotEmpty ? controller.experienceList.first : null;
+        final companyCtrl = TextEditingController(text: first?.companyName ?? '');
+        final roleCtrl = TextEditingController(text: first?.role ?? '');
+        final descCtrl = TextEditingController(text: first?.description ?? '');
+        String employmentType = (first?.employmentType ?? 'Full Time');
+        bool remote = (first?.isRemote ?? 0) == 1;
+        bool current = (first?.isCurrent ?? 0) == 1;
+        final startCtrl = TextEditingController(text: first?.startDate != null ?
+            '${first!.startDate!.year.toString().padLeft(4, '0')}-${first.startDate!.month.toString().padLeft(2, '0')}-${first.startDate!.day.toString().padLeft(2, '0')}' : '');
+        // End date optional; add when you add that field to the UI
+        Get.bottomSheet(
+          SafeArea(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Work Experience',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Add your professional experience',
+                      style: TextStyle(color: AppColors.textSecondaryColor),
+                    ),
+                    const SizedBox(height: 12),
+                    _label('Company Name *'),
+                    _field(companyCtrl, hint: 'Company Name'),
+                    const SizedBox(height: 10),
+                    _label('Job Title *'),
+                    _field(roleCtrl, hint: 'Job Title'),
+                    const SizedBox(height: 10),
+                    _label('Employment Type *'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F6FA),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButton<String>(
+                        value: employmentType,
+                        isExpanded: true,
+                        underline: const SizedBox.shrink(),
+                        items:
+                            const [
+                                  'Full Time',
+                                  'Part Time',
+                                  'Contract',
+                                  'Internship',
+                                ]
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (v) => employmentType = v ?? employmentType,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return Checkbox(
+                              value: remote,
+                              onChanged: (v) =>
+                                  setState(() => remote = v ?? false),
+                            );
+                          },
+                        ),
+                        const Text('Remote Work'),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _label('Start Date *'),
+                    _field(startCtrl, hint: 'YYYY-MM-DD'),
+                    Row(
+                      children: [
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            return Checkbox(
+                              value: current,
+                              onChanged: (v) =>
+                                  setState(() => current = v ?? false),
+                            );
+                          },
+                        ),
+                        const Text('Currently working here'),
+                      ],
+                    ),
+                    _label('Job Description *'),
+                    _field(descCtrl, hint: 'Describe your work', maxLines: 4),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => Get.back(),
+                          child: const Text('Cancel'),
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: 140,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (companyCtrl.text.trim().isEmpty ||
+                                  roleCtrl.text.trim().isEmpty ||
+                                  startCtrl.text.trim().isEmpty ||
+                                  descCtrl.text.trim().isEmpty) {
+                                Get.snackbar(
+                                  'Required',
+                                  'Please fill all required fields',
+                                );
+                                return;
+                              }
+
+                              final payload = {
+                                'companyName': companyCtrl.text.trim(),
+                                'role': roleCtrl.text.trim(),
+                                'employmentType': employmentType,
+                                'isRemote': remote ? 1 : 0,
+                                'startDate': startCtrl.text.trim(),
+                                'isCurrent': current ? 1 : 0,
+                                'description': descCtrl.text.trim(),
+                              };
+                              await controller.saveExperience(payload);
+                              Get.back();
+                            },
+                            child: const Text('Save Changes'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          isScrollControlled: true,
+        );
+      },
       child: Obx(() {
         final exps = controller.experienceList;
         if (exps.isEmpty) {
@@ -24,24 +177,36 @@ class ProfileExperience extends StatelessWidget {
           );
         }
         Color startFor(int i) => [
-              const Color(0xFF7C3AED),
-              const Color(0xFF0EA5E9),
-              const Color(0xFF10B981),
-              const Color(0xFFF59E0B),
-            ][i % 4];
+          const Color(0xFF7C3AED),
+          const Color(0xFF0EA5E9),
+          const Color(0xFF10B981),
+          const Color(0xFFF59E0B),
+        ][i % 4];
         Color endFor(int i) => [
-              const Color(0xFF4F46E5),
-              const Color(0xFF2563EB),
-              const Color(0xFF059669),
-              const Color(0xFFD97706),
-            ][i % 4];
+          const Color(0xFF4F46E5),
+          const Color(0xFF2563EB),
+          const Color(0xFF059669),
+          const Color(0xFFD97706),
+        ][i % 4];
         String fmt(DateTime? d) {
           if (d == null) return '';
           const months = [
-            'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
           ];
           return '${months[d.month - 1]} ${d.year}';
         }
+
         return Column(
           children: [
             for (int i = 0; i < exps.length; i++) ...[
@@ -52,7 +217,9 @@ class ProfileExperience extends StatelessWidget {
                 employmentType: exps[i].employmentType ?? '-',
                 period: () {
                   final s = fmt(exps[i].startDate);
-                  final e = exps[i].isCurrent == 1 ? 'Present' : fmt(exps[i].endDate);
+                  final e = exps[i].isCurrent == 1
+                      ? 'Present'
+                      : fmt(exps[i].endDate);
                   if (s.isEmpty && (e.isEmpty || e == 'Present')) return '-';
                   return [s, e].where((x) => x.isNotEmpty).join(' - ');
                 }(),
@@ -63,13 +230,34 @@ class ProfileExperience extends StatelessWidget {
                 gradientEnd: endFor(i),
               ),
               if (i != exps.length - 1) const SizedBox(height: 12),
-            ]
+            ],
           ],
         );
       }),
     );
   }
 }
+
+// Helpers for bottom sheet inputs
+Widget _label(String text) => Padding(
+  padding: const EdgeInsets.only(bottom: 6),
+  child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+);
+
+Widget _field(TextEditingController ctrl, {String? hint, int maxLines = 1}) =>
+    TextField(
+      controller: ctrl,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: const Color(0xFFF5F6FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
 
 class _ExperienceItem extends StatelessWidget {
   final String role;

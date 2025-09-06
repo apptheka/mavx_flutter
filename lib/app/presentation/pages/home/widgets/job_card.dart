@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart'; 
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
-import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart' as search;
+import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart' as saved;
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class JobCard extends StatelessWidget {
@@ -17,6 +19,10 @@ class JobCard extends StatelessWidget {
   final int id;
   final VoidCallback? onTap;
   final bool applied;
+  final bool showBookmark;
+  // Optional overrides to control bookmark icon/state from parent
+  final bool? bookmarkedOverride;
+  final VoidCallback? onBookmarkPressed;
 
   const JobCard({
     super.key,
@@ -30,6 +36,9 @@ class JobCard extends StatelessWidget {
     required this.id,
     this.onTap,
     this.applied = false,
+    this.showBookmark = true,
+    this.bookmarkedOverride,
+    this.onBookmarkPressed,
   });
 
    Color _getProjectTypeColor(String projectType) {
@@ -147,28 +156,51 @@ class JobCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Obx(() {
-                  final isBookmarked = controller.bookmarkedIds.contains(id);
-                  return IconButton(
-                    onPressed: () {
-                      controller.toggleBookmark(id);
-                    },
-                    padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
-                    constraints: BoxConstraints(
-                      minWidth: isSmallScreen ? 32 : 40,
-                      minHeight: isSmallScreen ? 32 : 40,
-                    ),
-                    icon: isBookmarked? Image.asset(
-                      IconAssets.saved,
-                      width: isSmallScreen ? 16 : 20,
-                      height: isSmallScreen ? 16 : 20,
-                    ) : Image.asset(
-                      IconAssets.clipboard,
-                      width: isSmallScreen ? 16 : 20,
-                      height: isSmallScreen ? 16 : 20,
-                    ),
-                  );
-                }),
+                if (showBookmark && !applied)
+                  // If parent provides an override, render a plain IconButton to avoid Obx without observables
+                  if (bookmarkedOverride != null)
+                    IconButton(
+                      onPressed: onBookmarkPressed ?? () { controller.toggleBookmark(id); },
+                      padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
+                      constraints: BoxConstraints(
+                        minWidth: isSmallScreen ? 32 : 40,
+                        minHeight: isSmallScreen ? 32 : 40,
+                      ),
+                      icon: (bookmarkedOverride == true)
+                          ? Image.asset(
+                              IconAssets.saved,
+                              width: isSmallScreen ? 16 : 20,
+                              height: isSmallScreen ? 16 : 20,
+                            )
+                          : Image.asset(
+                              IconAssets.clipboard,
+                              width: isSmallScreen ? 16 : 20,
+                              height: isSmallScreen ? 16 : 20,
+                            ),
+                    )
+                  else
+                    Obx(() {
+                      final isBookmarked = controller.bookmarkedIds.contains(id);
+                      return IconButton(
+                        onPressed: onBookmarkPressed ?? () { controller.toggleBookmark(id); },
+                        padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
+                        constraints: BoxConstraints(
+                          minWidth: isSmallScreen ? 32 : 40,
+                          minHeight: isSmallScreen ? 32 : 40,
+                        ),
+                        icon: isBookmarked
+                            ? Image.asset(
+                                IconAssets.saved,
+                                width: isSmallScreen ? 16 : 20,
+                                height: isSmallScreen ? 16 : 20,
+                              )
+                            : Image.asset(
+                                IconAssets.clipboard,
+                                width: isSmallScreen ? 16 : 20,
+                                height: isSmallScreen ? 16 : 20,
+                              ),
+                      );
+                    }),
               ],
             ),
             SizedBox(height: compact ? 6 : spacingSmall),
@@ -243,7 +275,24 @@ class JobCard extends StatelessWidget {
                         SizedBox(
                           height: buttonHeight,
                           child: ElevatedButton(
-                            onPressed: applied ? null : () {},
+                            onPressed: applied
+                                ? null
+                                : () async {
+                                    final res = await Get.toNamed(AppRoutes.apply, arguments: id);
+                                    if (res == true) {
+                                      // refresh applied state across pages after returning
+                                      if (Get.isRegistered<HomeController>()) {
+                                        Get.find<HomeController>().refreshAppliedIds();
+                                      }
+                                      if (Get.isRegistered<search.SearchController>()) {
+                                        Get.find<search.SearchController>().refreshAppliedIds();
+                                      }
+                                      if (Get.isRegistered<saved.SavedController>()) {
+                                        // refresh saved list to remove applied items
+                                        Get.find<saved.SavedController>().fetchSaved();
+                                      }
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF0B2944),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -269,8 +318,19 @@ class JobCard extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: applied
                               ? null
-                              : () {
-                                  Get.toNamed(AppRoutes.apply, arguments: id);
+                              : () async {
+                                  final res = await Get.toNamed(AppRoutes.apply, arguments: id);
+                                  if (res == true) {
+                                    if (Get.isRegistered<HomeController>()) {
+                                      Get.find<HomeController>().refreshAppliedIds();
+                                    }
+                                    if (Get.isRegistered<search.SearchController>()) {
+                                      Get.find<search.SearchController>().refreshAppliedIds();
+                                    }
+                                    if (Get.isRegistered<saved.SavedController>()) {
+                                      Get.find<saved.SavedController>().fetchSaved();
+                                    }
+                                  }
                                 },
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(isSmallScreen ? 80 : 100, isSmallScreen ? 32 : 35),
@@ -294,15 +354,7 @@ class JobCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Widget _separator(bool isSmall) => Text(
-    '|', 
-    style: TextStyle(
-      color: Colors.black26,
-      fontSize: isSmall ? 12 : 14,
-    )
-  );
+  } 
 
   Widget _matchBadge(String text, bool isSmall) {
     const color = Color(0xFF33C481);

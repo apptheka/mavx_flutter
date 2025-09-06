@@ -44,13 +44,13 @@ class FileRepositoryImpl implements FileRepository {
       log('file upload response json: $json');
 
       // Try flexible extraction of URL
-      // Expected shapes: {data: {url: ...}} or {data: {fileUrl: ...}} or {url: ...}
+      // Expected shapes: {data: {documentUrl: ...}} or {data: {url: ...}} or {data: {fileUrl: ...}} or {url: ...}
       String? url;
       final data = json['data'];
       if (data is Map) {
-        url = (data['url'] ?? data['fileUrl'] ?? data['path'] ?? data['location'])?.toString();
+        url = (data['documentUrl'] ?? data['url'] ?? data['fileUrl'] ?? data['path'] ?? data['location'])?.toString();
       }
-      url ??= (json['url'] ?? json['fileUrl'] ?? json['path'] ?? json['location'])?.toString();
+      url ??= (json['documentUrl'] ?? json['url'] ?? json['fileUrl'] ?? json['path'] ?? json['location'])?.toString();
 
       if (url == null || url.isEmpty) {
         throw Exception('File URL missing in upload response');

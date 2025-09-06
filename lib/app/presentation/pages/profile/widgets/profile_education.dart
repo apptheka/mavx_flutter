@@ -8,12 +8,103 @@ class ProfileEducation extends StatelessWidget {
   final ProfileController controller;
   const ProfileEducation({super.key, required this.controller});
 
+
   @override
   Widget build(BuildContext context) {
     return SectionCard(
       title: 'Education',
       subtitle: 'Your academic and professional learning history',
-      onEdit: () {},
+      onEdit: () {
+        final schoolCtrl = TextEditingController();
+        final degreeCtrl = TextEditingController();
+        final startCtrl = TextEditingController();
+        final endCtrl = TextEditingController();
+        bool current = false;
+
+        Get.bottomSheet(
+          SafeArea(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Education', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    const Text('Add your educational background', style: TextStyle(color: AppColors.textSecondaryColor)),
+                    const SizedBox(height: 12),
+                    const Text('Institution Name *', style: TextStyle(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    _field(schoolCtrl, hint: 'Institution Name'),
+                    const SizedBox(height: 10),
+                    const Text('Degree *', style: TextStyle(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 6),
+                    _field(degreeCtrl, hint: 'Degree'),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text('Start Date *', style: TextStyle(fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 6),
+                        _field(startCtrl, hint: 'YYYY-MM-DD'),
+                      ])),
+                      const SizedBox(width: 12),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text('End Date', style: TextStyle(fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 6),
+                        _field(endCtrl, hint: 'YYYY-MM-DD'),
+                      ])),
+                    ]),
+                    const SizedBox(height: 6),
+                    StatefulBuilder(builder: (context, setState) {
+                      return Row(children: [
+                        Checkbox(value: current, onChanged: (v) => setState(() => current = v ?? false)),
+                        const Text('Currently studying here'),
+                      ]);
+                    }),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Get.back(),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (schoolCtrl.text.trim().isEmpty || degreeCtrl.text.trim().isEmpty || startCtrl.text.trim().isEmpty) {
+                                Get.snackbar('Required', 'Institution, Degree and Start Date are required');
+                                return;
+                              }
+                              await controller.saveEducation({
+                                'institutionName': schoolCtrl.text.trim(),
+                                'degree': degreeCtrl.text.trim(),
+                                'startDate': startCtrl.text.trim(),
+                                'endDate': endCtrl.text.trim(),
+                                'isCurrent': current ? 1 : 0,
+                              });
+                              Get.back();
+                            },
+                            child: const Text('Save Changes'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          isScrollControlled: true,
+        );
+      },
       child: Obx(() {
         final items = controller.educationList;
         if (items.isEmpty) {
@@ -44,6 +135,24 @@ class ProfileEducation extends StatelessWidget {
       }),
     );
   }
+
+
+    Widget _field(TextEditingController controller, {String? hint}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: const Color(0xFFF5F6FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      ),
+    );
+  }
+
 }
 
 class _EducationItem extends StatelessWidget {

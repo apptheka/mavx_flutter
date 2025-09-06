@@ -37,6 +37,7 @@ class ApplicationsList extends StatelessWidget {
               tags: [p.projectType ?? ''],
               status: applied ? 'Applied' : null,
               applied: applied,
+              showBookmark: false,
               onTap: () => Get.toNamed(AppRoutes.projectDetail, arguments: p.id ?? 0),
             ),
           );

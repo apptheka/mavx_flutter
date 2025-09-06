@@ -9,8 +9,8 @@ class ApplyPage extends GetView<ApplyController> {
   const ApplyPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Ensure controller is available
+  Widget build(BuildContext context) { 
+
     final c = Get.isRegistered<ApplyController>()
         ? Get.find<ApplyController>()
         : Get.put(ApplyController());
@@ -51,7 +51,7 @@ class ApplyPage extends GetView<ApplyController> {
                   const Divider(thickness: 1, color: Color(0xFFE6E9EF)),
                   const SizedBox(height: 8),
 
-                  // Per Hour Cost
+                  // Always-required fields
                   Padding(
                     padding: edge,
                     child: LabeledField(
@@ -62,8 +62,16 @@ class ApplyPage extends GetView<ApplyController> {
                     ),
                   ),
                   SizedBox(height: fieldSpacing),
-
-                  // Availability in a Week
+                  Padding(
+                    padding: edge,
+                    child: LabeledField(
+                      label: 'Availability In A Day',
+                      hint: 'e.g. 5 hours per day',
+                      controller: c.availabilityDayCtrl,
+                      keyboardType: TextInputType.text,
+                    ),
+                  ),
+                  SizedBox(height: fieldSpacing),
                   Padding(
                     padding: edge,
                     child: LabeledField(
@@ -75,64 +83,117 @@ class ApplyPage extends GetView<ApplyController> {
                   ),
                   SizedBox(height: fieldSpacing),
 
-                  // Availability in a Day
-                  Padding(
-                    padding: edge,
-                    child: LabeledField(
-                      label: 'Availability In A Day',
-                      hint: 'e.g. 5 hours per day',
-                      controller: c.availabilityDayCtrl,
-                      keyboardType: TextInputType.text,
-                    ),
-                  ),
-                  SizedBox(height: fieldSpacing),
-
-                  // Upload area
-                  Padding(
-                    padding: edge,
-                    child: Column(
+                  // Dynamic Fields by Project Type
+                  Obx(() {
+                    final type = (c.project.value?.projectType ?? '').trim().toLowerCase();
+                    final isContractLike = type == 'contract' || type == 'contract placement' || type == 'consulting';
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SectionTitle('Upload Professional Document'),
-                        const SizedBox(height: 8),
-                        UploadDropArea(controller: c),
-                        const SizedBox(height: 6),
-                        Obx(() {
-                          final url = c.existingResumeUrl.value;
-                          if (url.isEmpty) return const SizedBox.shrink();
-                          final name = url.split('/').last;
-                          return Text(
-                            'Using resume: $name',
-                            style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
-                          );
-                        }),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: buttonHeight,
-                          child: Obx(() {
-                            return ElevatedButton.icon(
-                              onPressed: c.uploading.value ? null : c.pickAndUpload,
-                              icon: const Icon(Icons.upload, color: Colors.white),
-                              label: Text(
-                                c.uploading.value ? 'Uploading...' : 'Upload New CV',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
+                        if (!isContractLike) ...[
+                          // Current CTC
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'Current CTC',
+                              hint: 'Enter current CTC',
+                              controller: c.currentCtcCtrl,
+                              keyboardType: TextInputType.text,
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                          // Expected CTC
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'Expected CTC',
+                              hint: 'Enter expected CTC',
+                              controller: c.expectedCtcCtrl,
+                              keyboardType: TextInputType.text,
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                          // About You
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'About You',
+                              hint: 'Write briefly about yourself',
+                              controller: c.aboutYouCtrl,
+                              keyboardType: TextInputType.multiline,
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                          // Holding Offer checkbox
+                          Padding(
+                            padding: edge,
+                            child: Row(
+                              children: [
+                                Obx(() => Checkbox(
+                                      value: c.holdingOffer.value,
+                                      onChanged: (v) => c.holdingOffer.value = v ?? false,
+                                    )),
+                                const Expanded(
+                                  child: Text(
+                                    'Currently holding an offer',
+                                    style: TextStyle(fontWeight: FontWeight.w600),
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                        ],
+
+                        // Upload area (common)
+                        Padding(
+                          padding: edge,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SectionTitle('Upload Professional Document'),
+                              const SizedBox(height: 8),
+                              UploadDropArea(controller: c),
+                              const SizedBox(height: 6),
+                              Obx(() {
+                                final url = c.existingResumeUrl.value;
+                                if (url.isEmpty) return const SizedBox.shrink();
+                                final name = url.split('/').last;
+                                return Text(
+                                  'Using resume: $name',
+                                  style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
+                                );
+                              }),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                height: buttonHeight,
+                                child: Obx(() {
+                                  return ElevatedButton.icon(
+                                    onPressed: c.uploading.value ? null : c.pickAndUpload,
+                                    icon: const Icon(Icons.upload, color: Colors.white),
+                                    label: Text(
+                                      c.uploading.value ? 'Uploading...' : 'Upload New CV',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0B2944),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  );
+                                }),
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0B2944),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            );
-                          }),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
+                    );
+                  }),
 
                   const SizedBox(height: 20),
 
