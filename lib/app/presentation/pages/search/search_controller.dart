@@ -60,6 +60,11 @@ class SearchController extends GetxController {
     refreshAppliedIds();
   }
 
+  Future<void> refresh() async {
+    _performSearch();
+    refreshAppliedIds();
+  }
+
   void toggleWorkType(String type) {
     if (stagedWorkTypes.contains(type)) {
       stagedWorkTypes.remove(type);

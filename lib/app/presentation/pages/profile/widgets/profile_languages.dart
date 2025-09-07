@@ -3,6 +3,7 @@ import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.d
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class ProfileLanguages extends StatelessWidget {
   final ProfileController controller;
@@ -14,108 +15,227 @@ class ProfileLanguages extends StatelessWidget {
       title: 'Languages',
       subtitle: "Languages you're fluent in for communication",
       onEdit: () {
-        // Prefill from first language if available
-        final first = controller.languageList.isNotEmpty ? controller.languageList.first : null;
-        final nameCtrl = TextEditingController(text: first?.languageName ?? '');
-        String level = () {
-          final v = (first?.proficiencyLevel ?? 'Beginner').toString();
-          // Normalize values like 'beginner' to 'Beginner'
-          final cap = v.isEmpty ? 'Beginner' : v[0].toUpperCase() + v.substring(1).toLowerCase();
-          const allowed = ['Beginner','Intermediate','Advanced','Native'];
-          return allowed.contains(cap) ? cap : 'Beginner';
-        }();
-        bool canRead = (first?.canRead ?? 1) == 1;
-        bool canWrite = (first?.canWrite ?? 0) == 1;
-        bool canSpeak = (first?.canSpeak ?? 1) == 1;
+        // Manage multiple languages with add/edit functionality
+        final List<Map<String, dynamic>> languages = controller.languageList
+            .map((lang) => {
+                  'id': lang.id,
+                  'languageName': lang.languageName ?? '',
+                  'proficiencyLevel': () {
+                    final v = (lang.proficiencyLevel ?? 'Beginner').toString();
+                    final cap = v.isEmpty ? 'Beginner' : v[0].toUpperCase() + v.substring(1).toLowerCase();
+                    const allowed = ['Beginner','Intermediate','Advanced','Native'];
+                    return allowed.contains(cap) ? cap : 'Beginner';
+                  }(),
+                  'canRead': (lang.canRead ?? 1) == 1,
+                  'canWrite': (lang.canWrite ?? 0) == 1,
+                  'canSpeak': (lang.canSpeak ?? 1) == 1,
+                })
+            .toList();
         Get.bottomSheet(
           SafeArea(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Languages', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 6),
-                    const Text('Add languages you speak', style: TextStyle(color: AppColors.textSecondaryColor)),
-                    const SizedBox(height: 12),
-                    const Text('Language *', style: TextStyle(fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(
-                        hintText: 'e.g., English',
-                        filled: true,
-                        fillColor: const Color(0xFFF5F6FA),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: StatefulBuilder(
+                  builder: (context, setSheetState) {
+                    void addNewLanguage() {
+                      setSheetState(() {
+                        languages.add({
+                          'id': null,
+                          'languageName': '',
+                          'proficiencyLevel': 'Beginner',
+                          'canRead': true,
+                          'canWrite': false,
+                          'canSpeak': true,
+                        });
+                      });
+                    }
+              
+                    void removeLanguage(int index) {
+                      setSheetState(() {
+                        languages.removeAt(index);
+                      });
+                    }
+              
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CommonText('Languages', fontWeight: FontWeight.w800, fontSize: 18),
+                          const SizedBox(height: 6),
+                          const CommonText('Add languages', color: AppColors.textSecondaryColor, fontSize: 15),
+                          const SizedBox(height: 12),
+                          
+                          // Show existing languages for editing
+                          if (languages.isNotEmpty) ...[ 
+                            for (int i = 0; i < languages.length; i++) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F6FA),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFE6E9EF)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: CommonText(
+                                            languages[i]['id'] != null 
+                                                ? 'Edit Language ${i + 1}' 
+                                                : 'New Language ${i + 1}',
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () =>  controller.deleteLanguage(languages[i]['id']),
+                                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextField(
+                                      onChanged: (v) => setSheetState(() => languages[i]['languageName'] = v),
+                                      controller: TextEditingController(text: languages[i]['languageName'])
+                                        ..selection = TextSelection.fromPosition(
+                                            TextPosition(offset: languages[i]['languageName'].length)),
+                                      decoration: InputDecoration(
+                                        hintText: 'e.g., English',
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                                      child: DropdownButton<String>(
+                                        value: languages[i]['proficiencyLevel'],
+                                        isExpanded: true,
+                                        underline: const SizedBox.shrink(),
+                                        items: const ['Beginner', 'Intermediate', 'Advanced', 'Native']
+                                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                            .toList(),
+                                        onChanged: (v) => setSheetState(() => languages[i]['proficiencyLevel'] = v ?? 'Beginner'),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Checkbox(
+                                              value: languages[i]['canRead'],
+                                              onChanged: (v) => setSheetState(() => languages[i]['canRead'] = v ?? false),
+                                            ),
+                                            const Text('Can Read'),
+                                          ],
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Checkbox(
+                                              value: languages[i]['canWrite'],
+                                              onChanged: (v) => setSheetState(() => languages[i]['canWrite'] = v ?? false),
+                                            ),
+                                            const Text('Can Write'),
+                                          ],
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Checkbox(
+                                              value: languages[i]['canSpeak'],
+                                              onChanged: (v) => setSheetState(() => languages[i]['canSpeak'] = v ?? false),
+                                            ),
+                                            const Text('Can Speak'),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          ],
+                          
+                          // Add new language button
+                          OutlinedButton.icon(
+                            onPressed: addNewLanguage,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Language'),
+                          ),
+                          
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 140,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.greyColor,
+                                    foregroundColor: AppColors.primaryColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                  onPressed: () => Get.back(),
+                                  child: const CommonText('Cancel' , fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              SizedBox(
+                                width: 140,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryColor,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    // Save all languages
+                                    for (final lang in languages) {
+                                      final name = (lang['languageName'] as String).trim();
+                                      if (name.isEmpty) continue;
+                                      
+                                      await controller.saveLanguages({
+                                        'id': lang['id'],
+                                        'languageName': name,
+                                        'proficiencyLevel': lang['proficiencyLevel'],
+                                        'canRead': lang['canRead'] ? 1 : 0,
+                                        'canWrite': lang['canWrite'] ? 1 : 0,
+                                        'canSpeak': lang['canSpeak'] ? 1 : 0,
+                                      });
+                                    }
+                                    Get.back();
+                                  },
+                                  child: const CommonText('Save' , fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text('Proficiency Level *', style: TextStyle(fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: const Color(0xFFF5F6FA), borderRadius: BorderRadius.circular(12)),
-                      child: DropdownButton<String>(
-                        value: level,
-                        isExpanded: true,
-                        underline: const SizedBox.shrink(),
-                        items: const ['Beginner', 'Intermediate', 'Advanced', 'Native']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (v) => level = v ?? level,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(children: [
-                      StatefulBuilder(builder: (context, setState) {
-                        return Checkbox(value: canRead, onChanged: (v) => setState(() => canRead = v ?? false));
-                      }),
-                      const Text('Can Read'),
-                      const SizedBox(width: 12),
-                      StatefulBuilder(builder: (context, setState) {
-                        return Checkbox(value: canWrite, onChanged: (v) => setState(() => canWrite = v ?? false));
-                      }),
-                      const Text('Can Write'),
-                      const SizedBox(width: 12),
-                      StatefulBuilder(builder: (context, setState) {
-                        return Checkbox(value: canSpeak, onChanged: (v) => setState(() => canSpeak = v ?? false));
-                      }),
-                      const Text('Can Speak'),
-                    ]),
-                    const SizedBox(height: 14),
-                    Row(children: [
-                      TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-                      const Spacer(),
-                      SizedBox(
-                        width: 140,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final name = nameCtrl.text.trim();
-                            if (name.isEmpty) {
-                              Get.snackbar('Required', 'Language name is required');
-                              return;
-                            }
-                            await controller.saveLanguages({
-                              'languageName': name,
-                              'proficiencyLevel': level,
-                              'canRead': canRead ? 1 : 0,
-                              'canWrite': canWrite ? 1 : 0,
-                              'canSpeak': canSpeak ? 1 : 0,
-                            });
-                            Get.back();
-                          },
-                          child: const Text('Save Changes'),
-                        ),
-                      ),
-                    ])
-                  ],
+                    );
+                  },
                 ),
               ),
             ),

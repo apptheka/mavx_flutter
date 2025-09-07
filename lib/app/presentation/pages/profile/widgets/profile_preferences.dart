@@ -76,123 +76,132 @@ class ProfilePreferences extends StatelessWidget {
 
         Get.bottomSheet(
           SafeArea(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Project Preferences', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 6),
-                    const Text('Set your project and work preferences', style: TextStyle(color: AppColors.textSecondaryColor)),
-                    const SizedBox(height: 12),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Project Preferences', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 6),
+                      const Text('Set your project and work preferences', style: TextStyle(color: AppColors.textSecondaryColor)),
+                      const SizedBox(height: 12),
           
+                      _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
+                      const SizedBox(height: 10),
           
-                    _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
-                    const SizedBox(height: 10),
-          
-                    Row(children: [
-                      Expanded(child: _LabeledField(label: 'Preferred Budget *', controller: budgetCtrl, keyboardType: TextInputType.number)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                          label: 'Currency *',
-                          value: currency,
-                          items: currencyItems,
-                          onChanged: (v) => setState(() => currency = v ?? currency),
-                        )),
-                      ),
-                    ]),
-                    const SizedBox(height: 10),
-          
-                    Row(children: [
-                      Expanded(
-                        child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                          label: 'Period *',
-                          value: period,
-                          items: periodItems,
-                          onChanged: (v) => setState(() => period = v ?? period),
-                        )),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(child: _LabeledField(label: 'Availability (Hours per Week)', controller: hoursCtrl, keyboardType: TextInputType.number)),
-                    ]),
-                    const SizedBox(height: 10),
-          
-                    Row(children: [
-                      Expanded(
-                        child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                          label: 'Availability Type *',
-                          value: availabilityType,
-                          items: availabilityItems,
-                          onChanged: (v) => setState(() => availabilityType = v ?? availabilityType),
-                        )),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(child: _LabeledField(label: 'Minimum Duration (Months)', controller: minCtrl, keyboardType: TextInputType.number)),
-                    ]),
-                    const SizedBox(height: 10),
-          
-                    Row(children: [
-                      Expanded(child: _LabeledField(label: 'Maximum Duration (Months)', controller: maxCtrl, keyboardType: TextInputType.number)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                          label: 'Duration Type *',
-                          value: durationType,
-                          items: durationTypeItems,
-                          onChanged: (v) => setState(() => durationType = v ?? durationType),
-                        )),
-                      ),
-                    ]),
-                    const SizedBox(height: 10),
-          
-                    StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                      label: 'Work Type *',
-                      value: workType,
-                      items: workTypeItems,
-                      onChanged: (v) => setState(() => workType = v ?? workType),
-                    )),
-          
-                    const SizedBox(height: 14),
-                    Row(children: [
-                      TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-                      const Spacer(),
-                      SizedBox(
-                        width: 140,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final looking = lookingForCtrl.text.trim();
-                            final budget = budgetCtrl.text.trim();
-                            if (looking.isEmpty || budget.isEmpty) {
-                              Get.snackbar('Required', 'Looking For and Budget are required');
-                              return;
-                            }
-                            await controller.savePreferences(
-                              lookingFor: looking,
-                              preferredBudget: budget,
-                              budgetCurrency: currency,
-                              budgetPeriod: period,
-                              availabilityHoursPerWeek: int.tryParse(hoursCtrl.text.trim()) ?? 0,
-                              availabilityType: availabilityType,
-                              preferredDurationMin: int.tryParse(minCtrl.text.trim()) ?? 0,
-                              preferredDurationMax: int.tryParse(maxCtrl.text.trim()) ?? 0,
-                              preferredDurationType: durationType.replaceAll(' ', '_'),
-                              workType: workType,
-                            );
-                            Get.back();
-                          },
-                          child: const Text('Save Changes'),
+                      Row(children: [
+                        Expanded(child: _LabeledField(label: 'Preferred Budget *', controller: budgetCtrl, keyboardType: TextInputType.number)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                            label: 'Currency *',
+                            value: currency,
+                            items: currencyItems,
+                            onChanged: (v) => setState(() => currency = v ?? currency),
+                          )),
                         ),
-                      ),
-                    ])
-                  ],
+                      ]),
+                      const SizedBox(height: 10),
+          
+                      Row(children: [
+                        Expanded(
+                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                            label: 'Period *',
+                            value: period,
+                            items: periodItems,
+                            onChanged: (v) => setState(() => period = v ?? period),
+                          )),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: _LabeledField(label: 'Availability (Hours per Week)', controller: hoursCtrl, keyboardType: TextInputType.number)),
+                      ]),
+                      const SizedBox(height: 10),
+          
+                      Row(children: [
+                        Expanded(
+                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                            label: 'Availability Type *',
+                            value: availabilityType,
+                            items: availabilityItems,
+                            onChanged: (v) => setState(() => availabilityType = v ?? availabilityType),
+                          )),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: _LabeledField(label: 'Minimum Duration (Months)', controller: minCtrl, keyboardType: TextInputType.number)),
+                      ]),
+                      const SizedBox(height: 10),
+          
+                      Row(children: [
+                        Expanded(child: _LabeledField(label: 'Maximum Duration (Months)', controller: maxCtrl, keyboardType: TextInputType.number)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                            label: 'Duration Type *',
+                            value: durationType,
+                            items: durationTypeItems,
+                            onChanged: (v) => setState(() => durationType = v ?? durationType),
+                          )),
+                        ),
+                      ]),
+                      const SizedBox(height: 10),
+          
+                      StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                        label: 'Work Type *',
+                        value: workType,
+                        items: workTypeItems,
+                        onChanged: (v) => setState(() => workType = v ?? workType),
+                      )),
+          
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            width: 160,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final looking = lookingForCtrl.text.trim();
+                                final budget = budgetCtrl.text.trim();
+                                if (looking.isEmpty || budget.isEmpty) {
+                                  Get.snackbar('Required', 'Looking For and Budget are required');
+                                  return;
+                                }
+                                await controller.savePreferences(
+                                  lookingFor: looking,
+                                  preferredBudget: budget,
+                                  budgetCurrency: currency,
+                                  budgetPeriod: period,
+                                  availabilityHoursPerWeek: int.tryParse(hoursCtrl.text.trim()) ?? 0,
+                                  availabilityType: availabilityType,
+                                  preferredDurationMin: int.tryParse(minCtrl.text.trim()) ?? 0,
+                                  preferredDurationMax: int.tryParse(maxCtrl.text.trim()) ?? 0,
+                                  preferredDurationType: durationType.replaceAll(' ', '_'),
+                                  workType: workType,
+                                );
+                                Get.back();
+                              },
+                              child: const Text('Save Changes'),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -313,19 +322,20 @@ class _LabeledDropdown extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
-            borderRadius: BorderRadius.circular(12),
+        DropdownButtonFormField<String>(
+          value: value,
+          isExpanded: true,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF5F6FA),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
-          child: DropdownButton<String>(
-            value: value,
-            isExpanded: true,
-            underline: const SizedBox.shrink(),
-            items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: onChanged,
-          ),
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          onChanged: onChanged,
         ),
       ],
     );

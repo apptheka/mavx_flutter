@@ -45,4 +45,21 @@ class ProfileUseCase {
   Future<UserProfile> updateSkills(Map<String, dynamic> skills) async {
     return await profileRepository.updateSkills(skills);
   }
+
+  // Deletions
+  Future<UserProfile> deleteExperience(int id) async {
+    return await profileRepository.deleteExperience(id);
+  }
+
+  Future<UserProfile> deleteEducation(int id) async {
+    return await profileRepository.deleteEducation(id);
+  }
+
+  Future<UserProfile> deleteLanguage(int id) async {
+    return await profileRepository.deleteLanguage(id);
+  }
+
+  Future<UserProfile> deleteOnlineProfile(int id) async {
+    return await profileRepository.deleteOnlineProfile(id);
+  }
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
@@ -14,6 +17,9 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthRepository authRepository = Get.find<AuthRepository>();
+    final HomeController homeController = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : Get.put(HomeController());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -71,18 +77,44 @@ class ProfileHeader extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: ClipOval(
-                      child: Image.asset(
-                        ImageAssets.userAvatar,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+                   Obx(() {
+                final avatar = homeController.avatarUrl; // full http(s) if valid
+                final rawProfilePath = homeController.user.value?.profile.trim();
+                String? url;
+                if (avatar != null && avatar.isNotEmpty) {
+                  url = avatar;
+                } else if (rawProfilePath != null &&
+                    rawProfilePath.isNotEmpty &&
+                    rawProfilePath.toLowerCase() != 'null') {
+                  url = "${AppConstants.baseUrlImage}$rawProfilePath";
+                }
+
+                return CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundImage: (url != null && !url.toLowerCase().endsWith('.svg'))
+                      ? NetworkImage(url)
+                      : null,
+                  child: Builder(builder: (context) {
+                    if (url == null || url.isEmpty) {
+                      return Image.asset(ImageAssets.userAvatar);
+                    }
+                    if (url.toLowerCase().endsWith('.svg')) {
+                      return ClipOval(
+                        child: SvgPicture.network(
+                          url,
+                          width: 46,
+                          height: 46,
+                          fit: BoxFit.cover,
+                          placeholderBuilder: (_) => Image.asset(ImageAssets.userAvatar),
+                        ),
+                      );
+                    }
+                    // For raster images, child remains null to show backgroundImage
+                    return const SizedBox.shrink();
+                  }),
+                );
+              }),
                   const SizedBox(width: 12),
                   Expanded(child: _NameAndStatus(controller: controller)),
                 ],
@@ -92,19 +124,28 @@ class ProfileHeader extends StatelessWidget {
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    _IconText(
-                      iconAsset: IconAssets.experience,
-                      text: '${controller.registeredProfile.value.experience} Years of experience',
-                    ),
-                    SizedBox(width: 18),
-                    _IconText(
-                      iconAsset: IconAssets.location,
-                      text: '${controller.registeredProfile.value.location}',
-                    ),
-                  ],
-                ),
+                child: Obx(() {
+                  final rp = controller.registeredProfile.value;
+                  final expText = (rp.experience != null)
+                      ? '${rp.experience} Years of experience'
+                      : 'Years of experience';
+                  final locText = (rp.location != null && rp.location!.trim().isNotEmpty)
+                      ? rp.location!.trim()
+                      : 'Location';
+                  return Row(
+                    children: [
+                      _IconText(
+                        iconAsset: IconAssets.experience,
+                        text: expText,
+                      ),
+                      const SizedBox(width: 18),
+                      _IconText(
+                        iconAsset: IconAssets.location,
+                        text: locText,
+                      ),
+                    ],
+                  );
+                }),
               ),
             ],
           ),
@@ -139,17 +180,7 @@ class _NameAndStatus extends StatelessWidget {
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
               );
-            }),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Image.asset(
-                IconAssets.edit,
-                height: 20,
-                width: 20,
-                color: Colors.white,
-              ),
-            ),
+            }), 
           ],
         ),
         const SizedBox(height: 4),

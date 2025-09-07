@@ -28,58 +28,63 @@ class SearchPage extends StatelessWidget {
                   children: [
                     _Header(),
                     Expanded(
-                      child: Obx(() {
-                        final items = controller.filteredJobs;
-                        if (controller.isLoading.value) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (items.isEmpty) {
-                          return const Center(
-                            child: Text('No jobs match your search'),
-                          );
-                        }
-                        final extra = controller.isLoadingMore.value ? 1 : 0;
-                        return ListView.separated(
-                          controller: controller.scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: items.length + extra,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            if (index >= items.length) {
-                              return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 12),
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            }
-                            final job = items[index];
-                            final title = job.projectTitle ?? '';
-                            final company = job.projectCoordinator ?? '';
-                            // Clean description by removing HTML tags and extra whitespace
-                            String cleanDescription = job.description ?? '';
-                            cleanDescription = cleanDescription
-                                .replaceAll(RegExp(r'<[^>]*>'), '') // Remove HTML tags
-                                .replaceAll(RegExp(r'&nbsp;'), ' ') // Replace &nbsp; with space
-                                .replaceAll(RegExp(r'\s+'), ' ') // Replace multiple spaces with single space
-                                .trim(); // Remove leading/trailing whitespace
-                            // Derive lightweight tags from projectType string if present
-                            final tags = (job.projectType != null && job.projectType!.isNotEmpty)
-                                ? [job.projectType!]
-                                : const <String>[];
-                            final applied = controller.appliedIds.contains(job.id ?? -1);
-                            return JobCard(
-                              title: title,
-                              description: cleanDescription,
-                              company: company, 
-                              tags: tags,
-                              showApply: true,
-                              compact: false, 
-                              id: job.id!,
-                              applied: applied,
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          await controller.refresh();
+                        },
+                        child: Obx(() {
+                          final items = controller.filteredJobs;
+                          if (controller.isLoading.value) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (items.isEmpty) {
+                            return const Center(
+                              child: Text('No jobs match your search'),
                             );
-                          },
-                        );
-                      }),
+                          }
+                          final extra = controller.isLoadingMore.value ? 1 : 0;
+                          return ListView.separated(
+                            controller: controller.scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: items.length + extra,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              if (index >= items.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
+                              }
+                              final job = items[index];
+                              final title = job.projectTitle ?? '';
+                              final company = job.projectCoordinator ?? '';
+                              // Clean description by removing HTML tags and extra whitespace
+                              String cleanDescription = job.description ?? '';
+                              cleanDescription = cleanDescription
+                                  .replaceAll(RegExp(r'<[^>]*>'), '') // Remove HTML tags
+                                  .replaceAll(RegExp(r'&nbsp;'), ' ') // Replace &nbsp; with space
+                                  .replaceAll(RegExp(r'\s+'), ' ') // Replace multiple spaces with single space
+                                  .trim(); // Remove leading/trailing whitespace
+                              // Derive lightweight tags from projectType string if present
+                              final tags = (job.projectType != null && job.projectType!.isNotEmpty)
+                                  ? [job.projectType!]
+                                  : const <String>[];
+                              final applied = controller.appliedIds.contains(job.id ?? -1);
+                              return JobCard(
+                                title: title,
+                                description: cleanDescription,
+                                company: company, 
+                                tags: tags,
+                                showApply: true,
+                                compact: false, 
+                                id: job.id!,
+                                applied: applied,
+                              );
+                            },
+                          );
+                        }),
+                      ),
                     ),
                   ],
                 ),

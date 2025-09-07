@@ -223,7 +223,7 @@ class HomeController extends GetxController {
     if (p == null || p.isEmpty) return null;
     final uri = Uri.tryParse(p);
     if (uri == null) return null;
-    final scheme = uri.scheme.toLowerCase();
+    final scheme = uri.scheme ;
     if (scheme != 'http' && scheme != 'https') return null;
     return p;
   }

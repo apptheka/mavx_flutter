@@ -3,13 +3,14 @@ class AppConstants {
 
   // API URLs
   static const String baseUrl = 'http://192.168.1.23:3001/v1/api'; 
+  static const String baseUrlImage = 'http://192.168.1.23:3001/'; 
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';
   static const String checkOtp = '/user/check-otp';
   static const String getAllSpecification = '/specialisation';
   static const String getAllIndustries = '/industries'; 
-  static const String fileUploading = 'http://192.168.1.14:3001/file-uploading';
+  static const String fileUploading = 'http://192.168.1.23:3001/file-uploading';
   static const String project = "/project";
   static const String projectSearch = "/project/search";
   static const String profile = "/profile/full";

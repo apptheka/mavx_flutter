@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
@@ -57,7 +58,8 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
           'user_id': userId,
         },
       );
-      final decriptValue = jsonDecode(response.decrypt());
+      log('Decrypted Register ${response.toString()}');
+      final decriptValue = jsonDecode(response.decrypt()); 
       return BookmarksResponseModel.fromJson(decriptValue);
     } catch (e) {
       throw Exception('Fetch bookmarks failed: ${e.toString()}');

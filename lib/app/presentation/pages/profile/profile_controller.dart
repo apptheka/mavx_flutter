@@ -1,9 +1,11 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/data/models/complete_profile_model.dart';
 import 'package:mavx_flutter/app/data/models/user_registered_model.dart';
 import 'package:mavx_flutter/app/domain/usecases/profile_usecases.dart';
+import 'package:mavx_flutter/app/core/services/storage_service.dart';
 
 class ProfileController extends GetxController {
   final ProfileUseCase profileUseCase = Get.find<ProfileUseCase>();
@@ -19,10 +21,18 @@ class ProfileController extends GetxController {
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
   final RxInt profileCompletion = 0.obs;
+  bool _profileCompleteNotified = false; // persisted flag
 
   @override
   void onInit() {
     super.onInit();
+    // Load persisted flag so popup is shown only once ever
+    try {
+      final storage = Get.find<StorageService>();
+      _profileCompleteNotified = storage.prefs.getBool('profile_complete_notified') ?? false;
+    } catch (_) {
+      _profileCompleteNotified = false;
+    }
     fetchProfile();
     fetchRegisteredProfile();
   }
@@ -32,16 +42,14 @@ class ProfileController extends GetxController {
     error.value = '';
     try {
       final response = await profileUseCase.getProfile();
-      aboutMeList.value = response.aboutMe!;
-      experienceList.value = response.experience!;
-      educationList.value = response.education!;
-      skillList.value = response.skills!;
-      languageList.value = response.languages!;
-      onlineProfileList.value = response.onlineProfiles!;
-      basicDetailsList.value = response.basicDetails!;
-      if (response.preferences != null) {
-        preferences.value = response.preferences!;
-      }
+      aboutMeList.value = response.aboutMe ?? AboutMe();
+      experienceList.value = RxList<Experience>(response.experience ?? []);
+      educationList.value = RxList<Education>(response.education ?? []);
+      skillList.value = RxList<Skill>(response.skills ?? []);
+      languageList.value = RxList<Language>(response.languages ?? []);
+      onlineProfileList.value = RxList<OnlineProfile>(response.onlineProfiles ?? []);
+      basicDetailsList.value = response.basicDetails ?? BasicDetails();
+      preferences.value = response.preferences ?? Preferences();
       _recalculateCompletion();
     } catch (_) {
       error.value = 'Failed to load profile';
@@ -51,17 +59,16 @@ class ProfileController extends GetxController {
   }
 
   Future<void> fetchRegisteredProfile() async {
-    loading.value = true;
-    error.value = '';
+    // Do not toggle the global loading/error flags here to avoid
+    // masking the main profile load state on the page.
     try {
       final response = await profileUseCase.getRegisteredProfile();
       log("response========> ${response.toString()}");
       registeredProfile.value = response;
     } catch (e) {
       log("error========> ${e.toString()}");
-      error.value = 'Failed to load profile';
-    } finally {
-      loading.value = false;
+      // Keep UI visible even if registered profile fetch fails.
+      // Avoid setting the shared error flag here.
     }
   }
 
@@ -126,6 +133,35 @@ class ProfileController extends GetxController {
 
     if (completionScore > 100) completionScore = 100;
     profileCompletion.value = completionScore;
+
+    // Show a one-time popup when profile reaches 100% (persisted across restarts)
+    if (completionScore == 100 && !_profileCompleteNotified) {
+      _profileCompleteNotified = true;
+      // Persist flag
+      try {
+        final storage = Get.find<StorageService>();
+        storage.prefs.setBool('profile_complete_notified', true);
+      } catch (_) {}
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (Get.isOverlaysOpen == false) {
+          Get.dialog(
+            AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('Profile Complete!'),
+              content: const Text(
+                'Your profile is complete. Great job!\n\nThis will improve your chances of being discovered for future jobs.',
+              ),
+              actions: [
+                TextButton(onPressed: () => Get.back(), child: const Text('OK')),
+              ],
+            ),
+            barrierDismissible: true,
+          );
+        }
+      });
+    } else {
+      // no-op
+    }
   }
 
 
@@ -134,16 +170,14 @@ class ProfileController extends GetxController {
     error.value = '';
     try {
       final response = await profileUseCase.getProfile();
-      aboutMeList.value = response.aboutMe!;
-      experienceList.value = response.experience!;
-      educationList.value = response.education!;
-      skillList.value = response.skills!;
-      languageList.value = response.languages!;
-      onlineProfileList.value = response.onlineProfiles!;
-      basicDetailsList.value = response.basicDetails!;
-      if (response.preferences != null) {
-        preferences.value = response.preferences!;
-      }
+      aboutMeList.value = response.aboutMe ?? AboutMe();
+      experienceList.value = RxList<Experience>(response.experience ?? []);
+      educationList.value = RxList<Education>(response.education ?? []);
+      skillList.value = RxList<Skill>(response.skills ?? []);
+      languageList.value = RxList<Language>(response.languages ?? []);
+      onlineProfileList.value = RxList<OnlineProfile>(response.onlineProfiles ?? []);
+      basicDetailsList.value = response.basicDetails ?? BasicDetails();
+      preferences.value = response.preferences ?? Preferences();
       _recalculateCompletion();
     } catch (_) {
       error.value = 'Failed to load profile';
@@ -194,6 +228,7 @@ class ProfileController extends GetxController {
       };
       await profileUseCase.updatePreferences(payload);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Preferences saved');
     } catch (e) {
       Get.snackbar('Error', 'Failed to update preferences');
@@ -208,6 +243,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateBasicDetails(basicDetails);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Basic details saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update basic details');
@@ -221,6 +257,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateEducation(education);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Education saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update education');
@@ -234,6 +271,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateExperience(experience);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Experience saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update experience');
@@ -247,6 +285,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateLanguages(languages);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Languages saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update languages');
@@ -260,6 +299,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateOnlineProfiles(onlineProfiles);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Online profiles saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update online profiles');
@@ -273,9 +313,66 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateSkills(skills);
       await updateProfile();
+      Get.back();
       Get.snackbar('Updated', 'Skills saved');
     } catch (_) {
       Get.snackbar('Error', 'Failed to update skills');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> deleteExperience(int id) async {
+    try {
+      loading.value = true;
+      await profileUseCase.deleteExperience(id);
+      await updateProfile();
+      Get.back();
+      Get.snackbar('Deleted', 'Experience deleted');
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to delete experience');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> deleteEducation(int id) async {
+    try {
+      loading.value = true;
+      await profileUseCase.deleteEducation(id);
+      await updateProfile();
+      Get.back();
+      Get.snackbar('Deleted', 'Education deleted');
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to delete education');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> deleteLanguage(int id) async {
+    try {
+      loading.value = true;
+      await profileUseCase.deleteLanguage(id);
+      await updateProfile();
+      Get.back();
+      Get.snackbar('Deleted', 'Language deleted');
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to delete language');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> deleteOnlineProfile(int id) async {  
+    try {
+      loading.value = true;
+      await profileUseCase.deleteOnlineProfile(id);
+      await updateProfile();
+      Get.back();
+      Get.snackbar('Deleted', 'Online profile deleted');
+    } catch (_) {
+      Get.snackbar('Error', 'Failed to delete online profile');
     } finally {
       loading.value = false;
     }

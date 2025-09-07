@@ -35,5 +35,6 @@ class IconAssets{
    static const String experience = "assets/icons/experince.png";
    static const String logout = "assets/icons/logout.png";
    static const String saved = "assets/icons/save.png";
-
+   static const String dashboard = "assets/icons/dashboard.png";
+   static const String dashboardBlack = "assets/icons/dashboardblack.png";
 }

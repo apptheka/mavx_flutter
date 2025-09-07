@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/search_bar_widget.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
@@ -33,18 +35,47 @@ class HeaderWidget extends GetView<HomeController> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Obx(() {
-                final avatar = controller.avatarUrl;
+                final avatar = controller.avatarUrl; // full http(s) if valid
+                final rawProfilePath = controller.user.value?.profile.trim();
+                String? url;
+                if (avatar != null && avatar.isNotEmpty) {
+                  url = avatar;
+                } else if (rawProfilePath != null &&
+                    rawProfilePath.isNotEmpty &&
+                    rawProfilePath.toLowerCase() != 'null') {
+                  url = "${AppConstants.baseUrlImage}$rawProfilePath";
+                }
+
                 return GestureDetector(
                   onTap: () => Get.toNamed(AppRoutes.profile),
                   child: CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    backgroundImage: (avatar != null)
-                        ? NetworkImage(avatar)
+                    backgroundImage:
+                        (url != null && !url.toLowerCase().endsWith('.svg'))
+                        ? NetworkImage(url)
                         : null,
-                    child: (avatar == null)
-                        ? Image.asset(ImageAssets.userAvatar)
-                        : null,
+                    child: Builder(
+                      builder: (context) {
+                        if (url == null || url.isEmpty) {
+                          return Image.asset(ImageAssets.userAvatar);
+                        }
+                        if (url.toLowerCase().endsWith('.svg')) {
+                          return ClipOval(
+                            child: SvgPicture.network(
+                              url,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              placeholderBuilder: (_) =>
+                                  Image.asset(ImageAssets.userAvatar),
+                            ),
+                          );
+                        }
+                        // For raster images, child remains null to show backgroundImage
+                        return const SizedBox.shrink();
+                      },
+                    ),
                   ),
                 );
               }),
@@ -55,7 +86,7 @@ class HeaderWidget extends GetView<HomeController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        controller.greeting.value,
+                        "${controller.greeting.value}, ${controller.user.value?.fullName}",
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white70,
                         ),
@@ -64,7 +95,7 @@ class HeaderWidget extends GetView<HomeController> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "${controller.user.value?.fullName}",
+                        "Home",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 26,
@@ -75,6 +106,13 @@ class HeaderWidget extends GetView<HomeController> {
                   ),
                 ),
               ),
+              // Image.asset(
+              //   IconAssets.dashboard,
+              //   color: Colors.white,
+              //   height: 25,
+              //   width: 25,
+              // ),
+              // const SizedBox(width: 5),
               SearchBarIcon(onTap: () => Get.toNamed(AppRoutes.search)),
               IconButton(
                 onPressed: () {},

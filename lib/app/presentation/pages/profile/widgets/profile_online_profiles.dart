@@ -16,98 +16,173 @@ class ProfileOnlineProfiles extends StatelessWidget {
       title: 'Online Profiles',
       subtitle: 'Showcase your presence across professional platforms',
       onEdit: () {
-        // Prefill from first available profile (LinkedIn from registered or existing list)
-        String? prePlatform;
-        String? preUrl;
-        final linkedIn = controller.registeredProfile.value.linkedin;
-        if (linkedIn != null && linkedIn.trim().isNotEmpty) {
-          prePlatform = 'LinkedIn';
-          preUrl = linkedIn;
-        } else if (controller.onlineProfileList.isNotEmpty) {
-          final first = controller.onlineProfileList.first;
-          prePlatform = () {
-            final p = (first.platformType ?? '').toLowerCase();
-            if (p.contains('linkedin')) return 'LinkedIn';
-            if (p.contains('github')) return 'GitHub';
-            if (p.contains('behance') || p.contains('be')) return 'Behance';
-            if (p.contains('website') || p.contains('web')) return 'Website';
-            return 'Other';
-          }();
-          preUrl = first.profileUrl;
-        }
+        // Build editable list from existing items
+        final List<Map<String, dynamic>> profiles = controller.onlineProfileList
+            .map((p) => {
+                  'id': p.id,
+                  'platformType': () {
+                    final v = (p.platformType ?? '').toLowerCase();
+                    if (v.contains('linkedin')) return 'LinkedIn';
+                    if (v.contains('github')) return 'GitHub';
+                    if (v.contains('behance') || v.contains('be')) return 'Behance';
+                    if (v.contains('website') || v.contains('web')) return 'Website';
+                    return (p.platformType ?? 'Other').isEmpty ? 'Other' : p.platformType!;
+                  }(),
+                  'profileUrl': p.profileUrl ?? '',
+                })
+            .toList(); 
 
-        String platform = prePlatform ?? 'GitHub';
-        final urlCtrl = TextEditingController(text: preUrl ?? '');
+        const allowedPlatforms = ['GitHub', 'LinkedIn', 'Behance', 'Website', 'Other'];
         Get.bottomSheet(
           SafeArea(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const CommonText('Online Profiles', fontSize: 18, fontWeight: FontWeight.w800),
-                    const SizedBox(height: 6),
-                    const CommonText('Add your social media and professional profiles', color: AppColors.textSecondaryColor),
-                    const SizedBox(height: 12),
-                    const CommonText('Platform Type *', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: const Color(0xFFF5F6FA), borderRadius: BorderRadius.circular(12)),
-                      child: DropdownButton<String>(
-                        value: platform,
-                        isExpanded: true,
-                        underline: const SizedBox.shrink(),
-                        items: const ['GitHub','LinkedIn','Behance','Website','Other']
-                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (v) => platform = v ?? platform,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: StatefulBuilder(
+                  builder: (context, setSheetState) {
+                    void addProfile() {
+                      setSheetState(() {
+                        profiles.add({'id': null, 'platformType': 'GitHub', 'profileUrl': ''});
+                      });
+                    }
+               
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CommonText('Online Profiles', fontSize: 18, fontWeight: FontWeight.w800),
+                          const SizedBox(height: 6),
+                          const CommonText('Add your social media and professional profiles', color: AppColors.textSecondaryColor),
+                          const SizedBox(height: 12),
+              
+                          for (int i = 0; i < profiles.length; i++) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F6FA),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE6E9EF)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: CommonText(
+                                          profiles[i]['id'] != null ? 'Edit Profile ${i + 1}' : 'New Profile ${i + 1}',
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>  controller.deleteOnlineProfile(profiles[i]['id']),
+                                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    value: allowedPlatforms.contains(profiles[i]['platformType'])
+                                        ? profiles[i]['platformType']
+                                        : 'Other',
+                                    decoration: InputDecoration(
+                                      labelText: 'Platform Type *',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                    items: allowedPlatforms
+                                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                                        .toList(),
+                                    onChanged: (v) => setSheetState(() => profiles[i]['platformType'] = v ?? 'Other'),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    keyboardType: TextInputType.url,
+                                    onChanged: (v) => setSheetState(() => profiles[i]['profileUrl'] = v),
+                                    controller: TextEditingController(text: profiles[i]['profileUrl'])
+                                      ..selection = TextSelection.fromPosition(
+                                        TextPosition(offset: (profiles[i]['profileUrl'] as String).length),
+                                      ),
+                                    decoration: InputDecoration(
+                                      labelText: 'Profile URL *',
+                                      hintText: 'https://...',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+              
+                          OutlinedButton(
+                            onPressed: addProfile,
+                            child: const CommonText('Add profile', fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [ 
+                              SizedBox(
+                                width: 160,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    // Build a map of existing platform -> id (normalized)
+                                    final existing = <String, dynamic>{};
+                                    for (final item in controller.onlineProfileList) {
+                                      final plat = (item.platformType ?? '').toLowerCase();
+                                      if (plat.isEmpty) continue;
+                                      existing[plat] = item.id;
+                                    }
+              
+                                    // Ensure only one entry per platform (last one wins)
+                                    final seen = <String>{};
+                                    for (final p in profiles) {
+                                      final url = (p['profileUrl'] as String).trim();
+                                      if (url.isEmpty) continue;
+                                      final platNorm = (p['platformType'] as String).toLowerCase();
+                                      if (seen.contains(platNorm)) continue; // skip duplicates
+                                      seen.add(platNorm);
+                                      await controller.saveOnlineProfiles({
+                                        'id': existing[platNorm], // upsert to existing if present
+                                        'platformType': p['platformType'],
+                                        'profileUrl': url,
+                                      });
+                                    }
+                                    Get.back();
+                                  },
+                                  child: const CommonText('Save Changes', fontSize: 16, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const CommonText('Profile URL *', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: urlCtrl,
-                      keyboardType: TextInputType.url,
-                      decoration: InputDecoration(
-                        hintText: 'https://...',
-                        filled: true,
-                        fillColor: const Color(0xFFF5F6FA),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(children: [
-                      TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-                      const Spacer(),
-                      SizedBox(
-                        width: 140,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final url = urlCtrl.text.trim();
-                            if (url.isEmpty) {
-                              Get.snackbar('Required', 'Profile URL is required');
-                              return;
-                            }
-                            await controller.saveOnlineProfiles({
-                              'platformType': platform,
-                              'profileUrl': url,
-                            });
-                            Get.back();
-                          },
-                          child: const Text('Save Changes'),
-                        ),
-                      ),
-                    ])
-                  ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -118,23 +193,21 @@ class ProfileOnlineProfiles extends StatelessWidget {
       child: Obx(() {
         final items = controller.onlineProfileList;
         final linkedIn = controller.registeredProfile.value.linkedin;
-        
-        // Create combined list with LinkedIn from registeredProfile if available
+        // Build display list from backend items, optionally include registered LinkedIn only if backend has none
         final allProfiles = <Map<String, dynamic>>[];
-        
-        // Add LinkedIn from registeredProfile if available
-        if (linkedIn != null && linkedIn.trim().isNotEmpty) {
-          allProfiles.add({
-            'platformType': 'linkedin',
-            'profileUrl': linkedIn,
-          });
-        }
-        
-        // Add other profiles from onlineProfileList
+        final hasBackendLinkedIn = items.any((e) => (e.platformType ?? '').toLowerCase().contains('linkedin'));
+        // Add backend items first (source of truth)
         for (final item in items) {
           allProfiles.add({
             'platformType': item.platformType,
             'profileUrl': item.profileUrl,
+          });
+        }
+        // Add registered LinkedIn only if backend does not already have it
+        if (!hasBackendLinkedIn && linkedIn != null && linkedIn.trim().isNotEmpty) {
+          allProfiles.add({
+            'platformType': 'linkedin',
+            'profileUrl': linkedIn,
           });
         }
         

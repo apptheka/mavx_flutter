@@ -20,8 +20,8 @@ class ProfileResume extends StatelessWidget {
       if (path.startsWith('http')) return path;
       return '${AppConstants.baseUrl}$path';
     }
-    final rawResume = controller.registeredProfile.value.resume ?? '';
-    final resumeUrl = _prefixBase(rawResume);
+    String rawResume = controller.registeredProfile.value.resume ?? '';
+    String resumeUrl = _prefixBase(rawResume);
     return SectionCard(
       title: 'Resume',
       subtitle: 'Highlight your strongest areas of expertise',
@@ -88,63 +88,68 @@ class ProfileResume extends StatelessWidget {
           isScrollControlled: true,
         );
       },
-      child: 
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.greyColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.black.withValues(alpha: 0.06),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+      child: Obx(() {
+        rawResume = controller.registeredProfile.value.resume ?? '';
+        resumeUrl = _prefixBase(rawResume);
+        final displayName = rawResume.isNotEmpty
+            ? rawResume.split('/').last
+            : 'No resume found';
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.greyColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.black.withValues(alpha: 0.06),
+              width: 2,
             ),
-            child: Row(
-              children: [
-                Image.asset(
-                  IconAssets.resume,
-                  height: 20,
-                  width: 20,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Image.asset(
+                IconAssets.resume,
+                height: 20,
+                width: 20,
+                color: AppColors.textSecondaryColor,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CommonText(
+                  displayName,
+                  fontSize: 15,
+                  maxLines: 1,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textSecondaryColor,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommonText(
-                    rawResume,
-                    fontSize: 15,
-                    maxLines: 1,
-                    
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondaryColor,
-                  ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () async {
+                  if (resumeUrl.isEmpty) return;
+                  final uri = Uri.parse(resumeUrl);
+                  try {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } catch (_) {
+                    // Silently ignore if unable to launch
+                  }
+                },
+                child: Image.asset(
+                  IconAssets.download,
+                  height: 20,
+                  width: 20,
                 ),
-                const Spacer(),
-                InkWell(
-                  onTap: () async {
-                    if (resumeUrl.isEmpty) return;
-                    final uri = Uri.parse(resumeUrl);
-                    try {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } catch (_) {
-                      // Silently ignore if unable to launch
-                    }
-                  },
-                  child: Image.asset(
-                    IconAssets.download,
-                    height: 20,
-                    width: 20,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+        );
+      }),
     );
   }
 }

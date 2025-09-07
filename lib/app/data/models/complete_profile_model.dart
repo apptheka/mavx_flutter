@@ -22,42 +22,64 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? {};
+    // Unwrap common envelopes: { data: { data: {...} } } or { data: {...} }
+    dynamic root = json['data'] ?? json;
+    if (root is Map && root['data'] != null) {
+      root = root['data'];
+    }
+    final Map<String, dynamic> data =
+        root is Map<String, dynamic> ? root : <String, dynamic>{};
 
     return UserProfile(
-      preferences: data['preferences'] != null
-          ? Preferences.fromJson(data['preferences'])
+      preferences: (data['preferences'] ?? data['preference']) != null
+          ? Preferences.fromJson(
+              Map<String, dynamic>.from(
+                  (data['preferences'] ?? data['preference']) as Map))
           : null,
-      aboutMe:
-          data['aboutMe'] != null ? AboutMe.fromJson(data['aboutMe']) : null,
-      experience: data['experience'] != null
+      aboutMe: (data['aboutMe'] ?? data['about_me']) != null
+          ? AboutMe.fromJson(
+              Map<String, dynamic>.from(
+                  (data['aboutMe'] ?? data['about_me']) as Map))
+          : null,
+      experience: (data['experience'] ?? data['experiences']) != null
           ? List<Experience>.from(
-              (data['experience'] as List)
-                  .map((x) => Experience.fromJson(x)),
+              ((data['experience'] ?? data['experiences']) as List)
+                  .whereType<Map>()
+                  .map((x) => Experience.fromJson(Map<String, dynamic>.from(x))),
             )
           : [],
-      education: data['education'] != null
+      education: (data['education'] ?? data['educations']) != null
           ? List<Education>.from(
-              (data['education'] as List).map((x) => Education.fromJson(x)),
+              ((data['education'] ?? data['educations']) as List)
+                  .whereType<Map>()
+                  .map((x) => Education.fromJson(Map<String, dynamic>.from(x))),
             )
           : [],
-      languages: data['languages'] != null
+      languages: (data['languages'] ?? data['language']) != null
           ? List<Language>.from(
-              (data['languages'] as List).map((x) => Language.fromJson(x)),
+              ((data['languages'] ?? data['language']) as List)
+                  .whereType<Map>()
+                  .map((x) => Language.fromJson(Map<String, dynamic>.from(x))),
             )
           : [],
-      onlineProfiles: data['onlineProfiles'] != null
+      onlineProfiles: (data['onlineProfiles'] ?? data['online_profiles']) != null
           ? List<OnlineProfile>.from(
-              (data['onlineProfiles'] as List)
-                  .map((x) => OnlineProfile.fromJson(x)),
+              ((data['onlineProfiles'] ?? data['online_profiles']) as List)
+                  .whereType<Map>()
+                  .map((x) => OnlineProfile.fromJson(
+                      Map<String, dynamic>.from(x))),
             )
           : [],
-      basicDetails: data['basicDetails'] != null
-          ? BasicDetails.fromJson(data['basicDetails'])
+      basicDetails: (data['basicDetails'] ?? data['basic_details']) != null
+          ? BasicDetails.fromJson(
+              Map<String, dynamic>.from(
+                  (data['basicDetails'] ?? data['basic_details']) as Map))
           : null,
-      skills: data['skills'] != null
+      skills: (data['skills'] ?? data['skill']) != null
           ? List<Skill>.from(
-              (data['skills'] as List).map((x) => Skill.fromJson(x)),
+              ((data['skills'] ?? data['skill']) as List)
+                  .whereType<Map>()
+                  .map((x) => Skill.fromJson(Map<String, dynamic>.from(x))),
             )
           : [],
     );

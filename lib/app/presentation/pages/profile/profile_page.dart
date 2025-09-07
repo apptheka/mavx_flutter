@@ -27,58 +27,46 @@ class ProfilePage extends StatelessWidget {
         children: [
           Container(height: topInset, color: const Color(0xFF0B2944)),
           SafeArea(
-            child: Obx(() {
-              // Touch reactive sources to rebuild when data loads
-              final isLoading = controller.loading.value;
-              final error = controller.error.value;
-              if (isLoading) {
-                return const Center(
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(strokeWidth: 2.8, color: Color(0xFF0B2944)),
-                  ),
-                );
-              }
-              if (error.isNotEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(error, style: const TextStyle(color: Colors.red)),
-                  ),
-                );
-              }
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ProfileHeader(controller:  controller,),
-                    const SizedBox(height: 16),
-                    // Profile completion indicator (auto-hides at 100%)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ProfileCompletionCard(),
+            child: Column(
+              children: [
+                ProfileHeader(controller: controller),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await controller.fetchProfile();
+                    },
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Profile completion indicator (auto-hides at 100%)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ProfileCompletionCard(),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              ProfilePreferences(controller: controller),
+                              ProfileResume(controller: controller),
+                              ProfileAbout(controller: controller),
+                              ProfileSkills(controller: controller),
+                              ProfileExperience(controller: controller),
+                              ProfileEducation(controller: controller),
+                              ProfileLanguages(controller: controller),
+                              ProfileOnlineProfiles(controller: controller),
+                              ProfileBasicDetails(controller: controller),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ProfilePreferences(controller: controller),
-                        ProfileResume(controller: controller),
-                        ProfileAbout(controller: controller),
-                        ProfileSkills(controller: controller),
-                        ProfileExperience(controller: controller),
-                        ProfileEducation(controller: controller),
-                        ProfileLanguages(controller: controller),
-                        ProfileOnlineProfiles(controller: controller),
-                        ProfileBasicDetails(controller: controller),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            }),
+              ],
+            ),
           ),
         ],
       ),

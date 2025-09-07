@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
@@ -14,10 +15,40 @@ class ProfileSkills extends StatelessWidget {
       title: 'Key Skills',
       subtitle: 'Highlight your strongest areas of expertise',
       onEdit: () {
-        // Prefill from existing skills
-        final existing = controller.skillList.map((e) => e.skillName ?? '').where((e) => e.isNotEmpty).toList();
-        final namesCtrl = TextEditingController(text: existing.isNotEmpty ? existing.join(', ') : '');
+        // persist across sheet rebuilds
         String category = 'Technical';
+        final TextEditingController inputCtrl = TextEditingController();
+
+        // Flatten existing comma-separated skills into individual tokens
+        final List<String> skills = [];
+        for (final skill in controller.skillList) {
+          final raw = (skill.skillName ?? '').trim();
+          if (raw.isNotEmpty) {
+            final parts = raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+            skills.addAll(parts);
+          }
+        }
+
+        // util: add tokens -> chips
+        void addTokens(String raw, void Function(VoidCallback) setSheetState) {
+          final parts = raw
+              .split(RegExp(r'[,\n]+'))
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          if (parts.isEmpty) return;
+
+          setSheetState(() {
+            for (final p in parts) {
+              // de-dup (case-insensitive)
+              final exists = skills.any(
+                (s) => s.toLowerCase() == p.toLowerCase(),
+              );
+              if (!exists) skills.add(p);
+            }
+          });
+        }
+
         Get.bottomSheet(
           SafeArea(
             child: Container(
@@ -27,75 +58,214 @@ class ProfileSkills extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Skills', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 6),
-                  const Text('Add your professional skills - separate multiple skills with commas', style: TextStyle(color: AppColors.textSecondaryColor)),
-                  const SizedBox(height: 12),
-                  const Text('Skill Names *', style: TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: namesCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'e.g., JavaScript, React, SQL',
-                      filled: true,
-                      fillColor: const Color(0xFFF5F6FA),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('Skill Category *', style: TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(color: const Color(0xFFF5F6FA), borderRadius: BorderRadius.circular(12)),
-                    child: DropdownButton<String>(
-                      value: category,
-                      isExpanded: true,
-                      underline: const SizedBox.shrink(),
-                      items: const ['Technical', 'Soft', 'Other']
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (v) => category = v ?? category,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
+              child: StatefulBuilder(
+                builder: (context, setSheetState) {
+                  void flushInput() {
+                    final raw = inputCtrl.text;
+                    inputCtrl.clear();
+                    addTokens(raw, setSheetState);
+                  }
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
-                      const Spacer(),
-                      SizedBox(
-                        width: 140,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final raw = namesCtrl.text.trim();
-                            if (raw.isEmpty) {
-                              Get.snackbar('Required', 'Please enter at least one skill');
-                              return;
-                            }
-                            final names = raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-                            await controller.saveSkills({
-                              'skillCategory': category,
-                              'skills': names,
-                            });
-                            Get.back();
-                          },
-                          child: const Text('Save Changes'),
+                      // Header
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Skills', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                                SizedBox(height: 4),
+                                Text('Add your professional skills - separate multiple skills with commas',
+                                    style: TextStyle(color: AppColors.textSecondaryColor)),
+                              ],
+                            ),
+                          ),
+                          IconButton(onPressed: Get.back, icon: const Icon(Icons.close))
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Input + Add button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F6FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE6E9EF)),
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Skill Names *',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: inputCtrl,
+                                    textInputAction: TextInputAction.done,
+                                    // ENTER -> add remaining buffer
+                                    onSubmitted: (_) => flushInput(),
+                                    // COMMA -> turn tokens before the last comma into chips
+                                    onChanged: (val) {
+                                      if (val.contains(',')) {
+                                        final chunks = val.split(',');
+                                        final tail = chunks.removeLast();
+                                        addTokens(
+                                          chunks.join(','),
+                                          setSheetState,
+                                        );
+                                        // keep the last fragment in the field
+                                        inputCtrl
+                                          ..text = tail.trimLeft()
+                                          ..selection =
+                                              TextSelection.fromPosition(
+                                                TextPosition(
+                                                  offset: inputCtrl.text.length,
+                                                ),
+                                              );
+                                      }
+                                    },
+                                    inputFormatters: [
+                                      // prevent actual newlines in the field; we handle Enter via onSubmitted
+                                      FilteringTextInputFormatter.deny(
+                                        RegExp(r'\n'),
+                                      ),
+                                    ],
+                                    decoration: InputDecoration(
+                                      hintText: 'e.g., JavaScript, React',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                OutlinedButton(
+                                  onPressed: flushInput,
+                                  child: const Text('Add Skill'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Chips with delete
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (int i = 0; i < skills.length; i++)
+                                  Chip(
+                                    label: Text(skills[i]),
+                                    onDeleted: () => setSheetState(() {
+                                      skills.removeAt(i);
+                                    }),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Tip: Type a skill and press comma or Enter to add it. You can also paste a list separated by commas.',
+                              style: TextStyle(
+                                color: AppColors.textSecondaryColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Skill Category *',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F6FA),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: DropdownButton<String>(
+                          value: category,
+                          isExpanded: true,
+                          underline: const SizedBox.shrink(),
+                          items: const ['Technical', 'Soft', 'Other']
+                              .map(
+                                (e) =>
+                                    DropdownMenuItem(value: e, child: Text(e)),
+                              )
+                              .toList(),
+                          onChanged: (v) => setSheetState(() {
+                            category = v ?? category;
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 140,
+                            height: 44,
+                            child: OutlinedButton(
+                              onPressed: () => Get.back(),
+                              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 160,
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                flushInput(); // capture anything left in the field
+                                if (skills.isEmpty) {
+                                  Get.snackbar(
+                                    'Required',
+                                    'Please enter at least one skill',
+                                  );
+                                  return;
+                                }
+                                // Merge into an existing record if present
+                                final existingId = controller.skillList.isNotEmpty
+                                    ? controller.skillList.first.id
+                                    : null;
+                                await controller.saveSkills({
+                                  'id': existingId,
+                                  'skillCategory': category,
+                                  // Send as a single comma-separated string to update same row
+                                  'skillName': skills.join(', '),
+                                  // Do NOT send the bulk list to prevent new rows
+                                });
+                                Get.back();
+                              },
+                              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  )
-                ],
+                  );
+                },
               ),
             ),
           ),
           isScrollControlled: true,
         );
       },
+
       child: Obx(() {
         final skills = controller.skillList;
         if (skills.isEmpty) {
@@ -115,17 +285,35 @@ class ProfileSkills extends StatelessWidget {
           Color(0xFFE3F1FF),
           Color(0xFFE7EFF8),
         ];
+        // Flatten skills: if any skill_name contains commas, split into individual tags
+        final List<String> flat = [];
+        for (final s in skills) {
+          final raw = (s.skillName ?? '').trim();
+          if (raw.isEmpty) continue;
+          final parts = raw
+              .split(',')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          flat.addAll(parts);
+        }
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (int i = 0; i < skills.length; i++)
-                _Chip(
-                  text: skills[i].skillName ?? '-',
-                  bgColor: chipColors[i % chipColors.length],
-                ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (int i = 0; i < flat.length; i++)
+                    _Chip(
+                      text: flat[i],
+                      bgColor: chipColors[i % chipColors.length],
+                    ),
+                ],
+              ), 
             ],
           ),
         );
@@ -136,11 +324,8 @@ class ProfileSkills extends StatelessWidget {
 
 class _Chip extends StatelessWidget {
   final String text;
-  final Color bgColor; 
-  const _Chip({
-    required this.text,
-    this.bgColor = const Color(0xFFEFF4F8), 
-  });
+  final Color bgColor;
+  const _Chip({required this.text, this.bgColor = const Color(0xFFEFF4F8)});
 
   @override
   Widget build(BuildContext context) {
