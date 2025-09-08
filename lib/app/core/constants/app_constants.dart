@@ -2,15 +2,15 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  static const String baseUrl = 'http://192.168.1.23:3001/v1/api'; 
-  static const String baseUrlImage = 'http://192.168.1.23:3001/'; 
+  static const String baseUrl = 'http://192.168.1.3:3001/v1/api';
+  static const String baseUrlImage = 'http://192.168.1.23:3001/';
+  static const String fileUploading = 'http://192.168.1.3:3001/file-uploading';
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';
   static const String checkOtp = '/user/check-otp';
   static const String getAllSpecification = '/specialisation';
-  static const String getAllIndustries = '/industries'; 
-  static const String fileUploading = 'http://192.168.1.23:3001/file-uploading';
+  static const String getAllIndustries = '/industries';
   static const String project = "/project";
   static const String projectSearch = "/project/search";
   static const String profile = "/profile/full";
@@ -29,13 +29,14 @@ class AppConstants {
   static const String onlineProfiles = '/profile/online-profiles';
   static const String basicDetails = '/profile/basic-details';
   static const String skills = '/profile/skills';
+  static const String request = '/user/expert-requests';
 
   // Storage Keys
   static const String tokenKey = 'token';
   static const String userKey = 'user';
   static const String isLoggedInKey = 'isLoggedIn';
 
-  // Routes 
+  // Routes
   static const String initialRoute = '/splash';
   static const String loginRoute = '/login';
   static const String homeRoute = '/home';

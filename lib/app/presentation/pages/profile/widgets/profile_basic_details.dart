@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
@@ -45,94 +47,141 @@ class ProfileBasicDetails extends StatelessWidget {
 
         Get.bottomSheet(
           SafeArea(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with close
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CommonText('Basic Details', fontSize: 20, fontWeight: FontWeight.w800),
-                              SizedBox(height: 4),
-                              CommonText('Update your core personal information', color: AppColors.textSecondaryColor),
-                            ],
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with close
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CommonText(
+                                  'Basic Details',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                SizedBox(height: 4),
+                                CommonText(
+                                  'Update your core personal information',
+                                  color: AppColors.textSecondaryColor,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(onPressed: Get.back, icon: const Icon(Icons.close))
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const CommonText('Gender *', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    StatefulBuilder(
-                      builder: (context, setState) => DropdownButtonFormField<String>(
-                        isExpanded: true,
-                        value: genderOptions.contains(gender) ? gender : 'Male',
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF5F6FA),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        ),
-                        items: genderOptions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                        onChanged: (v) => setState(() => gender = v ?? 'Male'),
+                          IconButton(
+                            onPressed: Get.back,
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const CommonText('Date of Birth *', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    _textField(dobCtrl, hint: 'YYYY-MM-DD'),
-                    const SizedBox(height: 10),
-                    const CommonText('Phone', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    _textField(phoneCtrl, hint: 'Phone number', keyboardType: TextInputType.phone),
-                    const SizedBox(height: 10),
-                    const CommonText('Email', fontWeight: FontWeight.w700),
-                    const SizedBox(height: 6),
-                    _textField(emailCtrl, hint: 'Email address', keyboardType: TextInputType.emailAddress),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 140,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: () => Get.back(),
-                            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 12),
+                      const CommonText('Gender *', fontWeight: FontWeight.w700),
+                      const SizedBox(height: 6),
+                      StatefulBuilder(
+                        builder: (context, setState) =>
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              value: genderOptions.contains(gender)
+                                  ? gender
+                                  : 'Male',
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF5F6FA),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              items: genderOptions
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => gender = v ?? 'Male'),
+                            ),
+                      ),
+                      const SizedBox(height: 10),
+                      const CommonText(
+                        'Date of Birth *',
+                        fontWeight: FontWeight.w700,
+                      ),
+                      const SizedBox(height: 6),
+                      _textField(dobCtrl, hint: 'YYYY-MM-DD'),
+                      const SizedBox(height: 10),
+                      const CommonText('Phone', fontWeight: FontWeight.w700),
+                      const SizedBox(height: 6),
+                      _textField(
+                        phoneCtrl,
+                        hint: 'Phone number',
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 10),
+                      const CommonText('Email', fontWeight: FontWeight.w700),
+                      const SizedBox(height: 6),
+                      _textField(
+                        emailCtrl,
+                        hint: 'Email address',
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 140,
+                            height: 44,
+                            child: OutlinedButton(
+                              onPressed: () => Get.back(),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 160,
-                          height: 44,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final payload = {
-                                'id': controller.basicDetailsList.value.id,
-                                'gender': gender,
-                                'dateOfBirth': dobCtrl.text.trim(),
-                                'phone': phoneCtrl.text.trim().replaceAll('91', ''),
-                                'email': emailCtrl.text.trim(),
-                              };
-                              await controller.saveBasicDetails(payload);
-                              Get.back();
-                            },
-                            child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+                          SizedBox(
+                            width: 160,
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final payload = {
+                                  'id': controller.basicDetailsList.value.id,
+                                  'gender': gender,
+                                  'dateOfBirth': dobCtrl.text.trim(),
+                                  'phone': phoneCtrl.text.trim().replaceAll(
+                                    '91',
+                                    '',
+                                  ),
+                                  'email': emailCtrl.text.trim(),
+                                };
+                                await controller.saveBasicDetails(payload);
+                                Get.back();
+                              },
+                              child: const Text(
+                                'Save Changes',
+                                style: TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -181,14 +230,21 @@ class ProfileBasicDetails extends StatelessWidget {
   }
 }
 
-Widget _textField(TextEditingController c, {String? hint, TextInputType keyboardType = TextInputType.text}) => TextField(
+Widget _textField(
+  TextEditingController c, {
+  String? hint,
+  TextInputType keyboardType = TextInputType.text,
+}) => TextField(
   controller: c,
   keyboardType: keyboardType,
   decoration: InputDecoration(
     hintText: hint,
     filled: true,
     fillColor: const Color(0xFFF5F6FA),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
   ),
 );
 

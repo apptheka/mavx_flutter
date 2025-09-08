@@ -41,6 +41,9 @@ class HomeController extends GetxController {
   final RxInt totalBookmarks = 0.obs;
   final RxString greeting = ''.obs;
   final RxBool isLoadingProjects = false.obs;
+  // Fine-grained refresh flags per section
+  final RxBool isRefreshingTopMatches = false.obs;
+  final RxBool isRefreshingOtherProjects = false.obs;
   final RxList<ProjectModel> allProjects = <ProjectModel>[].obs;
   final RxList<ProjectModel> topMatches = <ProjectModel>[].obs;
   final RxList<ProjectModel> otherProjects = <ProjectModel>[].obs;
@@ -88,9 +91,9 @@ class HomeController extends GetxController {
   }
 
   // Fetch projects from API then compute matches
-  Future<void> fetchProjects() async {
+  Future<void> fetchProjects({bool showGlobalLoader = true}) async {
     try {
-      isLoadingProjects.value = true;
+      if (showGlobalLoader) isLoadingProjects.value = true;
       final resp = await _projectsUseCase.projects();
       final list = resp.data ?? [];
       allProjects.assignAll(list);
@@ -100,7 +103,42 @@ class HomeController extends GetxController {
       // Optionally expose an error state
     }
     finally {
-      isLoadingProjects.value = false;
+      if (showGlobalLoader) isLoadingProjects.value = false;
+    }
+  }
+
+Future<void> refreshTopMatches() async {
+  isRefreshingTopMatches.value = true;
+  try {
+    // Fetch fresh projects but only recompute topMatches, keep otherProjects as-is
+    final resp = await _projectsUseCase.projects();
+    final list = resp.data ?? [];
+
+    final profileController = Get.isRegistered<ProfileController>()
+        ? Get.find<ProfileController>()
+        : null;
+    final roleType = profileController?.registeredProfile.value.roleType?.trim();
+    final primarySector = profileController?.registeredProfile.value.primarySector;
+
+    final filtered = list.where((p) {
+      final pType = (p.projectType ?? '');
+      final matchRole = (roleType == null || roleType.isEmpty) || (pType.isNotEmpty && pType == roleType);
+      final matchSector = (primarySector == null) || (p.industry != null && p.industry == primarySector);
+      return matchRole && matchSector;
+    }).toList();
+
+    topMatches.assignAll(filtered);
+  } finally {
+    isRefreshingTopMatches.value = false;
+  }
+}
+
+  Future<void> refreshOtherOnly() async {
+    isRefreshingOtherProjects.value = true;
+    try {
+      await fetchProjects(showGlobalLoader: false);
+    } finally {
+      isRefreshingOtherProjects.value = false;
     }
   }
 
@@ -183,17 +221,36 @@ class HomeController extends GetxController {
   void applyFilter(int index) {
     selectedFilter.value = index;
     Iterable<ProjectModel> base = otherProjects;
+    
     if (index == 0) {
+      // Show all projects
       filteredProjects.assignAll(base.take(3).toList());
       return;
     }
-    final label = index == 1
-        ? 'On Site'
-        : index == 2
-        ? 'Remote'
-        : 'Hybrid';
+    
+    final filters = ['All', 'Consulting', 'Recruitment', 'Full Time', 'Contract Placement', 'Contract', 'Internal'];
+    final filterType = filters[index];
+    
     filteredProjects.assignAll(
-      base.where((p) => chipFor(p) == label).take(3).toList(),
+      base.where((p) {
+        final projectType = (p.projectType ?? '').trim().toLowerCase();
+        switch (filterType) {
+          case 'Consulting':
+            return projectType.contains('consult');
+          case 'Recruitment':
+            return projectType.contains('recruit');
+          case 'Full Time':
+            return projectType == 'full_time' || projectType.contains('full');
+          case 'Contract Placement':
+            return projectType.contains('contract placement');
+          case 'Contract':
+            return projectType.contains('contract') && !projectType.contains('contract placement');
+          case 'Internal':
+            return projectType.contains('internal');
+          default:
+            return true;
+        }
+      }).take(3).toList(),
     );
   }
 

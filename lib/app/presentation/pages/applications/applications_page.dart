@@ -125,12 +125,7 @@ class _HeaderApplications extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh, color: Colors.white),
-                onPressed: controller.fetchData,
-                tooltip: 'Refresh',
-              ),
+              ), 
             ],
           ),
         ],

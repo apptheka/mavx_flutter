@@ -6,6 +6,7 @@ import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/search_bar_widget.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class HeaderWidget extends GetView<HomeController> {
@@ -71,8 +72,7 @@ class HeaderWidget extends GetView<HomeController> {
                                   Image.asset(ImageAssets.userAvatar),
                             ),
                           );
-                        }
-                        // For raster images, child remains null to show backgroundImage
+                        } 
                         return const SizedBox.shrink();
                       },
                     ),
@@ -85,34 +85,33 @@ class HeaderWidget extends GetView<HomeController> {
                   () => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${controller.greeting.value}, ${controller.user.value?.fullName}",
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
+                      CommonText(
+                        "${controller.greeting.value}, ${controller.user.value?.fullName.capitalizeFirst}",
+                        color: Colors.white70,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
+                      const  SizedBox(height: 2),
+                      CommonText(
                         "Home",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
                       ),
                     ],
                   ),
                 ),
               ),
-              // Image.asset(
-              //   IconAssets.dashboard,
-              //   color: Colors.white,
-              //   height: 25,
-              //   width: 25,
-              // ),
-              // const SizedBox(width: 5),
+              InkWell(
+                onTap: () => Get.toNamed(AppRoutes.requests),
+                child: Image.asset(
+                  IconAssets.dashboard,
+                  color: Colors.white,
+                  height: 25,
+                  width: 25,
+                ),
+              ),
+              const SizedBox(width: 5),
               SearchBarIcon(onTap: () => Get.toNamed(AppRoutes.search)),
               IconButton(
                 onPressed: () {},

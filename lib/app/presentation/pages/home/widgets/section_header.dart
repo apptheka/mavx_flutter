@@ -5,10 +5,10 @@ import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 class SectionHeader extends StatelessWidget {
   final String title;
   final int total;
-  final String actionText;
+  final String? actionText;
   final VoidCallback? onAction;
 
-  const SectionHeader({super.key, required this.title, required this.total, this.actionText = 'View all', this.onAction});
+  const SectionHeader({super.key, required this.title, required this.total, this.actionText, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class SectionHeader extends StatelessWidget {
           GestureDetector(
             onTap: onAction,
             child: CommonText(
-              actionText,
+              actionText ?? '',
               fontSize: 13,
               color: AppColors.textButtonColor,
               fontWeight: FontWeight.w600,

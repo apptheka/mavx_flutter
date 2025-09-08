@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class StatsRow extends StatelessWidget {
@@ -18,17 +19,31 @@ class StatsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black)),
-              const SizedBox(height: 4),
-              Text(label, style: const TextStyle(color: Colors.black54,fontWeight: FontWeight.w600)),
-            ],
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CommonText(value, fontSize: 22, fontWeight: FontWeight.w700, color: Colors.black),
+                const SizedBox(height: 4),
+                CommonText(
+                  label,
+                  color: Colors.black54, 
+                  fontWeight: FontWeight.w600,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  fontSize: 12,
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
-          SizedBox(width: 36, height: 36, child: Image.asset(image, fit: BoxFit.contain)),
+          const SizedBox(width: 8),
+          Image.asset(
+            image,
+            fit: BoxFit.contain,
+            width: 36,
+            height: 36,
+          ),
         ],
       ),
     );

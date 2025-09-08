@@ -1,5 +1,6 @@
 // profile_repository_impl.dart
 import 'dart:convert';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
@@ -14,20 +15,32 @@ class ProfileRepositoryImpl implements ProfileRepository {
   final authRepository = Get.find<AuthRepository>();
 
   Future<String?> _currentUserId() async =>
-      (await authRepository.getCurrentUser())?.data.id.toString(); 
+      (await authRepository.getCurrentUser())?.data.id.toString();
 
   Future<Map<String, dynamic>> _decode(String encrypted) async =>
       jsonDecode(encrypted.decrypt());
 
-  Future<UserProfile> _postProfile(String path, Map<String, dynamic> data) async {
-    final encrypted = jsonEncode(data..removeWhere((k, v) => v == null || (v is String && v.isEmpty))).encript();
-    return UserProfile.fromJson(await _decode(await apiProvider.post(path, request: encrypted)));
+  Future<UserProfile> _postProfile(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
+    final encrypted = jsonEncode(
+      data..removeWhere((k, v) => v == null || (v is String && v.isEmpty)),
+    ).encript();
+    return UserProfile.fromJson(
+      await _decode(await apiProvider.post(path, request: encrypted)),
+    );
   }
 
   @override
   Future<UserProfile> getProfile() async {
     final id = await _currentUserId();
-    return UserProfile.fromJson(await _decode(await apiProvider.get("${AppConstants.profile}/$id")));
+
+    final decrypted = await _decode(
+      await apiProvider.get("${AppConstants.profile}/$id"),
+    );
+    log('getProfile decrypted data: $decrypted');
+    return UserProfile.fromJson(decrypted);
   }
 
   @override
@@ -36,15 +49,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     final payload = (decoded is Map)
         ? (decoded['data']?['data'] ?? decoded['data'] ?? decoded)
         : decoded;
-    return UserRegisteredModel.fromJson(Map<String, dynamic>.from(payload as Map));
+    return UserRegisteredModel.fromJson(
+      Map<String, dynamic>.from(payload as Map),
+    );
   }
 
   @override
-  Future<UserProfile> updateAboutMe(String description) async =>
-      _postProfile(AppConstants.aboutMe, {
-        'user_id': await _currentUserId(),
-        'description': description,
-      });
+  Future<UserProfile> updateAboutMe(String description) async => _postProfile(
+    AppConstants.aboutMe,
+    {'user_id': await _currentUserId(), 'description': description},
+  );
 
   @override
   Future<UserProfile> updateBasicDetails(Map<String, dynamic> details) async {
@@ -77,8 +91,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
       'user_id': user?.data.id,
       'id': details['id'],
       'gender': normGender(details['gender']),
-      'date_of_birth': ymd(details['date_of_birth'] ?? details['dateOfBirth'] ?? details['dob']),
-      'dob': ymd(details['dob'] ?? details['date_of_birth'] ?? details['dateOfBirth']),
+      'date_of_birth': ymd(
+        details['date_of_birth'] ?? details['dateOfBirth'] ?? details['dob'],
+      ),
+      'dob': ymd(
+        details['dob'] ?? details['date_of_birth'] ?? details['dateOfBirth'],
+      ),
       'phone': (details['phone'] ?? '').toString().trim(),
       // Always send email; backend validation requires it. Use provided or fallback to registered.
       'email': (details['email'] ?? email)?.toString().trim(),
@@ -91,11 +109,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
       _postProfile(AppConstants.education, {
         'user_id': await _currentUserId(),
         'id': education['id'],
-        'institution_name': education['institution_name'] ?? education['institutionName'],
+        'institution_name':
+            education['institution_name'] ?? education['institutionName'],
         'degree': education['degree'],
         'start_date': education['start_date'] ?? education['startDate'],
         'end_date': education['end_date'] ?? education['endDate'],
-        'is_current': (education['is_current'] ?? education['isCurrent']) == true || (education['is_current'] ?? education['isCurrent']) == 1,
+        'is_current':
+            (education['is_current'] ?? education['isCurrent']) == true ||
+            (education['is_current'] ?? education['isCurrent']) == 1,
       });
 
   @override
@@ -132,9 +153,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
       'company_name': trimStr(exp['company_name'] ?? exp['companyName']),
       'role': trimStr(exp['role'] ?? exp['job_title'] ?? exp['jobTitle']),
       'job_title': trimStr(exp['job_title'] ?? exp['role'] ?? exp['jobTitle']),
-      'employment_type': normEmployment(exp['employment_type'] ?? exp['employmentType']),
+      'employment_type': normEmployment(
+        exp['employment_type'] ?? exp['employmentType'],
+      ),
       // mirror misspelled key too (some backends expect it)
-      'employement_type': normEmployment(exp['employement_type'] ?? exp['employment_type'] ?? exp['employmentType']),
+      'employement_type': normEmployment(
+        exp['employement_type'] ??
+            exp['employment_type'] ??
+            exp['employmentType'],
+      ),
       'is_remote': to01(exp['is_remote'] ?? exp['isRemote']),
       'start_date': trimStr(exp['start_date'] ?? exp['startDate']),
       'end_date': trimStr(exp['end_date'] ?? exp['endDate']),
@@ -151,7 +178,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'user_id': await _currentUserId(),
         'id': lang['id'],
         'language_name': lang['language_name'] ?? lang['languageName'],
-        'proficiency_level': (lang['proficiency_level'] ?? lang['proficiencyLevel'])?.toString().toLowerCase(),
+        'proficiency_level':
+            (lang['proficiency_level'] ?? lang['proficiencyLevel'])
+                ?.toString()
+                .toLowerCase(),
         'can_read': lang['can_read'] ?? lang['canRead'],
         'can_write': lang['can_write'] ?? lang['canWrite'],
         'can_speak': lang['can_speak'] ?? lang['canSpeak'],
@@ -183,44 +213,45 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'skills': skills['skills'],
       });
 
-   
   @override
   Future<UserProfile> deleteExperience(int id) async {
-    try{
+    try {
       final res = await apiProvider.delete("${AppConstants.experience}/$id");
       return UserProfile.fromJson(await _decode(res.data));
-    }catch(e){
+    } catch (e) {
       return UserProfile();
     }
   }
 
   @override
-  Future<UserProfile> deleteEducation(int id) async { 
-    try{
+  Future<UserProfile> deleteEducation(int id) async {
+    try {
       final res = await apiProvider.delete("${AppConstants.education}/$id");
       return UserProfile.fromJson(await _decode(res.data));
-    }catch(e){
+    } catch (e) {
       return UserProfile();
     }
   }
 
   @override
-  Future<UserProfile> deleteLanguage(int id) async { 
-    try{
+  Future<UserProfile> deleteLanguage(int id) async {
+    try {
       final res = await apiProvider.delete("${AppConstants.languages}/$id");
       return UserProfile.fromJson(await _decode(res.data));
-    }catch(e){
+    } catch (e) {
       return UserProfile();
     }
   }
 
   @override
-  Future<UserProfile> deleteOnlineProfile(int id) async { 
-    try{
-      final res = await apiProvider.delete("${AppConstants.onlineProfiles}/$id");
+  Future<UserProfile> deleteOnlineProfile(int id) async {
+    try {
+      final res = await apiProvider.delete(
+        "${AppConstants.onlineProfiles}/$id",
+      );
       return UserProfile.fromJson(await _decode(res.data));
-    }catch(e){
+    } catch (e) {
       return UserProfile();
     }
-  } 
+  }
 }

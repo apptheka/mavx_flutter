@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class ProfilePreferences extends StatelessWidget {
   final ProfileController controller;
@@ -75,9 +78,10 @@ class ProfilePreferences extends StatelessWidget {
         String workType = normalizeToItem(p.workType, workTypeItems);
 
         Get.bottomSheet(
-          SafeArea(
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.7,
+              height: MediaQuery.of(context).size.height * 0.77,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -93,10 +97,10 @@ class ProfilePreferences extends StatelessWidget {
                       const SizedBox(height: 6),
                       const Text('Set your project and work preferences', style: TextStyle(color: AppColors.textSecondaryColor)),
                       const SizedBox(height: 12),
-          
+                      
                       _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
                       const SizedBox(height: 10),
-          
+                      
                       Row(children: [
                         Expanded(child: _LabeledField(label: 'Preferred Budget *', controller: budgetCtrl, keyboardType: TextInputType.number)),
                         const SizedBox(width: 12),
@@ -110,7 +114,7 @@ class ProfilePreferences extends StatelessWidget {
                         ),
                       ]),
                       const SizedBox(height: 10),
-          
+                      
                       Row(children: [
                         Expanded(
                           child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
@@ -124,7 +128,7 @@ class ProfilePreferences extends StatelessWidget {
                         Expanded(child: _LabeledField(label: 'Availability (Hours per Week)', controller: hoursCtrl, keyboardType: TextInputType.number)),
                       ]),
                       const SizedBox(height: 10),
-          
+                      
                       Row(children: [
                         Expanded(
                           child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
@@ -138,7 +142,7 @@ class ProfilePreferences extends StatelessWidget {
                         Expanded(child: _LabeledField(label: 'Minimum Duration (Months)', controller: minCtrl, keyboardType: TextInputType.number)),
                       ]),
                       const SizedBox(height: 10),
-          
+                      
                       Row(children: [
                         Expanded(child: _LabeledField(label: 'Maximum Duration (Months)', controller: maxCtrl, keyboardType: TextInputType.number)),
                         const SizedBox(width: 12),
@@ -152,14 +156,14 @@ class ProfilePreferences extends StatelessWidget {
                         ),
                       ]),
                       const SizedBox(height: 10),
-          
+                      
                       StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
                         label: 'Work Type *',
                         value: workType,
                         items: workTypeItems,
                         onChanged: (v) => setState(() => workType = v ?? workType),
                       )),
-          
+                      
                       const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -366,20 +370,16 @@ class _PrefRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              CommonText(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textSecondaryColor,
-                  fontSize: 12,
-                ),
+                color: AppColors.textSecondaryColor,
+                fontSize: 12,
               ),
               const SizedBox(height: 4),
-              Text(
+              CommonText(
                 value,
-                style: TextStyle(
-                  color: AppColors.textPrimaryColor,
-                  fontWeight: boldValue ? FontWeight.w800 : FontWeight.w700,
-                ),
+                color: AppColors.textPrimaryColor,
+                fontWeight: boldValue ? FontWeight.w800 : FontWeight.w700,
               ),
             ],
           ),

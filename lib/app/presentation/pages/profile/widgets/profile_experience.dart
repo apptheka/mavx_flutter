@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
@@ -47,13 +49,14 @@ class ProfileExperience extends StatelessWidget {
           });
         }
         Get.bottomSheet(
-          SafeArea(
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: SizedBox(
               height: rows.isEmpty
-                  ? MediaQuery.of(context).size.height * 0.76
+                  ? MediaQuery.of(context).size.height * 0.78
                   : (rows.length > 1
-                      ? MediaQuery.of(context).size.height * 0.76
-                      : MediaQuery.of(context).size.height * 0.76),
+                      ? MediaQuery.of(context).size.height * 0.8
+                      : MediaQuery.of(context).size.height * 0.8),
               child: Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -78,25 +81,24 @@ class ProfileExperience extends StatelessWidget {
                       });
                     });
                   }
- 
+             
                   String fmt(DateTime? d) => d == null
                       ? 'Select date'
                       : '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
+            
                   const types = ['Full Time','Part Time','Contract','Internship'];
-
+            
                   return SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Work Experience',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 6),
+                          'Experience',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                        ), 
                         const Text('Add your professional experience', style: TextStyle(color: AppColors.textSecondaryColor)),
                         const SizedBox(height: 12),
-
+            
                         for (int i = 0; i < rows.length; i++) ...[
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -231,7 +233,7 @@ class ProfileExperience extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                         ],
-
+            
                         OutlinedButton.icon(
                           onPressed: addRow,
                           icon: const Icon(Icons.add),
@@ -287,7 +289,7 @@ class ProfileExperience extends StatelessWidget {
                 },
               ),
             ),
-          ),
+                      ),
           ),
           isScrollControlled: true,
         );
@@ -315,18 +317,18 @@ class ProfileExperience extends StatelessWidget {
         String fmt(DateTime? d) {
           if (d == null) return '';
           const months = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
+            'January',
+            'February',
+            'March',
+            'April',
             'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
           ];
           return '${months[d.month - 1]} ${d.year}';
         }
@@ -369,7 +371,7 @@ Widget _label(String text) => Padding(
 );
  
 
-class _ExperienceItem extends StatelessWidget {
+class _ExperienceItem extends StatefulWidget {
   final String role;
   final String company;
   final String employmentType;
@@ -388,6 +390,15 @@ class _ExperienceItem extends StatelessWidget {
     this.gradientStart = const Color(0xFF7C3AED),
     this.gradientEnd = const Color(0xFF4F46E5),
   });
+
+  @override
+  State<_ExperienceItem> createState() => _ExperienceItemState();
+}
+
+class _ExperienceItemState extends State<_ExperienceItem> {
+  static const int _collapsedMaxLines = 3;
+  bool _expanded = false;
+  bool _isOverflow = false;
 
   @override
   Widget build(BuildContext context) {
@@ -413,14 +424,14 @@ class _ExperienceItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [gradientStart, gradientEnd],
+                    colors: [widget.gradientStart, widget.gradientEnd],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
                 child: Center(
                   child: Image.asset(
-                    iconAsset, 
+                    widget.iconAsset, 
                   ),
                 ),
               ),
@@ -429,53 +440,75 @@ class _ExperienceItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      role,
-                      style: const TextStyle(
-                        color: AppColors.textPrimaryColor,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    CommonText(
+                      widget.role.toUpperCase(),
+                      color: AppColors.textPrimaryColor,
+                      fontWeight: FontWeight.w800,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      company,
-                      style: const TextStyle(
-                        color: AppColors.textSecondaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    CommonText(
+                      '${widget.company.toUpperCase()} • ${widget.employmentType.toUpperCase()}',
+                      color: AppColors.textSecondaryColor,
+                      fontWeight: FontWeight.w600,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      '$employmentType • $period',
-                      style: const TextStyle(
-                        color: AppColors.textSecondaryColor,
-                      ),
+                    CommonText(
+                      widget.period,
+                      color: AppColors.textSecondaryColor,
+                    ), 
+                    // Summary aligned with this column
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Measure if text exceeds the collapsed max lines
+                        final span = TextSpan(
+                          text: widget.summary,
+                          style: const TextStyle(color: AppColors.textSecondaryColor),
+                        );
+                        final tp = TextPainter(
+                          text: span,
+                          maxLines: _collapsedMaxLines,
+                          textDirection: TextDirection.ltr,
+                        )..layout(maxWidth: constraints.maxWidth);
+                        final exceeds = tp.didExceedMaxLines;
+                        if (exceeds != _isOverflow) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) setState(() => _isOverflow = exceeds);
+                          });
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CommonText(
+                              widget.summary,
+                              maxLines: _expanded ? null : _collapsedMaxLines,
+                              overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                              color: AppColors.textSecondaryColor,
+                            ),
+                            if (_isOverflow)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => setState(() => _expanded = !_expanded),
+                                  child: CommonText(
+                                    _expanded ? 'Read less' : 'Read more',
+                                    color: AppColors.textButtonColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 5),
                   ],
                 ),
               ),
             ],
           ),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: summary,
-                  style: const TextStyle(color: AppColors.textSecondaryColor),
-                ),
-                const TextSpan(
-                  text: 'Read More',
-                  style: TextStyle(
-                    color: AppColors.textButtonColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
   }
-} 
+}

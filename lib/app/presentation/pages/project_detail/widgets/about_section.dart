@@ -21,9 +21,9 @@ class AboutSection extends StatelessWidget {
 
       if (controller.error.isNotEmpty) {
         return _Card(
-          child: Text(
+          child: CommonText(
             controller.error.value,
-            style: const TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           ),
         );
       }
@@ -48,12 +48,9 @@ class AboutSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            CommonText(
               desc,
-              style: const TextStyle(
-                color: AppColors.textSecondaryColor,
-                height: 1.5,
-              ),
+              color: AppColors.textSecondaryColor, 
             ),
             const SizedBox(height: 12),
             const _SubTitle('Responsibilities'),
@@ -143,12 +140,10 @@ class ClientOverviewSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    CommonText(
                       'Vatrix Global',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
                     ),
                     SizedBox(height: 2),
                     CommonText(
@@ -164,12 +159,10 @@ class ClientOverviewSection extends StatelessWidget {
                 children: [
                   Image.asset(IconAssets.verified, width: 18, height: 18),
                   const SizedBox(width: 4),
-                  Text(
+                  CommonText(
                     'Verified',
-                    style: TextStyle(
-                      color: AppColors.green,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    color: AppColors.green,
+                    fontWeight: FontWeight.w600,
                   ),
                 ],
               ),
@@ -235,9 +228,9 @@ class ActionsSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             onPressed: isApplied ? null : () { Get.toNamed(AppRoutes.apply, arguments: projectId); },
-            child: Text(
+            child: CommonText(
               isApplied ? 'Applied' : 'Apply',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -305,33 +298,43 @@ class SimilarProjectsSection extends StatelessWidget {
             );
           }
 
-          return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.27,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final it = controller.similarProjects[index];
-                return SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.92,
-                  child: JobCard(
-                    title: it.projectTitle ?? '',
-                    description: it.description ?? '',
-                    company: it.projectType ?? '',
-                    tags: [it.projectType ?? ''],
-                    status: it.projectType ?? '',
-                    compact: true,
-                    id: it.id ?? 0,  
-                    applied: it.id != null && controller.appliedIds.contains(it.id!),
-                    onTap: () {
-                      // Replace current detail page with the selected similar project's detail
-                      Get.offNamed(AppRoutes.projectDetail, arguments: it.id);
-                    },
-                  ),
-                );
-              },
-            ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final double itemWidth = screenWidth > 0
+                  ? (screenWidth - 15).clamp(200.0, 650.0) // min 280, max 600
+                  : MediaQuery.of(context).size.width - 15; // 16px side margins
+              
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal, 
+                  padding: EdgeInsets.only(right: 15),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final it = controller.similarProjects[index];
+                    return SizedBox(
+                      width: itemWidth,
+                      child: JobCard(
+                        title: it.projectTitle ?? '',
+                        description: it.description ?? '',
+                        company: it.projectType ?? '',
+                        tags: [it.projectType ?? ''],
+                        status: it.projectType ?? '',
+                        compact: true,
+                        id: it.id ?? 0,  
+                        applied: it.id != null && controller.appliedIds.contains(it.id!),
+                        onTap: () {
+                          // Replace current detail page with the selected similar project's detail
+                          Get.offNamed(AppRoutes.projectDetail, arguments: it.id);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           );
         }),
       ],
@@ -479,9 +482,9 @@ class _IconRow extends StatelessWidget {
         Image.asset(icon, width: 16, height: 16),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
+          child: CommonText(
             text,
-            style: const TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           ),
         ),
       ],
@@ -499,22 +502,18 @@ class _LinkRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
+        CommonText(
           left,
-          style: const TextStyle(
-            color: AppColors.textButtonColor,
-            fontWeight: FontWeight.w700,
-          ),
+          color: AppColors.textButtonColor,
+          fontWeight: FontWeight.w700,
         ),
         const SizedBox(width: 8),
         Container(width: 2, height: 16, color: AppColors.greyColor),
         const SizedBox(width: 8),
-        Text(
+        CommonText(
           right,
-          style: const TextStyle(
-            color: AppColors.textButtonColor,
-            fontWeight: FontWeight.w700,
-          ),
+          color: AppColors.textButtonColor,
+          fontWeight: FontWeight.w700,
         ),
       ],
     );
@@ -533,17 +532,16 @@ class _SectionHeaderRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
+            child: CommonText(
               title,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
             ),
           ),
-          Text(
+          CommonText(
             action,
-            style: const TextStyle(
-              color: AppColors.textButtonColor,
-              fontWeight: FontWeight.w700,
-            ),
+            color: AppColors.textButtonColor,
+            fontWeight: FontWeight.w700,
           ),
         ],
       ),

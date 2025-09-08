@@ -52,9 +52,9 @@ class RegisterStep2 extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
+                          CommonText(
                             c.flagEmoji.value,
-                            style: const TextStyle(fontSize: 18),
+                            fontSize: 18,
                           ),
                           const SizedBox(width: 4),
                           Flexible(

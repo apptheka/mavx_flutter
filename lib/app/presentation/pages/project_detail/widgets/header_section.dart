@@ -4,6 +4,7 @@ import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class HeaderSection extends StatelessWidget {
   const HeaderSection({super.key});
@@ -44,9 +45,9 @@ class HeaderSection extends StatelessWidget {
             ],
           ),
           padding: const EdgeInsets.all(16),
-          child: Text(
+          child: CommonText(
             controller.error.value,
-            style: const TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           ),
         );
       }
@@ -82,21 +83,19 @@ class HeaderSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    CommonText(
                       (it?.projectTitle?.isNotEmpty ?? false)
                           ? it!.projectTitle!
                           : 'Project',
-                      style: const TextStyle(
-                        fontSize: 18,
+                      fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimaryColor,
-                      ),
-                    ),
+                      ), 
                     const SizedBox(height: 4),
                     Row(children: [
-                      Text(
+                      CommonText(
                         it?.projectType ?? '—',
-                        style: const TextStyle(color: AppColors.textSecondaryColor),
+                        color: AppColors.textSecondaryColor,
                       ),
                     ]),
                     const SizedBox(height: 8),
@@ -121,52 +120,44 @@ class HeaderSection extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Text(
+              CommonText(
                 it?.projectType ?? '—',
-                style: const TextStyle(
-                  color: Color(0xff4fbace),
-                  fontWeight: FontWeight.w700,
-                ),
+                color: Color(0xff4fbace),
+                fontWeight: FontWeight.w700,
               ),
               const SizedBox(width: 10),
               _VSep(),
               const SizedBox(width: 10),
-              const Text(
+              CommonText(
                 '-',
-                style: TextStyle(
-                  color: AppColors.textSecondaryColor,
-                  fontSize: 13,
-                ),
+                color: AppColors.textSecondaryColor,
+                fontSize: 13,
               ),
               const SizedBox(width: 10),
               _VSep(),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
+                child: CommonText(
                   (it?.budget != null)
                       ? 'Budget: ${it!.budget!.toStringAsFixed(0)}'
                       : (it?.projectCost != null)
                           ? 'Cost: ${it!.projectCost!.toStringAsFixed(0)}'
                           : '-',
-                  style: const TextStyle(
-                    color: AppColors.textPrimaryColor,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  color: AppColors.textPrimaryColor,
+                  fontWeight: FontWeight.w700,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
+          CommonText(
             (it?.duration != null)
                 ? 'For ${it!.duration} ${it.durationType ?? ''}'.trim()
                 : '',
-            style: const TextStyle(
-              color: AppColors.textPrimaryColor,
+            color: AppColors.textPrimaryColor,
               fontWeight: FontWeight.w700,
-            ),
-          ),
+            ), 
           const SizedBox(height: 6),
           _IconText(
             text: it?.creationDate != null
@@ -184,7 +175,7 @@ class HeaderSection extends StatelessWidget {
                 children: [
                  Image.asset(IconAssets.badge,height: 16,width: 16,),
                  const SizedBox(width: 6,),
-                 const Text('Excellent Fit',style: TextStyle(color: AppColors.green,fontWeight: FontWeight.w700,fontSize: 13),)
+                 CommonText('Excellent Fit',color: AppColors.green,fontWeight: FontWeight.w700,fontSize: 13)
                 ]
               )
             ],
@@ -212,12 +203,10 @@ class _Chip extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
+      child: CommonText(
         text,
-        style: TextStyle( 
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
       ),
     );
   }
@@ -279,13 +268,11 @@ class _Badge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          CommonText(
             text,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
+            color: textColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
           ),
         ],
       ),

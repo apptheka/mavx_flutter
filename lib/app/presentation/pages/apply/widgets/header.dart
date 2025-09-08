@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class Header extends StatelessWidget {
   const Header({
@@ -46,15 +47,12 @@ class Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              CommonText(
                 (title?.trim().isNotEmpty == true ? title! : 'Project') + '\n' + (company?.trim().isNotEmpty == true ? company! : 'Company'),
-                style: TextStyle(
-                  fontSize: titleSize,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0B2944),
-                  height: 1.1,
-                ),
-              ),
+                fontSize: titleSize,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0B2944), 
+                ), 
               const SizedBox(height: 6),
               Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
@@ -67,7 +65,7 @@ class Header extends StatelessWidget {
                       Icon(Icons.badge_outlined, size: 14, color: Colors.black45),
                       SizedBox(width: 4),
                       // Company already shown in title line above; keeping badge as a visual element
-                      Text('', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      CommonText('', color: Colors.black54, fontSize: 12),
                     ],
                   ),
                   Container(

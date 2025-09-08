@@ -1,3 +1,5 @@
+import 'package:mavx_flutter/app/presentation/pages/requests/requests.binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/requests/requests_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/saved/saved_binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/saved/saved_page.dart';
 import 'package:get/get.dart';
@@ -83,6 +85,11 @@ class AppPages {
       name: AppRoutes.apply,
       page: () => const ApplyPage(),
       binding: ApplyBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.requests,
+      page: () => const RequestsPage(),
+      binding: RequestsBinding(),
     ),
   ];
 }

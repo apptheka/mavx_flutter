@@ -7,6 +7,7 @@ import 'package:mavx_flutter/app/domain/usecases/get_all_industries_usecase.dart
 import 'package:mavx_flutter/app/domain/usecases/get_all_specification_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
+import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class RegisterController extends GetxController {
   final GetAllSpecificationUseCase getAllSpecificationUseCase = Get.find<GetAllSpecificationUseCase>();
@@ -134,6 +135,27 @@ class RegisterController extends GetxController {
     }
   }
 
+
+    bool _isValidPlatformUrl({
+    required String platformType,
+    required String url,
+  }) {
+    final trimmed = url.trim();
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) return false;
+    if (!(uri.scheme == 'http' || uri.scheme == 'https')) return false;
+
+    final host = uri.host.toLowerCase();
+    final p = platformType.toLowerCase();
+
+    if (p.contains('linkedin')) {
+      // Accept linkedin.com and shortener lnkd.in
+      return host.endsWith('linkedin.com') || host.endsWith('lnkd.in');
+    } 
+    // Default allow
+    return true;
+  }
+
   // Public wrapper for validation so UI can control when to trigger errors
   bool validateCurrentStep() => _validateCurrentStep();
 
@@ -167,6 +189,16 @@ class RegisterController extends GetxController {
     // Parse integer fields where required
     int? parseInt(String? s) => int.tryParse((s ?? '').trim());
 
+    final linkedInUrl = linkedInCtrl.text.trim();
+    if (linkedInUrl.isNotEmpty && !_isValidPlatformUrl(platformType: 'linkedin', url: linkedInUrl)) {
+      showSnackBar(
+        title: 'Invalid LinkedIn URL',
+        message: 'Please enter a valid LinkedIn URL',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      ); 
+    }
+
     final payload = <String, dynamic>{
       'fullName': nullIfEmpty(firstNameCtrl.text),
       'lastName': nullIfEmpty(lastNameCtrl.text),
@@ -180,7 +212,7 @@ class RegisterController extends GetxController {
       'alternateEmail': nullIfEmpty(alternateEmailCtrl.text),
       'experience': parseInt(experienceCtrl.text),
       'ctc': nullIfEmpty(ctcCtrl.text),
-      'linkedin': nullIfEmpty(linkedInCtrl.text),
+      'linkedin': nullIfEmpty(linkedInUrl), 
       'roleType': nullIfEmpty(roleTypeCtrl.value),
       'primaryFunction': parseInt(primaryFunctionCtrl.value),
       'customPrimaryFunction': nullIfEmpty(otherPrimaryFunctionCtrl.text),
@@ -189,8 +221,7 @@ class RegisterController extends GetxController {
       'employer': nullIfEmpty(currentEmployerCtrl.text),
       'secondaryFunction': parseInt(secondaryFunctionCtrl.value),
       'secondarySector': null, // not captured in UI currently
-      'achievements': nullIfEmpty(achievementsCtrl.text),
-      // Files: these are uploaded separately; include resulting URLs only
+      'achievements': nullIfEmpty(achievementsCtrl.text), 
       'resume': nullIfEmpty(resumeUrl.value),
       'idType': nullIfEmpty(idTypeCtrl.value),
       'idFile': nullIfEmpty(idUrl.value),

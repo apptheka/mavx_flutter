@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -43,26 +45,16 @@ class ProfileHeader extends StatelessWidget {
               Row(
                 children: [
                   const Expanded(
-                    child: Text(
+                    child: CommonText(
                       'My Profile',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      ), 
                   ),
                   IconButton(
-                    onPressed: () {
-                      authRepository.logout();
-                      Get.snackbar(
-                        "Logout",
-                        "You have been logged out",
-                        colorText: Colors.white,
-                        backgroundColor: Colors.red,
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                      Get.offAllNamed(AppRoutes.login);
+                    onPressed: () async {
+                      await _logoutDialog(authRepository);
                     },
                     icon: Image.asset(
                       IconAssets.logout,
@@ -153,6 +145,141 @@ class ProfileHeader extends StatelessWidget {
       ],
     );
   }
+
+Future<void> _logoutDialog(AuthRepository authRepository) async {
+  return Get.dialog(
+    BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        contentPadding: const EdgeInsets.all(24),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.logout_rounded,
+                color: Colors.red.shade600,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Logout',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            CommonText(
+              'Are you sure you want to logout?',
+              fontSize: 16,
+              color: Colors.grey.shade700, 
+            ),
+            const SizedBox(height: 4),
+            CommonText(
+              'You will need to login again to access your account.',
+              fontSize: 14,
+              color: Colors.grey.shade500,
+            ),
+          ],
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Get.back(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Get.back();
+                    authRepository.logout();
+                    Get.snackbar(
+                      "Logout",
+                      "You have been logged out successfully",
+                      duration: const Duration(seconds: 3),
+                      icon: const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                      colorText: Colors.white,
+                      backgroundColor: Colors.green.shade600,
+                      snackPosition: SnackPosition.BOTTOM,
+                      margin: const EdgeInsets.all(16),
+                      borderRadius: 12,
+                      animationDuration: const Duration(milliseconds: 300),
+                    );
+                    Get.offAllNamed(AppRoutes.login);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+        actionsPadding: const EdgeInsets.only(
+          left: 24,
+          right: 24,
+          bottom: 20,
+          top: 8,
+        ),
+      ),
+    ),
+    barrierDismissible: false,
+  );
+}
 }
 
 class _NameAndStatus extends StatelessWidget {
@@ -168,8 +295,8 @@ class _NameAndStatus extends StatelessWidget {
           children: [
             Obx(() {
               final rp = controller.registeredProfile.value;
-              final first = (rp.fullName ?? '').trim();
-              final last = (rp.lastName ?? '').trim();
+              final first = (rp.fullName?.trim().capitalizeFirst ?? '').trim();
+              final last = (rp.lastName?.trim().capitalizeFirst ?? '').trim();
               final hasAny = first.isNotEmpty || last.isNotEmpty;
               final displayName = hasAny
                   ? [first, last].where((s) => s.isNotEmpty).join(' ')

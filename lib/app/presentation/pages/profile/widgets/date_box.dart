@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class DateBox extends StatelessWidget {
   final String label;
@@ -19,7 +20,7 @@ class DateBox extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label),
+            CommonText(label),
             const Icon(Icons.calendar_today, size: 18, color: Colors.black54),
           ],
         ),

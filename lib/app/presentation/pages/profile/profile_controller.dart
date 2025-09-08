@@ -1,11 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/data/models/complete_profile_model.dart';
 import 'package:mavx_flutter/app/data/models/user_registered_model.dart';
 import 'package:mavx_flutter/app/domain/usecases/profile_usecases.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class ProfileController extends GetxController {
   final ProfileUseCase profileUseCase = Get.find<ProfileUseCase>();
@@ -29,7 +29,8 @@ class ProfileController extends GetxController {
     // Load persisted flag so popup is shown only once ever
     try {
       final storage = Get.find<StorageService>();
-      _profileCompleteNotified = storage.prefs.getBool('profile_complete_notified') ?? false;
+      _profileCompleteNotified =
+          storage.prefs.getBool('profile_complete_notified') ?? false;
     } catch (_) {
       _profileCompleteNotified = false;
     }
@@ -47,7 +48,9 @@ class ProfileController extends GetxController {
       educationList.value = RxList<Education>(response.education ?? []);
       skillList.value = RxList<Skill>(response.skills ?? []);
       languageList.value = RxList<Language>(response.languages ?? []);
-      onlineProfileList.value = RxList<OnlineProfile>(response.onlineProfiles ?? []);
+      onlineProfileList.value = RxList<OnlineProfile>(
+        response.onlineProfiles ?? [],
+      );
       basicDetailsList.value = response.basicDetails ?? BasicDetails();
       preferences.value = response.preferences ?? Preferences();
       _recalculateCompletion();
@@ -146,13 +149,18 @@ class ProfileController extends GetxController {
         if (Get.isOverlaysOpen == false) {
           Get.dialog(
             AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               title: const Text('Profile Complete!'),
               content: const Text(
                 'Your profile is complete. Great job!\n\nThis will improve your chances of being discovered for future jobs.',
               ),
               actions: [
-                TextButton(onPressed: () => Get.back(), child: const Text('OK')),
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('OK'),
+                ),
               ],
             ),
             barrierDismissible: true,
@@ -164,7 +172,6 @@ class ProfileController extends GetxController {
     }
   }
 
-
   Future<void> updateProfile() async {
     loading.value = true;
     error.value = '';
@@ -175,7 +182,9 @@ class ProfileController extends GetxController {
       educationList.value = RxList<Education>(response.education ?? []);
       skillList.value = RxList<Skill>(response.skills ?? []);
       languageList.value = RxList<Language>(response.languages ?? []);
-      onlineProfileList.value = RxList<OnlineProfile>(response.onlineProfiles ?? []);
+      onlineProfileList.value = RxList<OnlineProfile>(
+        response.onlineProfiles ?? [],
+      );
       basicDetailsList.value = response.basicDetails ?? BasicDetails();
       preferences.value = response.preferences ?? Preferences();
       _recalculateCompletion();
@@ -192,9 +201,19 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateAboutMe(description);
       await updateProfile();
-      Get.snackbar('Updated', 'About Me updated');
+      showSnackBar(
+        title: 'Updated',
+        message: 'About Me updated',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update About Me');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update About Me',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -229,9 +248,19 @@ class ProfileController extends GetxController {
       await profileUseCase.updatePreferences(payload);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Preferences saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Preferences saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update preferences');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update preferences',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -244,9 +273,19 @@ class ProfileController extends GetxController {
       await profileUseCase.updateBasicDetails(basicDetails);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Basic details saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Basic details saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update basic details');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update basic details',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -258,9 +297,19 @@ class ProfileController extends GetxController {
       await profileUseCase.updateEducation(education);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Education saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Education saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update education');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update education',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -272,9 +321,19 @@ class ProfileController extends GetxController {
       await profileUseCase.updateExperience(experience);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Experience saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Experience saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update experience');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update experience',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -286,23 +345,101 @@ class ProfileController extends GetxController {
       await profileUseCase.updateLanguages(languages);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Languages saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Languages saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update languages');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update languages',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
   }
 
+  // Validates that the URL matches the expected domain for the given platform
+  bool _isValidPlatformUrl({
+    required String platformType,
+    required String url,
+  }) {
+    final trimmed = url.trim();
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) return false;
+    if (!(uri.scheme == 'http' || uri.scheme == 'https')) return false;
+
+    final host = uri.host.toLowerCase();
+    final p = platformType.toLowerCase();
+
+    if (p.contains('github')) {
+      return host.endsWith('github.com');
+    } else if (p.contains('linkedin')) {
+      // Accept linkedin.com and shortener lnkd.in
+      return host.endsWith('linkedin.com') || host.endsWith('lnkd.in');
+    } else if (p.contains('behance') || p.contains('be')) {
+      return host.endsWith('behance.net');
+    } else if (p.contains('website') ||
+        p.contains('web') ||
+        p.contains('other')) {
+      // Allow any domain for generic website/other
+      return true;
+    }
+    // Default allow
+    return true;
+  }
+
   Future<void> saveOnlineProfiles(Map<String, dynamic> onlineProfiles) async {
+    final url =
+        (onlineProfiles['profile_url'] ?? onlineProfiles['profileUrl'])
+            as String?;
+    final platform =
+        (onlineProfiles['platform_type'] ??
+                onlineProfiles['platformType'] ??
+                '')
+            .toString();
+    if (url == null || !_isValidPlatformUrl(platformType: platform, url: url)) {
+      final p = platform.toLowerCase();
+      String domainHint = 'a valid URL';
+      if (p.contains('github')) {
+        domainHint = 'a GitHub URL (e.g., https://github.com/username)';
+      } else if (p.contains('linkedin'))
+        domainHint =
+            'a LinkedIn URL (e.g., https://www.linkedin.com/in/username or https://lnkd.in/...)';
+      else if (p.contains('behance') || p.contains('be'))
+        domainHint = 'a Behance URL (e.g., https://www.behance.net/username)';
+
+      showSnackBar(
+        title: 'Invalid URL',
+        message: 'Please enter $domainHint',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     try {
       loading.value = true;
       await profileUseCase.updateOnlineProfiles(onlineProfiles);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Online profiles saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Online profiles saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update online profiles');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update online profiles',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -314,9 +451,19 @@ class ProfileController extends GetxController {
       await profileUseCase.updateSkills(skills);
       await updateProfile();
       Get.back();
-      Get.snackbar('Updated', 'Skills saved');
+      showSnackBar(
+        title: 'Updated',
+        message: 'Skills saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to update skills');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update skills',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -328,9 +475,19 @@ class ProfileController extends GetxController {
       await profileUseCase.deleteExperience(id);
       await updateProfile();
       Get.back();
-      Get.snackbar('Deleted', 'Experience deleted');
+      showSnackBar(
+        title: 'Deleted',
+        message: 'Experience deleted',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to delete experience');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to delete experience',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -342,9 +499,19 @@ class ProfileController extends GetxController {
       await profileUseCase.deleteEducation(id);
       await updateProfile();
       Get.back();
-      Get.snackbar('Deleted', 'Education deleted');
+      showSnackBar(
+        title: 'Deleted',
+        message: 'Education deleted',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to delete education');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to delete education',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
@@ -356,25 +523,47 @@ class ProfileController extends GetxController {
       await profileUseCase.deleteLanguage(id);
       await updateProfile();
       Get.back();
-      Get.snackbar('Deleted', 'Language deleted');
+      showSnackBar(
+        title: 'Deleted',
+        message: 'Language deleted',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to delete language');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to delete language',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
   }
 
-  Future<void> deleteOnlineProfile(int id) async {  
+  Future<void> deleteOnlineProfile(int id) async {
     try {
       loading.value = true;
       await profileUseCase.deleteOnlineProfile(id);
       await updateProfile();
       Get.back();
-      Get.snackbar('Deleted', 'Online profile deleted');
+      showSnackBar(
+        title: 'Deleted',
+        message: 'Online profile deleted',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (_) {
-      Get.snackbar('Error', 'Failed to delete online profile');
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to delete online profile',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       loading.value = false;
     }
   }
+
+
 }

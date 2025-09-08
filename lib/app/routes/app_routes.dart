@@ -10,4 +10,5 @@ class AppRoutes {
   static const profile = '/profile';
   static const saved = '/saved';
   static const apply = '/apply';
+  static const requests = '/requests';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/apply/apply_controller.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class UploadDropArea extends StatelessWidget {
   const UploadDropArea({super.key, required this.controller  });
@@ -40,15 +41,14 @@ class UploadDropArea extends StatelessWidget {
                   color: Colors.black38,
                 ),
                 const SizedBox(height: 6),
-                Text(
+                CommonText(
                   uploading
                       ? 'Uploading...'
                       : (hasFile ? controller.uploadedFileName.value : ''),
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                  color: Colors.black54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  ), 
               ],
             ),
           ),

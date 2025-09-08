@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class LabeledField extends StatelessWidget {
   const LabeledField({
@@ -7,12 +8,16 @@ class LabeledField extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.keyboardType,
+    this.validator,
+    this.maxLines,
   });
 
   final String label;
   final String hint;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final String? Function(String?)? validator;
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +30,8 @@ class LabeledField extends StatelessWidget {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          validator: validator,
+          maxLines: maxLines ?? (keyboardType == TextInputType.multiline ? null : 1),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.black38),
@@ -51,12 +58,10 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    return CommonText(
       text,
-      style: const TextStyle(
-        color: Colors.black87,
-        fontWeight: FontWeight.w700,
-      ),
+      color: Colors.black87,
+      fontWeight: FontWeight.w700,
     );
   }
 }

@@ -1,8 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
-import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart'; 
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
@@ -15,19 +17,30 @@ class ProfileResume extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _prefixBase(String path) {
+    String prefixBase(String path) {
       if (path.isEmpty) return path;
       if (path.startsWith('http')) return path;
-      return '${AppConstants.baseUrl}$path';
+      // Use baseUrlImage for static file hosting and ensure '/uploads'
+      final base = AppConstants.baseUrlImage.endsWith('/')
+          ? AppConstants.baseUrlImage
+          : '${AppConstants.baseUrlImage}/';
+      String clean = path.trim();
+      if (clean.startsWith('/')) clean = clean.substring(1);
+      if (!clean.startsWith('uploads/')) {
+        clean = 'uploads/$clean';
+      }
+      return '$base$clean';
     }
+
     String rawResume = controller.registeredProfile.value.resume ?? '';
-    String resumeUrl = _prefixBase(rawResume);
+    String resumeUrl = prefixBase(rawResume);
     return SectionCard(
       title: 'Resume',
       subtitle: 'Highlight your strongest areas of expertise',
       onEdit: () {
         Get.bottomSheet(
-          SafeArea(
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               decoration: const BoxDecoration(
@@ -38,40 +51,67 @@ class ProfileResume extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Edit Resume', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const Text(
+                    'Edit Resume',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
                   const SizedBox(height: 6),
-                  const Text('Update your professional document', style: TextStyle(color: AppColors.textSecondaryColor)),
+                  const Text(
+                    'Update your professional document',
+                    style: TextStyle(color: AppColors.textSecondaryColor),
+                  ),
                   const SizedBox(height: 12),
                   Container(
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121212),
+                      color: AppColors.greyColor,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.black.withValues(alpha: 0.06),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.picture_as_pdf, color: Colors.white70, size: 36),
+                          const Icon(
+                            Icons.picture_as_pdf,
+                            color: AppColors.textSecondaryColor,
+                            size: 36,
+                          ),
                           const SizedBox(height: 8),
-                          Text(
-                            rawResume.isNotEmpty ? rawResume.split('/').last : 'No resume found',
-                            style: const TextStyle(color: Colors.white70),
+                          CommonText(
+                            rawResume.isNotEmpty
+                                ? rawResume.split('/').last
+                                : 'No resume found',
+                            color: AppColors.textSecondaryColor, 
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () async {
-                              if (resumeUrl.isEmpty) {
-                                Get.snackbar('Resume', 'No resume to open');
-                                return;
-                              }
-                              await Clipboard.setData(ClipboardData(text: resumeUrl));
-                              Get.snackbar('Copied', 'Resume link copied');
-                            },
-                            child: const Text('Open'),
-                          )
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            child: ElevatedButton(
+                              onPressed: () {
+                            
+                              },
+                              child: const CommonText(
+                                'Open',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -79,8 +119,11 @@ class ProfileResume extends StatelessWidget {
                   const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: TextButton(onPressed: () => Get.back(), child: const Text('Close')),
-                  )
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text('Close'),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -90,7 +133,7 @@ class ProfileResume extends StatelessWidget {
       },
       child: Obx(() {
         rawResume = controller.registeredProfile.value.resume ?? '';
-        resumeUrl = _prefixBase(rawResume);
+        resumeUrl = prefixBase(rawResume);
         final displayName = rawResume.isNotEmpty
             ? rawResume.split('/').last
             : 'No resume found';
@@ -124,27 +167,17 @@ class ProfileResume extends StatelessWidget {
                 child: CommonText(
                   displayName,
                   fontSize: 15,
-                  maxLines: 1,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondaryColor,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Spacer(),
               InkWell(
                 onTap: () async {
-                  if (resumeUrl.isEmpty) return;
-                  final uri = Uri.parse(resumeUrl);
-                  try {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } catch (_) {
-                    // Silently ignore if unable to launch
-                  }
                 },
-                child: Image.asset(
-                  IconAssets.download,
-                  height: 20,
-                  width: 20,
-                ),
+                child: Image.asset(IconAssets.download, height: 20, width: 20),
               ),
             ],
           ),

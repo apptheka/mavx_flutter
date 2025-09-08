@@ -23,6 +23,7 @@ class ApplyPage extends GetView<ApplyController> {
     final subtitleSize = isSmall ? 12.0 : 13.0;
     final buttonHeight = isSmall ? 44.0 : 50.0;
 
+    final formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -51,69 +52,100 @@ class ApplyPage extends GetView<ApplyController> {
                   const Divider(thickness: 1, color: Color(0xFFE6E9EF)),
                   const SizedBox(height: 8),
 
-                  // Always-required fields
-                  Padding(
-                    padding: edge,
-                    child: LabeledField(
-                      label: 'Per Hour Cost',
-                      hint: 'Enter Per Hour Cost',
-                      controller: c.perHourCostCtrl,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  SizedBox(height: fieldSpacing),
-                  Padding(
-                    padding: edge,
-                    child: LabeledField(
-                      label: 'Availability In A Day',
-                      hint: 'e.g. 5 hours per day',
-                      controller: c.availabilityDayCtrl,
-                      keyboardType: TextInputType.text,
-                    ),
-                  ),
-                  SizedBox(height: fieldSpacing),
-                  Padding(
-                    padding: edge,
-                    child: LabeledField(
-                      label: 'Availability In A Week',
-                      hint: 'e.g. 30 hours/week',
-                      controller: c.availabilityWeekCtrl,
-                      keyboardType: TextInputType.text,
-                    ),
-                  ),
-                  SizedBox(height: fieldSpacing),
-
-                  // Dynamic Fields by Project Type
-                  Obx(() {
-                    final type = (c.project.value?.projectType ?? '').trim().toLowerCase();
-                    final isContractLike = type == 'contract' || type == 'contract placement' || type == 'consulting';
-                    return Column(
+                  Form(
+                    key: formKey,
+                    child: Obx(() {
+                      final type = (c.project.value?.projectType ?? '').trim().toLowerCase();
+                      final isContractLike = type == 'contract' || type == 'contract placement' || type == 'consulting';
+                      return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Contract-like fields visible only for Contract / Contract placement / Consulting
+                        if (isContractLike) ...[
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'Per Hour Cost',
+                              hint: 'Enter Per Hour Cost',
+                              controller: c.perHourCostCtrl,
+                              keyboardType: TextInputType.number,
+                              validator: (v) {
+                                final t = (v ?? '').trim();
+                                if (t.isEmpty) return 'Per hour cost is required';
+                                final n = int.tryParse(t);
+                                if (n == null || n <= 0) return 'Enter a valid positive number';
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'Availability In A Day',
+                              hint: 'e.g. 5 hours per day',
+                              controller: c.availabilityDayCtrl,
+                              keyboardType: TextInputType.text,
+                              validator: (v) {
+                                if ((v ?? '').trim().isEmpty) return 'Availability per day is required';
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(height: fieldSpacing),
+                          Padding(
+                            padding: edge,
+                            child: LabeledField(
+                              label: 'Availability In A Week',
+                              hint: 'e.g. 30 hours/week',
+                              controller: c.availabilityWeekCtrl,
+                              keyboardType: TextInputType.number,
+                              validator: (v) {
+                                final t = (v ?? '').trim();
+                                if (t.isEmpty) return 'Availability per week is required';
+                                final n = int.tryParse(t);
+                                if (n == null || n < 0) return 'Enter a valid number';
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        // Non-contract-like: show Current/Expected CTC with validation
                         if (!isContractLike) ...[
-                          // Current CTC
                           Padding(
                             padding: edge,
                             child: LabeledField(
                               label: 'Current CTC',
                               hint: 'Enter current CTC',
                               controller: c.currentCtcCtrl,
-                              keyboardType: TextInputType.text,
+                              keyboardType: TextInputType.number,
+                              validator: (v) {
+                                final t = (v ?? '').trim();
+                                if (t.isEmpty) return 'Current CTC is required';
+                                if (int.tryParse(t) == null) return 'Enter a valid number';
+                                return null;
+                              },
                             ),
                           ),
                           SizedBox(height: fieldSpacing),
-                          // Expected CTC
                           Padding(
                             padding: edge,
                             child: LabeledField(
                               label: 'Expected CTC',
                               hint: 'Enter expected CTC',
                               controller: c.expectedCtcCtrl,
-                              keyboardType: TextInputType.text,
+                              keyboardType: TextInputType.number,
+                              validator: (v) {
+                                final t = (v ?? '').trim();
+                                if (t.isEmpty) return 'Expected CTC is required';
+                                if (int.tryParse(t) == null) return 'Enter a valid number';
+                                return null;
+                              },
                             ),
                           ),
                           SizedBox(height: fieldSpacing),
-                          // About You
+                          // About You (only for non-contract-like)
                           Padding(
                             padding: edge,
                             child: LabeledField(
@@ -121,10 +153,14 @@ class ApplyPage extends GetView<ApplyController> {
                               hint: 'Write briefly about yourself',
                               controller: c.aboutYouCtrl,
                               keyboardType: TextInputType.multiline,
+                              validator: (v) {
+                                if ((v ?? '').trim().isEmpty) return 'Please add a short summary';
+                                return null;
+                              },
                             ),
                           ),
                           SizedBox(height: fieldSpacing),
-                          // Holding Offer checkbox
+                          // Holding Offer (only for non-contract-like)
                           Padding(
                             padding: edge,
                             child: Row(
@@ -143,8 +179,7 @@ class ApplyPage extends GetView<ApplyController> {
                             ),
                           ),
                           SizedBox(height: fieldSpacing),
-                        ],
-
+                        ], 
                         // Upload area (common)
                         Padding(
                           padding: edge,
@@ -188,69 +223,64 @@ class ApplyPage extends GetView<ApplyController> {
                                   );
                                 }),
                               ),
+                              const SizedBox(height: 20),
+                              // Bottom action buttons
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: buttonHeight,
+                                      child: ElevatedButton(
+                                        onPressed: () => Get.back(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFD2D2D2),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Back',
+                                          style: TextStyle(fontWeight: FontWeight.w700),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: isSmall ? 10 : 16),
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: buttonHeight,
+                                      child: ElevatedButton(
+                                        onPressed: c.applying.value
+                                            ? null
+                                            : () {
+                                                final ok = formKey.currentState?.validate() ?? true;
+                                                if (!ok) return;
+                                                c.apply();
+                                              },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF0B2944),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(30),
+                                          ),
+                                        ),
+                                        child: Obx(() => Text(
+                                              c.applying.value ? 'Applying...' : 'Apply',
+                                              style: const TextStyle(fontWeight: FontWeight.w700),
+                                            )),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
                       ],
                     );
                   }),
-
-                  const SizedBox(height: 20),
-
-                  // Bottom navigation buttons
-                  Padding(
-                    padding: edge,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: buttonHeight,
-                            child: ElevatedButton(
-                              onPressed: () => Get.back(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD2D2D2),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: const Text(
-                                'Previous',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: isSmall ? 10 : 16),
-                        Container(
-                          width: 1,
-                          height: buttonHeight * 0.6,
-                          color: const Color(0xFFE0E0E0),
-                        ),
-                        SizedBox(width: isSmall ? 10 : 16),
-                        Expanded(
-                          child: SizedBox(
-                            height: buttonHeight,
-                            child: ElevatedButton(
-                              onPressed: c.applying.value ? null : c.apply,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0B2944),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              child: Obx(() => Text(
-                                    c.applying.value ? 'Applying...' : 'Apply',
-                                    style: const TextStyle(fontWeight: FontWeight.w700),
-                                  )),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              )],
               ),
             );
           },

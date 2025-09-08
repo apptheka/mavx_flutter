@@ -67,11 +67,11 @@ class ApplyController extends GetxController {
         existingResumeUrl.value = _prefixBaseUrl(raw);
       }
       // Prefill non-contract fields from profile when available
-      // Current/Expected CTC from Preferences.preferredBudget if present (best-effort)
+      // Only Current CTC from Preferences.preferredBudget; Expected CTC left empty for user input
       final pref = pc.preferences.value;
       if ((pref.preferredBudget ?? '').isNotEmpty) {
         currentCtcCtrl.text = pref.preferredBudget!;
-        expectedCtcCtrl.text = pref.preferredBudget!;
+        expectedCtcCtrl.clear();
       }
       final about = pc.aboutMeList.value;
       if ((about.description ?? '').isNotEmpty) {
@@ -156,21 +156,22 @@ class ApplyController extends GetxController {
       final payload = {
         'user_id': uid,
         'userId': uid,
-        // Numeric CTC values (0 when contract-like)
-        'current_ctc': isContractLike ? 0 : (int.tryParse(currentCtcCtrl.text.trim()) ?? 0),
-        'expected_ctc': isContractLike ? 0 : (int.tryParse(expectedCtcCtrl.text.trim()) ?? 0),
+        // For non-contract-like, include CTCs; otherwise 0
+        'current_ctc': isContractLike ? 0 : (int.tryParse(currentCtcCtrl.text.trim())),
+        'expected_ctc': isContractLike ? 0 : (int.tryParse(expectedCtcCtrl.text.trim())),
         'updated_cv': (uploadedUrl.value.isNotEmpty
             ? uploadedUrl.value
             : existingResumeUrl.value),
-        'about_you': isContractLike ? '' : aboutYouCtrl.text.trim(),
+        // For contract-like, include About You and Holding Offer; otherwise empty/0
+        'about_you': isContractLike ? aboutYouCtrl.text.trim() : '',
         // Backend expects boolean often as 0/1; send as int
-        'holding_offer': isContractLike ? 0 : (holdingOffer.value ? 1 : 0),
+        'holding_offer': isContractLike ? (holdingOffer.value ? 1 : 0) : 0,
         'project_id': projectId,
         'projectId': projectId,
-        // Always include these (as per requirements)
-        'per_hour_cost': int.tryParse(perHourCostCtrl.text.trim()) ?? 0,
-        'week_available': int.tryParse(availabilityWeekCtrl.text.trim()) ?? 0,
-        'time_available': availabilityDayCtrl.text.trim(),
+        // Contract-like include these; else zero/empty
+        'per_hour_cost': isContractLike ? (int.tryParse(perHourCostCtrl.text.trim())) : 0,
+        'week_available': isContractLike ? (int.tryParse(availabilityWeekCtrl.text.trim())) : 0,
+        'time_available': isContractLike ? availabilityDayCtrl.text.trim() : '',
       };
       final encrypted = payload.toJsonRequest().encript();
 

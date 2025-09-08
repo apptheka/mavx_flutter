@@ -64,7 +64,7 @@ class ApplicationItem extends StatelessWidget {
                           children: [
                             Icon(Icons.verified_rounded, size: 18, color: Color(0xFF3B82F6)),
                             SizedBox(width: 4),
-                            Text('Applied', style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
+                            CommonText('Applied', color: Color(0xFF3B82F6), fontWeight: FontWeight.w700),
                           ],
                         )
                     ],
@@ -83,11 +83,12 @@ class ApplicationItem extends StatelessWidget {
                   ),
                   if ((project.description ?? '').isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(
+                    CommonText(
                       project.description!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      fontSize: 12,
+                      color: AppColors.textSecondaryColor,
                     ),
                   ],
                 ],

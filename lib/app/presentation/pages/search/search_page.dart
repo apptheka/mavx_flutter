@@ -129,12 +129,10 @@ class SearchPage extends StatelessWidget {
                   child: Row(
                     children: [
                       const Expanded(
-                        child: Text(
+                        child: CommonText(
                           'Filters',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       IconButton(
@@ -175,12 +173,10 @@ class SearchPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              const CommonText(
                                 'Category',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
                               ),
                               const SizedBox(height: 8),
                               Expanded(
@@ -339,9 +335,10 @@ class _LeftMenuItem extends StatelessWidget {
             bottomRight: Radius.circular(8),
           ),
         ),
-        child: Text(
+        child: CommonText(
           title,
-          style: TextStyle(fontWeight: FontWeight.w600, color: fg),
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
       ),
     );

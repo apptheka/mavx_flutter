@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
@@ -32,9 +34,10 @@ class ProfileLanguages extends StatelessWidget {
                 })
             .toList();
         Get.bottomSheet(
-          SafeArea(
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: MediaQuery.of(context).size.height * 0.7,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -56,18 +59,13 @@ class ProfileLanguages extends StatelessWidget {
                         });
                       });
                     }
-              
-                    void removeLanguage(int index) {
-                      setSheetState(() {
-                        languages.removeAt(index);
-                      });
-                    }
-              
+               
+        
                     return SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const CommonText('Languages', fontWeight: FontWeight.w800, fontSize: 18),
+                          const CommonText('Languages', fontWeight: FontWeight.w800, fontSize: 20),
                           const SizedBox(height: 6),
                           const CommonText('Add languages', color: AppColors.textSecondaryColor, fontSize: 15),
                           const SizedBox(height: 12),
@@ -296,20 +294,16 @@ class _LangCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          CommonText(
             title,
-            style: const TextStyle(
-              color: AppColors.textPrimaryColor,
-              fontWeight: FontWeight.w800,
-            ),
+            color: AppColors.textPrimaryColor,
+            fontWeight: FontWeight.w800,
           ),
           const SizedBox(height: 4),
-          Text(
+          CommonText(
             details,
-            style: const TextStyle(
-              color: AppColors.textSecondaryColor,
-              fontWeight: FontWeight.w500,
-            ),
+            color: AppColors.textSecondaryColor,
+            fontWeight: FontWeight.w500,
           ),
         ],
       ),

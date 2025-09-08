@@ -6,8 +6,10 @@ import 'package:mavx_flutter/app/presentation/pages/home/widgets/profile_complet
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/stats_row.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/section_header.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
-import 'package:mavx_flutter/app/presentation/theme/app_colors.dart'; 
-import 'package:mavx_flutter/app/routes/app_routes.dart'; 
+import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/routes/app_routes.dart';
+import 'package:mavx_flutter/app/data/models/projects_model.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -30,8 +32,8 @@ class HomePage extends GetView<HomeController> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: ()async{
-                      controller.refreshPage();
+                    onRefresh: () async {
+                      await controller.fetchProjects();
                     },
                     child: SingleChildScrollView(
                       child: Column(
@@ -53,12 +55,15 @@ class HomePage extends GetView<HomeController> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ProfileCompletionCard(), 
-                                StatsRow(padding: EdgeInsets.zero, controller: Get.find<HomeController>()),
+                                ProfileCompletionCard(),
+                                StatsRow(
+                                  padding: EdgeInsets.zero,
+                                  controller: Get.find<HomeController>(),
+                                ),
                               ],
                             ),
                           ),
-                    
+
                           Obx(
                             () => SectionHeader(
                               title: 'Top Matches for You',
@@ -70,6 +75,7 @@ class HomePage extends GetView<HomeController> {
                             () => SectionHeader(
                               title: 'Other Projects',
                               total: controller.filteredProjects.length,
+                              actionText: 'View all',
                               onAction: () {
                                 Get.toNamed(AppRoutes.search);
                               },
@@ -91,13 +97,13 @@ class HomePage extends GetView<HomeController> {
   }
 }
 
-class _EmptyState extends StatelessWidget { 
+class _EmptyState extends StatelessWidget {
   final String title;
   final String message;
   final String actionLabel;
   final VoidCallback onAction;
 
-  const _EmptyState({ 
+  const _EmptyState({
     required this.title,
     required this.message,
     required this.actionLabel,
@@ -117,36 +123,39 @@ class _EmptyState extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [ 
-          Text(
+        children: [
+          CommonText(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
-          Text(
+          CommonText(
             message,
-            style: const TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             onPressed: onAction,
-            child: Text(
+            child: CommonText(
               actionLabel,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              fontWeight: FontWeight.w700,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -158,65 +167,79 @@ class _TopMatchesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double itemWidth =
-        MediaQuery.of(context).size.width - 32; // 16px side margins
-    return Obx(() {
-      final ctrl = Get.find<HomeController>();
-      if (ctrl.isLoadingProjects.value) {
-        return SizedBox(
-          height: 236,
-          child: Center(
-            child: SizedBox(
-              height: 28,
-              width: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.8, color: Color(0xFF0B2944)),
-            ),
-          ),
-        );
-      }
-      final items = ctrl.topMatches;
-      if (items.isEmpty) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.2,
-          child: _EmptyState( 
-            title: 'No matches yet',
-            message: 'Complete your profile and set preferences to see top matches here.',
-            actionLabel: 'Refresh',
-            onAction: () => ctrl.fetchProjects(),
-          ),
-        );
-      }
-      return SizedBox(
-        height: 236,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          primary: false,
-          shrinkWrap: true,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            final p = items[index];
-            // touch appliedIds to rebuild when it changes
-            final applied = Get.find<HomeController>().appliedIds.contains(p.id ?? -1);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final double itemWidth = screenWidth > 0
+            ? (screenWidth - 32).clamp(280.0, 600.0) // min 280, max 600
+            : MediaQuery.of(context).size.width - 32; // 16px side margins
+        return Obx(() {
+          final ctrl = Get.find<HomeController>();
+          final bool loading =
+              ctrl.isLoadingProjects.value || ctrl.isRefreshingTopMatches.value;
+          if (loading) {
             return SizedBox(
-              width: itemWidth,
-              child: JobCard(
-                title: p.projectTitle ?? '-',
-                description: p.description ?? (p.projectTitle ?? '-'),
-                company: p.projectCoordinator ?? '—',
-                tags: [Get.find<HomeController>().chipFor(p)],
-                showApply: true,
-                compact: true,
-                id: p.id ?? index,
-                applied: applied,
+              height: 236,
+              child: Center(
+                child: SizedBox(
+                  height: 28,
+                  width: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.8,
+                    color: Color(0xFF0B2944),
+                  ),
+                ),
               ),
             );
-          },
-          separatorBuilder: (_, __) => const SizedBox(width: 12),
-          itemCount: items.length,
-        ),
-      );
-    });
+          }
+          final items = ctrl.topMatches;
+          if (items.isEmpty) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.25,
+              child: _EmptyState(
+                title: 'No matches yet',
+                message:
+                    'Complete your profile and set preferences to see top matches here.',
+                actionLabel: 'Refresh',
+                onAction: () => ctrl.refreshTopMatches(),
+              ),
+            );
+          }
+          return SizedBox(
+            height: 236,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              primary: false,
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                final p = items[index];
+                // touch appliedIds to rebuild when it changes
+                final applied = Get.find<HomeController>().appliedIds.contains(
+                  p.id ?? -1,
+                );
+                return SizedBox(
+                  width: itemWidth,
+                  child: JobCard(
+                    title: p.projectTitle ?? '-',
+                    description: p.description ?? (p.projectTitle ?? '-'),
+                    company: p.projectCoordinator ?? '—',
+                    tags: [Get.find<HomeController>().chipFor(p)],
+                    showApply: true,
+                    compact: true,
+                    id: p.id ?? index,
+                    applied: applied,
+                  ),
+                );
+              },
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemCount: items.length,
+            ),
+          );
+        });
+      },
+    );
   }
 }
 
@@ -225,9 +248,20 @@ class _RecommendedList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
-    final filters = const ['All', 'On Site', 'Remote', 'Hybrid'];
+    final filters = const ['All','Consulting','Recruitment','Full Time','Contract Placement','Contract','Internal'];
     final controller = Get.find<HomeController>();
+    String labelForProjectType(ProjectModel p) {
+      final raw = (p.projectType ?? '').trim().toLowerCase();
+      if (raw.isEmpty) return controller.chipFor(p); // fallback to work arrangement
+      if (raw.contains('consult')) return 'Consulting';
+      if (raw.contains('recruit')) return 'Recruitment';
+      if (raw == 'full_time' || raw.contains('full')) return 'Full Time';
+      if (raw.contains('contract placement')) return 'Contract Placement';
+      if (raw.contains('contract')) return 'Contract';
+      if (raw.contains('internal')) return 'Internal';
+      // Title-case unknowns
+      return raw.split(' ').map((w) => w.isEmpty ? w : (w[0].toUpperCase() + (w.length > 1 ? w.substring(1) : ''))).join(' ');
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
@@ -236,7 +270,6 @@ class _RecommendedList extends StatelessWidget {
           SizedBox(
             height: 40,
             child: Obx(() {
-              // Touch Rx to register dependency for this Obx 
               final selectedIndex = controller.selectedFilter.value;
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -244,19 +277,16 @@ class _RecommendedList extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final isSelected = selectedIndex == index;
                   return ChoiceChip(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 3,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
                     label: Text(filters[index]),
                     selected: isSelected,
                     showCheckmark: false,
-                    onSelected: controller.isLoadingProjects.value ? null : (_) => controller.applyFilter(index),
+                    onSelected: controller.isLoadingProjects.value
+                        ? null
+                        : (_) => controller.applyFilter(index),
                     selectedColor: AppColors.secondaryColor,
                     labelStyle: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : AppColors.textSecondaryColor,
+                      color: isSelected ? Colors.white : AppColors.textSecondaryColor,
                       fontWeight: FontWeight.w600,
                     ),
                     backgroundColor: const Color(0xffe9eaeb),
@@ -272,7 +302,8 @@ class _RecommendedList extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Obx(() {
-            if (controller.isLoadingProjects.value) {
+            final bool loading = controller.isLoadingProjects.value || controller.isRefreshingOtherProjects.value;
+            if (loading) {
               return SizedBox(
                 height: 120,
                 child: Center(
@@ -284,34 +315,76 @@ class _RecommendedList extends StatelessWidget {
                 ),
               );
             }
-            final items = controller.filteredProjects; 
+            final items = controller.filteredProjects;
             if (items.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _EmptyState( 
+                child: _EmptyState(
                   title: 'No projects found',
                   message: 'Try changing filters or browse all projects in the search.',
                   actionLabel: 'Refresh',
-                  onAction: () => controller.fetchProjects(),
+                  onAction: () => controller.refreshOtherOnly(),
                 ),
               );
             }
-            return Column(
-              children: [
-                for (int i = 0; i < items.length && i < 3; i++) ...[
-                  JobCard(
-                    title: items[i].projectTitle ?? '-',
-                    description:
-                        items[i].description ?? (items[i].projectTitle ?? '-'),
-                    company: items[i].projectCoordinator ?? '—',
-                    tags: [controller.chipFor(items[i])],
-                    showApply: true,
-                    id: items[i].id ?? i,
-                    applied: controller.appliedIds.contains(items[i].id ?? -1),
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final crossAxisCount = width >= 900 ? 3 : (width >= 700 ? 2 : 1);
+
+                if (crossAxisCount == 1) {
+                  // Single column: render as a regular vertical list (no overflow)
+                  return Column(
+                    children: [
+                      for (int i = 0; i < items.length && i < 3; i++) ...[
+                        JobCard(
+                          title: items[i].projectTitle ?? '-',
+                          description: items[i].description ?? (items[i].projectTitle ?? '-'),
+                          company: items[i].projectCoordinator ?? '—',
+                          tags: [labelForProjectType(items[i])],
+                          showApply: true,
+                          id: items[i].id ?? i,
+                          applied: controller.appliedIds.contains(items[i].id ?? -1),
+                        ),
+                        if (i != items.length - 1) const SizedBox(height: 12),
+                      ],
+                    ],
+                  );
+                }
+
+                // Multi-column grid: compute aspect ratio from available width to avoid overflow
+                final totalSpacing = 12.0 * (crossAxisCount - 1);
+                final horizontalPadding = 16.0; // approx outer padding (8 left + 8 right)
+                final cardWidth = (width - totalSpacing - horizontalPadding) / crossAxisCount;
+                final targetHeight = 240.0; // expected compact card height
+                final aspect = cardWidth / targetHeight;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  primary: false,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: items.length.clamp(0, 6),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: aspect,
                   ),
-                  if (i != items.length - 1) const SizedBox(height: 12),
-                ],
-              ],
+                  itemBuilder: (_, i) {
+                    final p = items[i];
+                    return JobCard(
+                      title: p.projectTitle ?? '-',
+                      description: p.description ?? (p.projectTitle ?? '-'),
+                      company: p.projectCoordinator ?? '—',
+                      tags: [labelForProjectType(p)],
+                      showApply: true,
+                      compact: true,
+                      id: p.id ?? i,
+                      applied: controller.appliedIds.contains(p.id ?? -1),
+                    );
+                  },
+                );
+              },
             );
           }),
         ],

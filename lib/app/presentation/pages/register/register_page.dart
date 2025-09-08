@@ -8,8 +8,7 @@ import 'package:mavx_flutter/app/presentation/pages/register/widgets/step3.dart'
 import 'package:mavx_flutter/app/presentation/pages/register/widgets/step4.dart';
 import 'package:mavx_flutter/app/presentation/pages/register/widgets/step_nav.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
-import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
-import 'package:mavx_flutter/app/routes/app_routes.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart'; 
 
 class RegisterPage extends GetView<RegisterController> {
   const RegisterPage({super.key});

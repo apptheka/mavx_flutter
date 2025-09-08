@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class DetailHeader extends StatelessWidget {
   const DetailHeader({super.key});
@@ -39,17 +40,15 @@ class DetailHeader extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           const Expanded(
-            child: Text(
+            child: CommonText(
               'Project Details',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white,
+              color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
-            ),
-          ),
+            ), 
           Obx(() {
             final isApplied = ProjectDetailController().appliedIds.contains(projectId);
             final isBookmarked = homeCtrl.bookmarkedIds.contains(projectId);

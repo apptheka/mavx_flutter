@@ -121,13 +121,12 @@ class JobCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      CommonText(
                         title,
-                        style: TextStyle(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0B2944),
-                        ),
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0B2944),
+                     
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -223,14 +222,12 @@ class JobCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (tags.isNotEmpty)
-                        Text(
+                        CommonText(
                           tags.first,
-                          style: TextStyle(
-                            color: _getProjectTypeColor(tags.first),
-                            fontWeight: FontWeight.w700,
-                            fontSize: isSmallScreen ? 12 : 14,
-                          ),
-                        ),
+                          color: _getProjectTypeColor(tags.first),
+                          fontWeight: FontWeight.w700,
+                          fontSize: isSmallScreen ? 12 : 14,
+                          ), 
                     ],
                   );
                 }
@@ -241,33 +238,27 @@ class JobCard extends StatelessWidget {
                   runSpacing: 6,
                   children: [
                     if (tags.isNotEmpty)
-                      Text(
+                      CommonText(
                         tags.first,
-                        style: TextStyle(
-                          color: _getProjectTypeColor(tags.first),
-                          fontWeight: FontWeight.w700,
-                          fontSize: isSmallScreen ? 12 : 14,
-                        ),
-                      ),
+                        color: _getProjectTypeColor(tags.first),
+                        fontWeight: FontWeight.w700,
+                        fontSize: isSmallScreen ? 12 : 14,
+                        ), 
                   ],
                 );
               },
             ),
             SizedBox(height: compact ? 4 : 6),
-            Text(
+            CommonText(
               'For 6 Months',
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: isSmallScreen ? 12 : 14,
-              ),
+              color: Colors.black87,
+              fontSize: isSmallScreen ? 12 : 14,
             ),
             SizedBox(height: compact ? 2 : 4),
-            Text(
+            CommonText(
               'Posted: 1 hour ago',
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: isSmallScreen ? 10 : 12,
-              ),
+              color: Colors.black54,
+              fontSize: isSmallScreen ? 10 : 12,
             ),
             if (showApply) ...[
               SizedBox(height: compact ? spacingSmall : spacingMedium),
@@ -408,14 +399,12 @@ class JobCard extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Text(
+      child: CommonText(
         text,
-        style: TextStyle(
-          color: color,
-          fontSize: isSmall ? 10 : 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+        color: color,
+        fontSize: isSmall ? 10 : 12,
+        fontWeight: FontWeight.w700,
+        ), 
     );
   }
 }

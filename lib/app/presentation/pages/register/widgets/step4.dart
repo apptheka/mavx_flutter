@@ -198,7 +198,7 @@ class RegisterStep4 extends StatelessWidget {
                     textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   icon: Image.asset(IconAssets.upload, height: 15, width: 15),
-                  label: Text(
+                  label: CommonText(
                     controller.uploadingResume.value
                         ? 'Uploading...'
                         : (controller.resumeUrl.isNotEmpty
@@ -242,7 +242,7 @@ class RegisterStep4 extends StatelessWidget {
                     textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   icon: Image.asset(IconAssets.upload, height: 15, width: 15),
-                  label: Text(
+                  label: CommonText(
                     controller.uploadingProfile.value
                         ? 'Uploading...'
                         : (controller.profileUrl.isNotEmpty

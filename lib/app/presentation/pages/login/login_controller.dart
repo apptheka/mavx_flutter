@@ -44,8 +44,7 @@ class LoginController extends GetxController {
     return null;
   }
 
-  void signIn() async{
-
+  void signIn() async {
     FocusManager.instance.primaryFocus?.unfocus();
     final form = formKey.currentState;
     if (form == null) return;
@@ -56,39 +55,55 @@ class LoginController extends GetxController {
     }
 
     // Proceed with sign-in
-   try{
-     isError.value = false;
-    isLoading.value = true;
-    final res = await loginUseCase.call(emailController.text, passwordController.text);
-    if(res.status == 200){
-      final status = res.data.status.toLowerCase();
-      if (status == 'pending') {
-        await _showPendingDialog();
-        // stay on login; user will be able to access after approval
+    try {
+      isError.value = false;
+      isLoading.value = true;
+      final res = await loginUseCase.call(
+        emailController.text,
+        passwordController.text,
+      );
+      if (res.status == 200) {
+        final status = res.data.status.toLowerCase();
+        if (status == 'pending') {
+          await _showPendingDialog();
+          // stay on login; user will be able to access after approval
+        } else {
+          Get.offAllNamed(AppRoutes.dashboard);
+          Get.snackbar(
+            'Success',
+            'Login successful',
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            snackPosition: SnackPosition.BOTTOM,
+            colorText: Colors.white,
+          );
+        }
+        log(res.message);
       } else {
-        Get.offAllNamed(AppRoutes.dashboard);
-        Get.snackbar('Success', 'Login successful');
+        isError.value = true;
+        log(res.message);
+        final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
+        Get.snackbar(
+          'Error',
+          msg,
+          colorText: Colors.white,
+          backgroundColor: Colors.red,
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
-      log(res.message);
-    }else{
+    } catch (e) {
       isError.value = true;
-      log(res.message);
-      final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
-      Get.snackbar('Error', msg);
+      final err = e.toString();
+      log(err);
+      String uiMsg = 'Login failed';
+      final lower = err.toLowerCase();
+      if (lower.contains('401') || lower.contains('unauthorized')) {
+        uiMsg = 'Invalid email or password';
+      } else if (lower.contains('timeout')) {
+        uiMsg = 'Connection timeout. Please try again.';
+      }
+      Get.snackbar('Error', uiMsg);
     }
-   }catch(e){
-    isError.value = true;
-    final err = e.toString();
-    log(err);
-    String uiMsg = 'Login failed';
-    final lower = err.toLowerCase();
-    if (lower.contains('401') || lower.contains('unauthorized')) {
-      uiMsg = 'Invalid email or password';
-    } else if (lower.contains('timeout')) {
-      uiMsg = 'Connection timeout. Please try again.';
-    }
-    Get.snackbar('Error', uiMsg);
-   }
     isLoading.value = false;
   }
 
@@ -100,10 +115,7 @@ class LoginController extends GetxController {
           'Your profile is under review. You will be notified once approved. You can log in after approval.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('OK'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('OK')),
         ],
       ),
       barrierDismissible: false,
