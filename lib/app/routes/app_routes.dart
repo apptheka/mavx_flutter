@@ -11,4 +11,8 @@ class AppRoutes {
   static const saved = '/saved';
   static const apply = '/apply';
   static const requests = '/requests';
+  static const notifications = '/notifications';
+  static const forgetPassword = '/forget-password';
+  static const otp = '/otp';
+  static const changePassword = '/change-password';
 }

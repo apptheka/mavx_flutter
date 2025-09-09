@@ -22,6 +22,8 @@ class AppTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? margin;
+  final Color? borderColor;
+  final TextAlign? textAlign;
 
   const AppTextField({  
     super.key,
@@ -44,6 +46,8 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.margin,
+    this.borderColor,
+    this.textAlign,
   });
 
   @override
@@ -71,6 +75,7 @@ class AppTextField extends StatelessWidget {
         onTap: onTap,
         onTapOutside: (v) => FocusScope.of(context).unfocus(),
         validator: validator,
+        textAlign: textAlign ?? TextAlign.start,
         style: const TextStyle(
           color: AppColors.textPrimaryColor,
           fontSize: 16,
@@ -91,22 +96,30 @@ class AppTextField extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           filled: true,
           fillColor: fillColor,
-          // No visible borders
+          // Borders: use custom borderColor if provided; otherwise none
           border: OutlineInputBorder(
             borderRadius: borderRadius,
-            borderSide: BorderSide.none,
+            borderSide: borderColor == null
+                ? BorderSide.none
+                : BorderSide(color: borderColor!, width: 1),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: borderRadius,
-            borderSide: BorderSide.none,
+            borderSide: borderColor == null
+                ? BorderSide.none
+                : BorderSide(color: borderColor!, width: 1),
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: borderRadius,
-            borderSide: BorderSide.none,
+            borderSide: borderColor == null
+                ? BorderSide.none
+                : BorderSide(color: borderColor!, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: borderRadius,
-            borderSide: BorderSide.none,
+            borderSide: borderColor == null
+                ? BorderSide.none
+                : BorderSide(color: borderColor!, width: 1.2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: borderRadius,

@@ -12,7 +12,21 @@ class ProjectsUseCase {
     return await projectsRepository.projectById(id);
   }
 
-  Future<ProjectResponse> search({required String search, String type = '', String industry = '', String specialisation = ''}) async {
-    return await projectsRepository.searchProjects(search: search, type: type, industry: industry, specialisation: specialisation);
+  Future<ProjectResponse> search({
+    required String search,
+    String type = '',
+    String industry = '',
+    String specialisation = '',
+    int page = 1,
+    int? limit,
+  }) async {
+    return await projectsRepository.searchProjects(
+      search: search,
+      type: type,
+      industry: industry,
+      specialisation: specialisation,
+      page: page,
+      limit: limit,
+    );
   }
 }

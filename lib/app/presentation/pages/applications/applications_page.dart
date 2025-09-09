@@ -59,7 +59,13 @@ class ApplicationsPage extends StatelessWidget {
                                         EmptyView(message: 'You have not applied to any projects yet.'),
                                       ],
                                     )
-                                  : ListView.builder(
+                                  : controller.error.isNotEmpty ?  ListView(
+                                      physics: const AlwaysScrollableScrollPhysics(),
+                                      children: const [
+                                        SizedBox(height: 100),
+                                        EmptyView(message: 'Something went wrong'),
+                                      ],
+                                    ): ListView.builder(
                                       itemCount: controller.projects.length,
                                       padding: const EdgeInsets.all(16),
                                       itemBuilder: (context, index) {

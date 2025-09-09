@@ -7,6 +7,7 @@ import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart'as search;
 import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart'as saved;
 import 'package:mavx_flutter/app/routes/app_routes.dart';
+import 'package:mavx_flutter/app/presentation/pages/applications/applications_controller.dart';
 
 class JobCard extends StatelessWidget {
   final String title;
@@ -282,23 +283,28 @@ class JobCard extends StatelessWidget {
                                       arguments: id,
                                     );
                                     if (res == true) {
-                                      // refresh applied state across pages after returning
+                                      // Optimistically mark as applied in current views
                                       if (Get.isRegistered<HomeController>()) {
-                                        Get.find<HomeController>()
-                                            .refreshAppliedIds();
+                                        final hc = Get.find<HomeController>();
+                                        hc.appliedIds.add(id);
+                                        hc.appliedIds.refresh();
+                                        hc.refreshAppliedIds();
                                       }
-                                      if (Get.isRegistered<
-                                        search.SearchController
-                                      >()) {
-                                        Get.find<search.SearchController>()
-                                            .refreshAppliedIds();
+                                      if (Get.isRegistered<search.SearchPageController>()) {
+                                        final sc = Get.find<search.SearchPageController>();
+                                        sc.appliedIds.add(id);
+                                        sc.appliedIds.refresh();
+                                        // Force list to rebuild so button reflects 'Applied'
+                                        sc.filteredJobs.refresh();
+                                        sc.refreshAppliedIds();
                                       }
-                                      if (Get.isRegistered<
-                                        saved.SavedController
-                                      >()) {
+                                      if (Get.isRegistered<saved.SavedController>()) {
                                         // refresh saved list to remove applied items
-                                        Get.find<saved.SavedController>()
-                                            .fetchSaved();
+                                        Get.find<saved.SavedController>().fetchSaved();
+                                      }
+                                      // Refresh Applications tab data if controller exists
+                                      if (Get.isRegistered<ApplicationsController>()) {
+                                        Get.find<ApplicationsController>().fetchData();
                                       }
                                     }
                                   },
@@ -340,20 +346,23 @@ class JobCard extends StatelessWidget {
                                   );
                                   if (res == true) {
                                     if (Get.isRegistered<HomeController>()) {
-                                      Get.find<HomeController>()
-                                          .refreshAppliedIds();
+                                      final hc = Get.find<HomeController>();
+                                      hc.appliedIds.add(id);
+                                      hc.appliedIds.refresh();
+                                      hc.refreshAppliedIds();
                                     }
-                                    if (Get.isRegistered<
-                                      search.SearchController
-                                    >()) {
-                                      Get.find<search.SearchController>()
-                                          .refreshAppliedIds();
+                                    if (Get.isRegistered<search.SearchPageController>()) {
+                                      final sc = Get.find<search.SearchPageController>();
+                                      sc.appliedIds.add(id);
+                                      sc.appliedIds.refresh();
+                                      sc.filteredJobs.refresh();
+                                      sc.refreshAppliedIds();
                                     }
-                                    if (Get.isRegistered<
-                                      saved.SavedController
-                                    >()) {
-                                      Get.find<saved.SavedController>()
-                                          .fetchSaved();
+                                    if (Get.isRegistered<saved.SavedController>()) {
+                                      Get.find<saved.SavedController>().fetchSaved();
+                                    }
+                                    if (Get.isRegistered<ApplicationsController>()) {
+                                      Get.find<ApplicationsController>().fetchData();
                                     }
                                   }
                                 },

@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'dart:developer';
+import 'dart:convert'; 
 
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
@@ -43,14 +42,23 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
   }
 
   @override
-  Future<ProjectResponse> searchProjects({required String search, String type = '', String industry = '', String specialisation = ''}) async {
+  Future<ProjectResponse> searchProjects({
+    required String search,
+    String type = '',
+    String industry = '',
+    String specialisation = '',
+    int page = 1,
+    int? limit,
+  }) async {
     try {
       final params = <String, dynamic>{
         'search': search,
         'type': type,
         'industry': industry,
         'specialisation': specialisation,
+        'page': page,
       };
+      if (limit != null) params['limit'] = limit;
       final res = await apiProvider.get(
         AppConstants.projectSearch,
         queryParameters: params,

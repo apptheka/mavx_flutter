@@ -22,17 +22,15 @@ class LoginController extends GetxController {
   final isPasswordHidden = true.obs;
 
   // Validators
-  String? validateEmailOrPhone(String? value) {
+  String? validateEmail(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Please enter email or phone';
+    if (v.isEmpty) return 'Please enter email';
 
     // Basic email regex
-    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    // Basic phone: 7-15 digits with optional + and spaces/dashes
-    final phoneRegex = RegExp(r'^\+?[0-9\s\-]{7,15}$');
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$'); 
 
-    if (!emailRegex.hasMatch(v) && !phoneRegex.hasMatch(v)) {
-      return 'Enter a valid email or phone number';
+    if (!emailRegex.hasMatch(v)) {
+      return 'Enter a valid email';
     }
     return null;
   }
@@ -126,7 +124,6 @@ class LoginController extends GetxController {
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
-
     super.onClose();
   }
 }

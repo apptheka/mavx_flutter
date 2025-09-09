@@ -192,8 +192,10 @@ class ApplyController extends GetxController {
         ok = result.isNotEmpty;
       }
       if (ok) {
-        Get.snackbar('Applied', msg, duration: const Duration(seconds: 2));
         Get.back(result: true);
+        Get.snackbar('Applied', msg, duration: const Duration(seconds: 2));
+        // Small delay to let the user see the success and to ensure navigation happens smoothly
+        await Future.delayed(const Duration(milliseconds: 900));
       } else {
         Get.snackbar('Apply Failed', msg);
       }

@@ -36,6 +36,8 @@ class ApiProvider {
     _dio.interceptors.add(
       dio.InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // Always refresh baseUrl from AppConstants to avoid stale value after hot reloads
+          options.baseUrl = AppConstants.baseUrl;
           // Skip auth header for unauthenticated endpoints
           final isLogin = options.path == AppConstants.login;
           final isEncrypt = options.uri.toString().contains('/encrypt');

@@ -13,7 +13,7 @@ class IndustriesRepositoryImpl implements IndustriesRepository {
   Future<IndustriesResponse> getAllIndustries() async {
     try {
       final res = await apiProvider.get(
-        "${AppConstants.getAllIndustries}?page=1&limit=10",
+        AppConstants.getAllIndustries,
       );
       final decriptValue = jsonDecode(res.decrypt());
       log("Decrypted Register ${decriptValue.toString()}");

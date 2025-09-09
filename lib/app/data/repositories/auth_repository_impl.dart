@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
+import 'package:mavx_flutter/app/core/services/notification_storage_service.dart';
 import 'package:mavx_flutter/app/data/models/register_model.dart';
 import 'package:mavx_flutter/app/data/models/response.dart';
 import 'package:mavx_flutter/app/data/models/user_model.dart';
@@ -64,6 +66,83 @@ class AuthRepositoryImpl implements AuthRepository {
           log(
             'login persisted -> token: ${token.isNotEmpty}, user saved, flag set',
           );
+
+          // Subscribe user to a default topic via backend
+          try {
+            final uid = parsed.data.id;
+            final payload = {"userId": uid, "topic": "news"};
+            final enc = jsonEncode(payload).encript();
+            final res = await apiProvider.post(
+              AppConstants.topicSubscribe,
+              request: enc,
+            );
+            dynamic body;
+            try {
+              body = jsonDecode(res.decrypt());
+            } catch (_) {
+              body = res;
+            }
+            log('✅ Topic subscribe response: $body');
+          } catch (e, st) {
+            log('❌ Topic subscribe failed', error: e, stackTrace: st);
+          }
+
+          // Also subscribe this device to the same FCM topic locally
+          try {
+            const topic = 'news';
+            await FirebaseMessaging.instance.subscribeToTopic(topic);
+            log('✅ Subscribed device to FCM topic: $topic');
+          } catch (e, st) {
+            log(
+              '❌ Local FCM topic subscription failed',
+              error: e,
+              stackTrace: st,
+            );
+          }
+
+          // ✅ Step: Get FCM Token
+          String? fcmToken;
+          try {
+            fcmToken = await FirebaseMessaging.instance.getToken();
+            log("FCM Token: $fcmToken");
+          } catch (e) {
+            log("❌ Failed to get FCM token: $e");
+          }
+
+          // ✅ Step: Send FCM Token to Backend
+          if (fcmToken != null) {
+            final fcmPayload = {
+              "userId": parsed.data.id,
+              "deviceToken": fcmToken,
+              "platform": "android",
+            };
+            log("FCM Payload: $fcmPayload");
+            final encryptedPayload = jsonEncode(fcmPayload).encript();
+
+            try {
+              final fcmRes = await apiProvider.post(
+                AppConstants.fcmRegister,
+                request: encryptedPayload,
+              );
+              // The server may return either encrypted or plain JSON/text (especially on errors)
+              dynamic parsedBody;
+              try {
+                // Try to decrypt as base64
+                final decryptedFcm = fcmRes.decrypt();
+                parsedBody = jsonDecode(decryptedFcm);
+              } catch (_) {
+                // Not encrypted or not JSON – attempt direct JSON parse, else keep raw string
+                try {
+                  parsedBody = jsonDecode(fcmRes);
+                } catch (__) {
+                  parsedBody = fcmRes; // raw text/HTML (e.g., 404 page)
+                }
+              }
+              log("✅ FCM register response: $parsedBody");
+            } catch (e) {
+              log("❌ Failed to send FCM token: $e");
+            }
+          }
         } catch (e, st) {
           log('login persistence failed: $e', stackTrace: st);
         }
@@ -96,15 +175,57 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<CommonResponse> requestOtp(String phone) {
-    // TODO: implement requestOtp
-    throw UnimplementedError();
+  Future<void> requestOtp(String email) async {
+    try {
+      final request = {"email": email};
+      final enc = jsonEncode(request).encript();
+      final res = await apiProvider.post(AppConstants.sendOtp, request: enc);
+      // The response might be plain text or encrypted JSON, but we don't need to parse
+      // into UserData for OTP request. Attempt decrypt for logging only.
+      try {
+        final maybeJson = res.decrypt();
+        log('requestOtp decrypted: $maybeJson');
+      } catch (_) {
+        log('requestOtp raw response: $res');
+      }
+      return;
+    } catch (e) {
+      throw Exception('Request OTP failed: ${e.toString()}');
+    }
   }
 
   @override
-  Future<String> verifyOtp(String phoneNumber, String otp) {
-    // TODO: implement verifyOtp
-    throw UnimplementedError();
+  Future<void> verifyOtp(String email, String otp) async {
+    try {
+      final request = {"email": email, "otp": otp};
+      final enc = jsonEncode(request).encript();
+      final res = await apiProvider.post(AppConstants.checkOtp, request: enc);
+      // Attempt to decrypt/log for visibility, but do not enforce model shape
+      try {
+        final dec = res.decrypt();
+        log('verifyOtp decrypted: $dec');
+      } catch (_) {
+        log('verifyOtp raw response: $res');
+      }
+      return;
+    } catch (e) {
+      throw Exception('Verify OTP failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> changePassword(String email, String newPassword) async {
+    try {
+      final request = {"email": email, "newPassword": newPassword};
+      final enc = jsonEncode(request).encript();
+      await apiProvider.post(
+        AppConstants.changePassword,
+        request: enc,
+      );
+      return;
+    } catch (e) {
+      throw Exception('Change Password failed: ${e.toString()}');
+    }
   }
 
   @override
@@ -115,6 +236,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await prefs.remove(AppConstants.tokenKey);
       await prefs.remove(AppConstants.userKey);
       await prefs.remove(AppConstants.isLoggedInKey);
+      // Clear notification Hive storage
+      await NotificationStorageService.clearAll();
       navigateToLogin();
       log('logout: cleared token, user data, and login flag');
     } catch (e) {
@@ -145,12 +268,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<bool> checkAuthStatus() {
-    // TODO: implement checkAuthStatus
-    throw UnimplementedError();
-  }
-
-  @override
   Future<UserModel?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString(AppConstants.userKey);
@@ -164,12 +281,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Otherwise, treat as plain UserData and construct a minimal UserModel
       final data = UserData.fromJson(decoded as Map<String, dynamic>);
       final token = prefs.getString(AppConstants.tokenKey) ?? '';
-      return UserModel(
-        status: 200,
-        message: 'OK',
-        token: token,
-        data: data,
-      );
+      return UserModel(status: 200, message: 'OK', token: token, data: data);
     } catch (e) {
       log('getCurrentUser parse error: $e');
       return null;

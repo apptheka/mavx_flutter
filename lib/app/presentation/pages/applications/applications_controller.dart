@@ -11,7 +11,7 @@ class ApplicationsController extends GetxController {
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
   final RxList<ProjectModel> projects = <ProjectModel>[].obs;
-  final RxSet<int> appliedIds = <int>{}.obs;
+  final RxSet<int> appliedIds = <int>{}.obs; 
 
   @override
   void onInit() {
@@ -29,8 +29,8 @@ class ApplicationsController extends GetxController {
         ..addAll(ids);
       final list = await _repo.getAppliedProjectsForCurrentUser();
       projects.assignAll(list);
-    } catch (e) {
-      error.value = e.toString();
+    } catch (e) { 
+      error.value = 'Something went wrong';
     } finally {
       loading.value = false;
     }

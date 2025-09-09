@@ -254,8 +254,24 @@ class ApplyPage extends GetView<ApplyController> {
                                         onPressed: c.applying.value
                                             ? null
                                             : () {
-                                                final ok = formKey.currentState?.validate() ?? true;
-                                                if (!ok) return;
+                                                if (!(formKey.currentState?.validate() ?? false)) {
+                                                  return;
+                                                }
+                                                
+                                                // Additional validation for CV upload
+                                                final hasUploadedFile = c.uploadedFileName.value.isNotEmpty;
+                                                final hasExistingResume = c.existingResumeUrl.value.isNotEmpty;
+                                                
+                                                if (!hasUploadedFile && !hasExistingResume) {
+                                                  Get.snackbar(
+                                                    'Missing Document',
+                                                    'Please upload your CV or resume',
+                                                    backgroundColor: Colors.red,
+                                                    colorText: Colors.white,
+                                                  );
+                                                  return;
+                                                }
+                                                
                                                 c.apply();
                                               },
                                         style: ElevatedButton.styleFrom(
@@ -289,10 +305,3 @@ class ApplyPage extends GetView<ApplyController> {
     );
   }
 }
-
-
-
-
-
-
-

@@ -14,7 +14,7 @@ class SpecificationRepositoryImpl implements SpecificationRepository {
   Future<JobRolesResponse> getAllSpecification() async {
     try {
       final res = await apiProvider.get(
-        "${AppConstants.getAllSpecification}?page=1&limit=10",
+        AppConstants.getAllSpecification,
       );
       final decriptValue = jsonDecode(res.decrypt());
       log("Decrypted Register ${decriptValue.toString()}");

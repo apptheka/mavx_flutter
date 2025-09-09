@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/applications/applications_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/applications/applications_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/dashboard/dashboard_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
@@ -30,7 +34,42 @@ class DashboardPage extends GetView<DashboardController> {
         ),
         bottomNavigationBar: _BottomBar(
           currentIndex: idx,
-          onTap: controller.changeTab,
+          onTap: (i) {
+            // If Applications tab tapped, refresh its data
+            if (i == 0) {
+              if (Get.isRegistered<HomePage>()) {
+                // no-op: widget class, keep for clarity
+              }
+              if (Get.isRegistered<HomeController>()) {
+                Get.find<HomeController>().fetchProjects();
+              }
+            } 
+            if (i == 1) {
+              if (Get.isRegistered<SearchPage>()) {
+                // no-op: widget class, keep for clarity
+              }
+              if (Get.isRegistered<SearchPageController>()) {
+                Get.find<SearchPageController>().refresh();
+              }
+            } 
+            if (i == 2) {
+              if (Get.isRegistered<ApplicationsPage>()) {
+                // no-op: widget class, keep for clarity
+              }
+              if (Get.isRegistered<ApplicationsController>()) {
+                Get.find<ApplicationsController>().fetchData();
+              }
+            } 
+            if (i == 3) {
+              if (Get.isRegistered<ProfilePage>()) {
+                // no-op: widget class, keep for clarity
+              }
+              if (Get.isRegistered<ProfileController>()) {
+                Get.find<ProfileController>().fetchProfile();
+              }
+            }
+            controller.changeTab(i);
+          },
         ),
       );
     });

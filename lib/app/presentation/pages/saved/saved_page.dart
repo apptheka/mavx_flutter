@@ -5,6 +5,7 @@ import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
 import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/presentation/widgets/no_data_lottie.dart';
 
 class SavedPage extends GetView<SavedController> {
   const SavedPage({super.key});
@@ -93,15 +94,7 @@ class SavedPage extends GetView<SavedController> {
                                   ],
                                 )
                               : c.saved.isEmpty
-                                  ? ListView(
-                                      physics: const AlwaysScrollableScrollPhysics(),
-                                      children: const [
-                                        SizedBox(height: 100),
-                                        Center(
-                                          child: CommonText('No saved projects yet'),
-                                        ),
-                                      ],
-                                    )
+                                  ? NoDataLottie(text: 'No saved projects yet', onPressed: () => Get.back(result: true))
                                   : ListView.separated(
                                       padding: const EdgeInsets.all(12),
                                       separatorBuilder: (_, __) => const SizedBox(height: 12),

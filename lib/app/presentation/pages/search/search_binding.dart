@@ -4,6 +4,6 @@ import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dar
 class SearchBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put<search.SearchController>(search.SearchController());
+    Get.put<search.SearchPageController>(search.SearchPageController());
   }
 }

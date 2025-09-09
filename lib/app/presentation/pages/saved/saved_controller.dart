@@ -60,7 +60,7 @@ class SavedController extends GetxController {
         }
       }
     } catch (e) {
-      error.value = 'Failed to load saved projects';
+      error.value = 'Failed to load saved projects\nConnection Error';
     } finally {
       loading.value = false;
     }

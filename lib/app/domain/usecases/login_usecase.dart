@@ -17,7 +17,15 @@ class OtpRequestUseCase {
 
   OtpRequestUseCase(this._authRepository);
 
-  Future<CommonResponse> call(String phone) {
-    return _authRepository.requestOtp(phone);
+  Future<void> call(String email) {
+    return _authRepository.requestOtp(email);
+  }
+
+  Future<void> verifyOtp(String email,String otp) {
+    return _authRepository.verifyOtp(email,otp);
+  }
+  
+  Future<void> changePassword(String email,String newPassword) {
+    return _authRepository.changePassword(email,newPassword);
   }
 }

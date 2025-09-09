@@ -1,3 +1,9 @@
+import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/otp/otp_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/otp/otp_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/requests/requests.binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/requests/requests_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/saved/saved_binding.dart';
@@ -24,6 +30,7 @@ import 'package:mavx_flutter/app/routes/app_routes.dart';
 import 'package:mavx_flutter/app/presentation/pages/splash/splash_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/notifications/notifications_page.dart';
 
 class AppPages {
   static const initial = AppRoutes.splash;
@@ -90,6 +97,26 @@ class AppPages {
       name: AppRoutes.requests,
       page: () => const RequestsPage(),
       binding: RequestsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.notifications,
+      page: () => const NotificationsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.forgetPassword,
+      page: () => const ForgetPasswordPage(),
+      binding: ForgetPasswordBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.otp,
+      page: () => const OtpPage(),
+      binding: OtpBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.changePassword,
+      page: () => const ChangePassPage(),
+      binding: ChangePassBinding(),
+      arguments: Get.arguments,
     ),
   ];
 }

@@ -35,8 +35,7 @@ class HeaderRequests extends StatelessWidget {
                 onPressed: () {
                   Get.back();
                 },
-              ),
-              const SizedBox(width: 16),
+              ), 
               const Expanded(
                 child: CommonText(
                   'My Requests',

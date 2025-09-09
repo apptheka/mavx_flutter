@@ -22,34 +22,26 @@ class LoginPage extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 32),
-                          _buildHeader(),
-                          const SizedBox(height: 40),
-                          _buildForm(context),
-                          const SizedBox(height: 32),
-                          _buildSignInButton(),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildSocialSection(),
-                  const SizedBox(height: 40),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 32),
+                    _buildHeader(),
+                    const SizedBox(height: 40),
+                    _buildForm(context),
+                    const SizedBox(height: 32),
+                    _buildSignInButton(),
+                    const SizedBox(height: 100),
+                    _buildSocialSection(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      )
+      ),
     );
   }
 
@@ -57,11 +49,7 @@ class LoginPage extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          CommonText(
-            'Welcome Back',
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
+          CommonText('Welcome Back', fontSize: 28, fontWeight: FontWeight.w800),
           CommonText(
             'Please sign in to continue',
             fontSize: 15,
@@ -79,35 +67,41 @@ class LoginPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CommonText("Email or Phone", fontSize: 15, fontWeight: FontWeight.w600),
+          CommonText(
+            "Email",
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
           const SizedBox(height: 8),
-          AppTextField( 
+          AppTextField(
             controller: controller.emailController,
-            validator: controller.validateEmailOrPhone,
-            hintText: "Enter email or phone",
+            validator: controller.validateEmail,
+            hintText: "Enter email",
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 20),
           CommonText("Password", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
-          Obx(() => AppTextField( 
-                controller: controller.passwordController,
-                validator: controller.validatePassword,
-                hintText: "Enter your password",
-                obscureText: controller.isPasswordHidden.value,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.isPasswordHidden.value
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: AppColors.textSecondaryColor,
-                  ),
-                  onPressed: () => controller.isPasswordHidden.toggle(),
+          Obx(
+            () => AppTextField(
+              controller: controller.passwordController,
+              validator: controller.validatePassword,
+              hintText: "Enter your password",
+              obscureText: controller.isPasswordHidden.value,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.isPasswordHidden.value
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: AppColors.textSecondaryColor,
                 ),
-                keyboardType: TextInputType.visiblePassword,
-                textInputAction: TextInputAction.done,
-              )),
+                onPressed: () => controller.isPasswordHidden.toggle(),
+              ),
+              keyboardType: TextInputType.visiblePassword,
+              textInputAction: TextInputAction.done,
+            ),
+          ),
           const SizedBox(height: 16),
           _buildForgotPassword(),
         ],
@@ -124,7 +118,9 @@ class LoginPage extends StatelessWidget {
           minimumSize: const Size(0, 0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        onPressed: () {},
+        onPressed: () {
+          Get.toNamed(AppRoutes.forgetPassword);
+        },
         child: const CommonText(
           'Forgot password?',
           fontSize: 15,
@@ -138,35 +134,37 @@ class LoginPage extends StatelessWidget {
   Widget _buildSignInButton() {
     return Column(
       children: [
-        Obx(() => SizedBox(
-              height: 56,
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  elevation: 0,
+        Obx(
+          () => SizedBox(
+            height: 56,
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
                 ),
-                onPressed: controller.isLoading.value ? null : controller.signIn,
-                child: controller.isLoading.value
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const CommonText(
-                        'Sign In',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.white,
-                      ),
+                elevation: 0,
               ),
-            )),
+              onPressed: controller.isLoading.value ? null : controller.signIn,
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const CommonText(
+                      'Sign In',
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white,
+                    ),
+            ),
+          ),
+        ),
         const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

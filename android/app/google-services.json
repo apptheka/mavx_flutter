@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "961866680814",
+    "project_id": "mavxexpert",
+    "storage_bucket": "mavxexpert.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:961866680814:android:12bd88ab8b5aa665e2e6ff",
+        "android_client_info": {
+          "package_name": "com.app.mavx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsL8OX1I4EBk_6nsF9H9oBVqIt7lUn6eQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

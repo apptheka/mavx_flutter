@@ -74,5 +74,6 @@ class DependenceInjection {
     Get.lazyPut(() => GetAllBookmarksUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => ApplyJobUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => RequestsUseCase(Get.find()), fenix: true);
+    Get.lazyPut(()=> OtpRequestUseCase(Get.find()), fenix: true);
   }
 }

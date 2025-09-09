@@ -1,4 +1,4 @@
-package com.example.mavx_flutter
+package com.app.mavx
 
 import io.flutter.embedding.android.FlutterActivity
 

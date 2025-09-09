@@ -53,14 +53,14 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                         ),
                         const SizedBox(height: 12),
                         const TimelineSection(),
-                        const SizedBox(height: 12),
-                        const CommonText(
-                          'Client Overview',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        const SizedBox(height: 12),
-                        const ClientOverviewSection(),
+                        // const SizedBox(height: 12),
+                        // const CommonText(
+                        //   'Client Overview',
+                        //   fontSize: 20,
+                        //   fontWeight: FontWeight.w800,
+                        // ),
+                        // const SizedBox(height: 12),
+                        // const ClientOverviewSection(),
                         const SizedBox(height: 12),
                         const CommonText(
                           'Why You\'re a Great Fit',

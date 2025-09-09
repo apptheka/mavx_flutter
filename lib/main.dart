@@ -1,17 +1,33 @@
+import 'dart:io';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
+import 'package:mavx_flutter/app/core/services/firebase_messaging_service.dart';
+import 'package:mavx_flutter/app/core/services/notification_storage_service.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/di/dependence_injection.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_theme.dart';
 import 'package:mavx_flutter/app/routes/app_pages.dart';
-
+import 'package:mavx_flutter/firebase_options.dart';
+import 'package:path_provider/path_provider.dart' as pathProvider;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() async{
+void main() async {
   // Ensure Flutter engine & platform channels are initialized
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationStorageService.init();
+  await _initializeHive();
+
+    // Initialize Firebase Messaging service
+  await FirebaseMessagingService().initialize();
 
   // Initialize storage
   final storage = StorageService();
@@ -19,7 +35,6 @@ void main() async{
 
   // Initialize dependencies
   await DependenceInjection.init();
-
 
   runApp(const MyApp());
 }
@@ -30,7 +45,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp( 
+    return GetMaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
@@ -41,4 +56,24 @@ class MyApp extends StatelessWidget {
     );
   }
 }
- 
+
+
+Future<void> _initializeHive() async {
+  try {
+    Directory directory = await pathProvider.getApplicationDocumentsDirectory();
+    await Hive.initFlutter(directory.path);
+
+    // Open all required boxes
+    final boxes = [
+      HiveConstant.CACHE,
+    ];
+
+    for (final boxName in boxes) {
+      if (!Hive.isBoxOpen(boxName)) {
+        await Hive.openBox(boxName);
+      }
+    }
+  } catch (e, stackTrace) {
+    rethrow;
+  }
+}
