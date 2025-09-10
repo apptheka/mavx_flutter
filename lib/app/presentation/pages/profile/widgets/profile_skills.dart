@@ -247,9 +247,9 @@ class ProfileSkills extends StatelessWidget {
                                       : null;
                                   await controller.saveSkills({
                                     'id': existingId,
-                                    'skillCategory': category,
+                                    'skill_category': category,
                                     // Send as a single comma-separated string to update same row
-                                    'skillName': skills.join(', '),
+                                    'skill_name': skills.join(', '),
                                     // Do NOT send the bulk list to prevent new rows
                                   });
                                   Get.back();

@@ -2,9 +2,9 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  static const String baseUrl = 'http://192.168.1.28:3001/v1/api';
-  static const String baseUrlImage = 'http://192.168.1.28:3001/';
-  static const String fileUploading = 'http://192.168.1.28:3001/file-uploading';
+  static const String baseUrl = 'http://192.168.1.6:3001/v1/api';
+  static const String baseUrlImage = 'http://192.168.1.6:3001/';
+  static const String fileUploading = 'http://192.168.1.6:3001/file-uploading';
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';

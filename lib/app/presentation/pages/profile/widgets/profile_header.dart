@@ -311,20 +311,28 @@ class _NameAndStatus extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Obx(
-          () => Row(
+        Obx(() {
+          final raw = controller.preferences.value.lookingFor;
+          // Remove stray numerals and whitespace, and guard against literal 'null'
+          final text = (raw ?? '')
+              .replaceAll('1', '')
+              .trim();
+          if (text.isEmpty || text.toLowerCase() == 'null') {
+            return const SizedBox.shrink();
+          }
+          return Row(
             children: [
               Image.asset(IconAssets.role, height: 15, width: 15),
               const SizedBox(width: 8),
               CommonText(
-                '${controller.preferences.value.lookingFor}'.replaceAll("1", ""),
+                text,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey,
               ),
             ],
-          ),
-        ),
+          );
+        }),
       ],
     );
   }

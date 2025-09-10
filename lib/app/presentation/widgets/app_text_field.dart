@@ -39,7 +39,7 @@ class AppTextField extends StatelessWidget {
     this.maxLength,
     this.prefixIcon,
     this.suffixIcon,
-    this.textCapitalization = TextCapitalization.none,
+    this.textCapitalization = TextCapitalization.sentences,
     this.validator,
     this.onChanged, 
     this.focusNode,
@@ -60,7 +60,7 @@ class AppTextField extends StatelessWidget {
       margin: margin,
       child: TextFormField(
         maxLength: maxLength, 
-        textCapitalization: textCapitalization ?? TextCapitalization.sentences,
+        textCapitalization: textCapitalization ?? TextCapitalization.none,
         controller: controller,
         focusNode: focusNode,
         keyboardType: keyboardType,

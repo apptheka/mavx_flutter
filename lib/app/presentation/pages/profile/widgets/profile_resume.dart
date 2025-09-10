@@ -37,100 +37,100 @@ class ProfileResume extends StatelessWidget {
     return SectionCard(
       title: 'Resume',
       subtitle: 'Highlight your strongest areas of expertise',
-      onEdit: () {
-        Get.bottomSheet(
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Edit Resume',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Update your professional document',
-                    style: TextStyle(color: AppColors.textSecondaryColor),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.greyColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.black.withValues(alpha: 0.06),
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.picture_as_pdf,
-                            color: AppColors.textSecondaryColor,
-                            size: 36,
-                          ),
-                          const SizedBox(height: 8),
-                          CommonText(
-                            rawResume.isNotEmpty
-                                ? rawResume.split('/').last
-                                : 'No resume found',
-                            color: AppColors.textSecondaryColor, 
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            child: ElevatedButton(
-                              onPressed: () {
+      // onEdit: () {
+      //   Get.bottomSheet(
+      //     BackdropFilter(
+      //       filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+      //       child: Container(
+      //         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      //         decoration: const BoxDecoration(
+      //           color: Colors.white,
+      //           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      //         ),
+      //         child: Column(
+      //           mainAxisSize: MainAxisSize.min,
+      //           crossAxisAlignment: CrossAxisAlignment.start,
+      //           children: [
+      //             const Text(
+      //               'Edit Resume',
+      //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+      //             ),
+      //             const SizedBox(height: 6),
+      //             const Text(
+      //               'Update your professional document',
+      //               style: TextStyle(color: AppColors.textSecondaryColor),
+      //             ),
+      //             const SizedBox(height: 12),
+      //             Container(
+      //               height: 180,
+      //               width: double.infinity,
+      //               decoration: BoxDecoration(
+      //                 color: AppColors.greyColor,
+      //                 borderRadius: BorderRadius.circular(12),
+      //                 border: Border.all(
+      //                   color: AppColors.black.withValues(alpha: 0.06),
+      //                   width: 2,
+      //                 ),
+      //                 boxShadow: [
+      //                   BoxShadow(
+      //                     color: Colors.black.withValues(alpha: 0.06),
+      //                     blurRadius: 10,
+      //                     offset: const Offset(0, 4),
+      //                   ),
+      //                 ],
+      //               ),
+      //               child: Center(
+      //                 child: Column(
+      //                   mainAxisSize: MainAxisSize.min,
+      //                   children: [
+      //                     const Icon(
+      //                       Icons.picture_as_pdf,
+      //                       color: AppColors.textSecondaryColor,
+      //                       size: 36,
+      //                     ),
+      //                     const SizedBox(height: 8),
+      //                     CommonText(
+      //                       rawResume.isNotEmpty
+      //                           ? rawResume.split('/').last
+      //                           : 'No resume found',
+      //                       color: AppColors.textSecondaryColor, 
+      //                       fontSize: 15,
+      //                       fontWeight: FontWeight.w600,
+      //                       overflow: TextOverflow.ellipsis,
+      //                     ),
+      //                     const SizedBox(height: 12),
+      //                     SizedBox(
+      //                       width: MediaQuery.of(context).size.width * 0.4,
+      //                       child: ElevatedButton(
+      //                         onPressed: () {
                             
-                              },
-                              child: const CommonText(
-                                'Open',
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => Get.back(),
-                      child: const Text('Close'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          isScrollControlled: true,
-        );
-      },
+      //                         },
+      //                         child: const CommonText(
+      //                           'Open',
+      //                           fontSize: 15,
+      //                           fontWeight: FontWeight.w600,
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ],
+      //                 ),
+      //               ),
+      //             ),
+      //             const SizedBox(height: 12),
+      //             Align(
+      //               alignment: Alignment.centerRight,
+      //               child: TextButton(
+      //                 onPressed: () => Get.back(),
+      //                 child: const Text('Close'),
+      //               ),
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //     isScrollControlled: true,
+      //   );
+      // },
       child: Obx(() {
         rawResume = controller.registeredProfile.value.resume ?? '';
         resumeUrl = prefixBase(rawResume);
@@ -176,8 +176,50 @@ class ProfileResume extends StatelessWidget {
               const Spacer(),
               InkWell(
                 onTap: () async {
+                  final url = resumeUrl.trim();
+                  if (url.isEmpty) {
+                    Get.snackbar(
+                      'Resume',
+                      'No resume found to preview',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                    );
+                    return;
+                  }
+                  final uri = Uri.tryParse(url);
+                  if (uri == null) {
+                    Get.snackbar(
+                      'Resume',
+                      'Invalid resume link',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                    );
+                    return;
+                  }
+                  if (!await canLaunchUrl(uri)) {
+                    Get.snackbar(
+                      'Resume',
+                      'Could not open resume',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                    );
+                    return;
+                  }
+                  await launchUrl(
+                    uri,
+                    mode: LaunchMode.inAppWebView,
+                    webViewConfiguration: const WebViewConfiguration(
+                      enableJavaScript: true,
+                    ),
+                  );
                 },
-                child: Image.asset(IconAssets.download, height: 20, width: 20),
+                child: Icon(Icons.remove_red_eye)
               ),
             ],
           ),

@@ -266,11 +266,11 @@ class ProfileExperience extends StatelessWidget {
                                     if (r['id'] != null || (r['isNew'] == true)) {
                                       await controller.saveExperience({
                                         'id': r['id'],
-                                        'companyName': company,
+                                        'company_name': company,
                                         'role': role,
-                                        'employmentType': r['employmentType'],
+                                        'employment_type': r['employmentType'],
                                         'isRemote': (r['isRemote'] as bool) ? 1 : 0,
-                                        'startDate': fmtOut(s),
+                                        'start_date': fmtOut(s),
                                         'isCurrent': (r['isCurrent'] as bool) ? 1 : 0,
                                         'description': desc,
                                       });

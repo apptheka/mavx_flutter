@@ -31,15 +31,7 @@ class RegisterStep3 extends StatelessWidget {
                 hintText: 'Enter URL',
                 keyboardType: TextInputType.url,
                 controller: controller.linkedInCtrl,
-                validator: (v) {
-                  final value = v?.trim() ?? '';
-                  if (value.isEmpty) return 'URL required';
-                  if (!RegExp(
-                    r'^(https?:\/\/)?[^\s.]+\.[^\s]{2,}',
-                  ).hasMatch(value))
-                    return 'Invalid URL';
-                  return null;
-                },
+                validator: controller.validateLinkedIn,
               ),
               const SizedBox(height: 16),
               const CommonText(
@@ -169,12 +161,12 @@ class RegisterStep3 extends StatelessWidget {
               const SizedBox(height: 8),
               AppDropdown<String>(
                 items: controller.primaryFunctionItems,
-                value: controller.primaryFunctionCtrl.value.isEmpty
+                value: controller.secondaryFactorCtrl.value.isEmpty
                     ? null
-                    : controller.primaryFunctionCtrl.value,
+                    : controller.secondaryFactorCtrl.value,
                 hintText: 'Select',
                 onChanged: (v) =>
-                    controller.primaryFunctionCtrl.value = v ?? '',
+                    controller.secondaryFactorCtrl.value = v ?? '',
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Secondary function required'
                     : null,

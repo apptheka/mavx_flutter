@@ -35,26 +35,28 @@ class StepNav extends StatelessWidget {
               final bool isLast = controller.isLastStep;
               return Row(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: isFirst ? Get.back : controller.prevStep,
-                      style: prevStyle,
-                      child: CommonText(
-                        isFirst ? 'Back' : 'Previous',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                  if (!isFirst) ...[
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: controller.prevStep,
+                        style: prevStyle,
+                        child: const CommonText(
+                          'Previous',
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  if (!isNarrow)
-                    Container(
-                      width: 2,
-                      height: 50,
-                      color: const Color(0xffD9D9D9),
-                    ),
-                  if (!isNarrow) const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                    if (!isNarrow)
+                      Container(
+                        width: 2,
+                        height: 50,
+                        color: const Color(0xffD9D9D9),
+                      ),
+                    if (!isNarrow) const SizedBox(width: 12),
+                  ],
                   Expanded(
                     child: ElevatedButton(
                       onPressed: isLast ? controller.submitRegistration : controller.nextStep,

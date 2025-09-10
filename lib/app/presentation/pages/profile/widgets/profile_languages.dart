@@ -216,11 +216,11 @@ class ProfileLanguages extends StatelessWidget {
                                       
                                       await controller.saveLanguages({
                                         'id': lang['id'],
-                                        'languageName': name,
-                                        'proficiencyLevel': lang['proficiencyLevel'],
-                                        'canRead': lang['canRead'] ? 1 : 0,
-                                        'canWrite': lang['canWrite'] ? 1 : 0,
-                                        'canSpeak': lang['canSpeak'] ? 1 : 0,
+                                        'language_name': name,
+                                        'proficiency_level': lang['proficiencyLevel'],
+                                        'can_read': lang['canRead'] ? 1 : 0,
+                                        'can_write': lang['canWrite'] ? 1 : 0,
+                                        'can_speak': lang['canSpeak'] ? 1 : 0,
                                       });
                                     }
                                     Get.back();

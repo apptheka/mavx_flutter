@@ -24,10 +24,21 @@ class RegisterStep2 extends StatelessWidget {
             CommonText("Continent", fontSize: 13, fontWeight: FontWeight.w600),
             const SizedBox(height: 8),
             AppTextField(
+              textCapitalization:  TextCapitalization.sentences,
+              keyboardType: TextInputType.name,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+              ],
               hintText: 'Continent',
               controller: c.continentCtrl,
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Continent required' : null,
+              validator: (v) {
+                final value = v?.trim() ?? '';
+                if (value.isEmpty) return 'Continent required';
+                if (!RegExp(r'^[A-Za-z ]+$').hasMatch(value)) {
+                  return 'Only letters and spaces allowed';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             CommonText("Mobile", fontSize: 13, fontWeight: FontWeight.w600),
@@ -89,18 +100,11 @@ class RegisterStep2 extends StatelessWidget {
             const SizedBox(height: 16),
             CommonText("Email", fontSize: 13, fontWeight: FontWeight.w600),
             const SizedBox(height: 8),
-            AppTextField(
-              textCapitalization: TextCapitalization.none,
+            AppTextField( 
               hintText: 'Enter Email',
               controller: c.primaryEmailCtrl,
               keyboardType: TextInputType.emailAddress,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Email required';
-                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
-                  return 'Invalid email';
-                }
-                return null;
-              },
+              validator: c.validateEmail,
             ),
             const SizedBox(height: 16),
             CommonText(
@@ -114,11 +118,9 @@ class RegisterStep2 extends StatelessWidget {
               controller: c.alternateEmailCtrl,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Email required';
-                if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
-                  return 'Invalid email';
-                }
-                if (v.trim() == c.primaryEmailCtrl.text.trim()) {
+                final err = c.validateEmail(v);
+                if (err != null) return err;
+                if ((v ?? '').trim() == c.primaryEmailCtrl.text.trim()) {
                   return 'Email cannot be same as primary email';
                 }
                 return null;

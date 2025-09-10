@@ -234,16 +234,16 @@ class ProfileController extends GetxController {
     try {
       loading.value = true;
       final payload = {
-        'lookingFor': lookingFor,
-        'preferredBudget': preferredBudget,
-        'budgetCurrency': budgetCurrency,
-        'budgetPeriod': budgetPeriod,
-        'availabilityHoursPerWeek': availabilityHoursPerWeek,
-        'availabilityType': availabilityType,
-        'preferredDurationMin': preferredDurationMin,
-        'preferredDurationMax': preferredDurationMax,
-        'preferredDurationType': preferredDurationType,
-        'workType': workType,
+        'looking_for': lookingFor,
+        'preferred_budget': preferredBudget,
+        'budget_currency': budgetCurrency,
+        'budget_period': budgetPeriod,
+        'availability_hours_per_week': availabilityHoursPerWeek,
+        'availability_type': availabilityType,
+        'preferred_duration_min': preferredDurationMin,
+        'preferred_duration_max': preferredDurationMax,
+        'preferred_duration_type': preferredDurationType,
+        'work_type': workType,
       };
       await profileUseCase.updatePreferences(payload);
       await updateProfile();
@@ -408,9 +408,11 @@ class ProfileController extends GetxController {
       if (p.contains('github')) {
         domainHint = 'a GitHub URL (e.g., https://github.com/username)';
       } else if (p.contains('linkedin'))
+        // ignore: curly_braces_in_flow_control_structures
         domainHint =
             'a LinkedIn URL (e.g., https://www.linkedin.com/in/username or https://lnkd.in/...)';
       else if (p.contains('behance') || p.contains('be'))
+        // ignore: curly_braces_in_flow_control_structures
         domainHint = 'a Behance URL (e.g., https://www.behance.net/username)';
 
       showSnackBar(

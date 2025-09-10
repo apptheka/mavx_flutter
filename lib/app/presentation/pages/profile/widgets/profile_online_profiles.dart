@@ -362,8 +362,8 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                   await controller.saveOnlineProfiles({
                                     'id':
                                         existing[platNorm], // upsert to existing if present
-                                    'platformType': p['platformType'],
-                                    'profileUrl': url,
+                                    'platform_type': p['platformType'],
+                                    'profile_url': url,
                                   });
                                 }
                                 // Close once after processing all entries

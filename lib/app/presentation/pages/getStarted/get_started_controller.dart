@@ -82,11 +82,7 @@ class GetStartedController extends GetxController {
   }
 
   void skipToLast() {
-    pageController.animateToPage(
-      items.length - 1,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+      Get.offNamed(AppRoutes.login);
   }
 
   @override

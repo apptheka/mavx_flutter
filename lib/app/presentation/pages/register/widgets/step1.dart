@@ -20,9 +20,13 @@ class RegisterStep1 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 22),
-              CommonText("First Name", fontSize: 13, fontWeight: FontWeight.w600),
+              CommonText(
+                "First Name",
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
               const SizedBox(height: 8),
-              AppTextField(
+              AppTextField( 
                 hintText: 'Enter First Name',
                 controller: c.firstNameCtrl,
                 validator: (v) => (v == null || v.trim().isEmpty)
@@ -30,35 +34,42 @@ class RegisterStep1 extends StatelessWidget {
                     : null,
               ),
               const SizedBox(height: 12),
-              CommonText("Last Name", fontSize: 13, fontWeight: FontWeight.w600),
+              CommonText(
+                "Last Name",
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
               const SizedBox(height: 8),
-              AppTextField(
+              AppTextField( 
                 hintText: 'Enter Last Name',
                 controller: c.lastNameCtrl,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Last name required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Last name required'
+                    : null,
               ),
               const SizedBox(height: 12),
               CommonText("Password", fontSize: 13, fontWeight: FontWeight.w600),
               const SizedBox(height: 8),
-              Obx(() => AppTextField(
-                    hintText: 'Enter Password',
-                    controller: c.passwordCtrl,
-                    obscureText: c.isPasswordHidden.value,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        c.isPasswordHidden.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () => c.isPasswordHidden.toggle(),
+              Obx(
+                () => AppTextField(
+                  hintText: 'Enter Password',
+                  controller: c.passwordCtrl,
+                  obscureText: c.isPasswordHidden.value,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      c.isPasswordHidden.value
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password required';
-                      if (v.length < 6) return 'Min 6 characters';
-                      return null;
-                    },
-                  )),
+                    onPressed: () => c.isPasswordHidden.toggle(),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Password required';
+                    if (v.length < 6) return 'Min 6 characters';
+                    return null;
+                  },
+                ),
+              ),
               const SizedBox(height: 16),
               CommonText(
                 "Date Of Birth",
@@ -66,82 +77,17 @@ class RegisterStep1 extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      hintText: 'Day',
-                      maxLength: 2,
-                      controller: c.dayCtrl,
-                      focusNode: c.dayFocus,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (v) {
-                        if (v.length >= 2) {
-                          FocusScope.of(context).requestFocus(c.monthFocus);
-                        } else if (v.isEmpty) {
-                          
-                          // Focus back to previous field if available
-                        }
-                      },
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Day required' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppTextField(
-                      hintText: 'Month',
-                      maxLength: 2,
-                      controller: c.monthCtrl,
-                      focusNode: c.monthFocus,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (v) {
-                        if (v.length >= 2) {
-                          FocusScope.of(context).requestFocus(c.yearFocus);
-                        } else if (v.isEmpty) {
-                          FocusScope.of(context).requestFocus(c.dayFocus);
-                        }
-                      },
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Month required'
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppTextField(
-                      hintText: 'Year',
-                      maxLength: 4,
-                      controller: c.yearCtrl,
-                      focusNode: c.yearFocus,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (v) {
-                        if (v.length >= 4) {
-                          c.yearFocus.unfocus();
-                        } else if (v.isEmpty) {
-                          FocusScope.of(context).requestFocus(c.monthFocus);
-                        }
-                      },
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today_rounded),
-                        color: Colors.grey[700],
-                        onPressed: () => c.pickDob(context),
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Year required'
-                          : null,
-                    ),
-                  ),
-                ],
+              AppTextField(
+                controller: c.dobCtrl,
+                hintText: 'DD/MM/YYYY',
+                readOnly: true,
+                onTap: () => c.pickDob(Get.context ?? context),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.calendar_today_rounded),
+                  color: Colors.grey[700],
+                  onPressed: () => c.pickDob(Get.context ?? context),
+                ),
+                validator: c.validateDob,
               ),
               const SizedBox(height: 16),
               Row(
@@ -157,10 +103,20 @@ class RegisterStep1 extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
+                          keyboardType: TextInputType.name,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                          ],
                           hintText: 'City',
                           controller: c.cityCtrl,
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          validator: (v) {
+                            final value = v?.trim() ?? '';
+                            if (value.isEmpty) return 'Required';
+                            if (!RegExp(r'^[A-Za-z ]+$').hasMatch(value)) {
+                              return 'Only letters and spaces allowed';
+                            }
+                            return null;
+                          },
                         ),
                       ],
                     ),
@@ -177,17 +133,24 @@ class RegisterStep1 extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
+                          keyboardType: TextInputType.name,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                          ],
                           hintText: 'Country',
                           controller: c.countryCtrl,
-                          validator: (v) =>
-                              (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          validator: (v) {
+                            final value = v?.trim() ?? '';
+                            if (value.isEmpty) return 'Required';
+                            if (!RegExp(r'^[A-Za-z ]+$').hasMatch(value)) return 'Only letters and spaces allowed';
+                            return null;
+                          },
                         ),
                       ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
+              ), 
               const SizedBox(height: 22), // bottom spacer
             ],
           ),

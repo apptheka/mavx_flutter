@@ -217,10 +217,10 @@ class ProfileEducation extends StatelessWidget {
                                         if (r['id'] != null || (r['isNew'] == true)) {
                                           await controller.saveEducation({
                                             'id': r['id'],
-                                            'institutionName': inst,
+                                            'institution_name': inst,
                                             'degree': degree,
-                                            'startDate': fmtOut(s),
-                                            'endDate': r['endDate'] != null ? fmtOut(r['endDate'] as DateTime) : '',
+                                            'start_date': fmtOut(s),
+                                            'end_Date': r['endDate'] != null ? fmtOut(r['endDate'] as DateTime) : '',
                                             'isCurrent': (r['isCurrent'] as bool) ? 1 : 0,
                                           });
                                         }

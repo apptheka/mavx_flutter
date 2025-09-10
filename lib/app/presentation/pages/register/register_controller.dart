@@ -33,6 +33,7 @@ class RegisterController extends GetxController {
   final cityCtrl = TextEditingController();
   final stateCtrl = TextEditingController();
   final countryCtrl = TextEditingController();
+  final dobCtrl = TextEditingController();
   final dayCtrl = TextEditingController();
   final monthCtrl = TextEditingController();
   final yearCtrl = TextEditingController();
@@ -60,11 +61,13 @@ class RegisterController extends GetxController {
   // Step 3 controllers (examples)
   final linkedInCtrl = TextEditingController(); 
   final roleTypeCtrl = ''.obs;
-  final primaryFunctionCtrl = ''.obs;
+  final primaryFunctionCtrl = ''.obs; 
   final industryCtrl = ''.obs;
   final otherPrimaryFunctionCtrl = TextEditingController();
+  final otherPrimaryIndustryCtrl = TextEditingController();
   final currentEmployerCtrl = TextEditingController();
   final RxList<DropdownMenuItem<String>> primaryFunctionItems = <DropdownMenuItem<String>>[].obs;
+  final RxList<DropdownMenuItem<String>> secondaryFunction = <DropdownMenuItem<String>>[].obs;
   final RxList<DropdownMenuItem<String>> industryItems = <DropdownMenuItem<String>>[].obs;
   final List<DropdownMenuItem<String>> roleTypeItems = [
     DropdownMenuItem(
@@ -171,9 +174,18 @@ class RegisterController extends GetxController {
     final d = int.tryParse(dayCtrl.text);
     final m = int.tryParse(monthCtrl.text);
     final y = int.tryParse(yearCtrl.text);
-    final String? dob = (d != null && m != null && y != null)
-        ? '${y.toString().padLeft(4, '0')}-${two(m)}-${two(d)}'
-        : null;
+    String? dob;
+    if (d != null && m != null && y != null) {
+      try {
+        final candidate = DateTime(y, m, d);
+        final isSame = candidate.year == y && candidate.month == m && candidate.day == d;
+        final now = DateTime.now();
+        final notFuture = !candidate.isAfter(DateTime(now.year, now.month, now.day));
+        if (isSame && notFuture) {
+          dob = '${y.toString().padLeft(4, '0')}-${two(m)}-${two(d)}';
+        }
+      } catch (_) {}
+    }
 
     // Compose phone with dial code
     final String? phone = nullIfEmpty(mobileCtrl.text) != null
@@ -216,6 +228,7 @@ class RegisterController extends GetxController {
       'roleType': nullIfEmpty(roleTypeCtrl.value),
       'primaryFunction': parseInt(primaryFunctionCtrl.value),
       'customPrimaryFunction': nullIfEmpty(otherPrimaryFunctionCtrl.text),
+      'customPrimaryIndustry': nullIfEmpty(otherPrimaryIndustryCtrl.text),
       'primarySector': parseInt(industryCtrl.value),
       'customPrimarySector': null, // no UI yet; keep for API compatibility
       'employer': nullIfEmpty(currentEmployerCtrl.text),
@@ -426,10 +439,15 @@ Future<void> _showPendingDialog() async {
 
     final firstDate = DateTime(1900, 1, 1);
     final lastDate = DateTime(now.year, now.month, now.day);
+    // Clamp initialDate within [firstDate, lastDate] to satisfy showDatePicker constraints
+    DateTime clampedInitial = initialDate;
+    if (clampedInitial.isBefore(firstDate)) clampedInitial = firstDate;
+    if (clampedInitial.isAfter(lastDate)) clampedInitial = lastDate;
 
+    final safeContext = Get.context ?? context;
     final picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate.isBefore(firstDate) ? firstDate : initialDate,
+      context: safeContext,
+      initialDate: clampedInitial,
       firstDate: firstDate,
       lastDate: lastDate,
       helpText: 'Select Date of Birth',
@@ -439,9 +457,129 @@ Future<void> _showPendingDialog() async {
       dayCtrl.text = two(picked.day);
       monthCtrl.text = two(picked.month);
       yearCtrl.text = picked.year.toString();
+      dobCtrl.text = '${two(picked.day)}/${two(picked.month)}/${picked.year}';
       // Unfocus after auto-fill
       yearFocus.unfocus();
     }
+  }
+
+  // ================= DOB VALIDATION HELPERS =================
+  int? _toInt(String? s) => int.tryParse((s ?? '').trim());
+
+  int _daysInMonth(int year, int month) {
+    // Using DateTime roll-over to get last day of month
+    // DateTime(year, month + 1, 0) gives the last day of the target month
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  String? validateDay(String? v) {
+    final now = DateTime.now();
+    final day = _toInt(v);
+    if (v == null || v.trim().isEmpty) return 'Day required';
+    if (day == null) return 'Invalid day';
+    if (day < 1 || day > 31) return 'Day must be 1-31';
+
+    final m = _toInt(monthCtrl.text);
+    final y = _toInt(yearCtrl.text);
+    if (m != null && y != null && m >= 1 && m <= 12) {
+      final maxDay = _daysInMonth(y, m);
+      if (day > maxDay) return 'Max $maxDay days in $m/$y';
+      // Do not allow future date within current year/month
+      if (y == now.year && m == now.month && day > now.day) {
+        return 'Date cannot be in the future';
+      }
+    }
+    return null;
+  }
+
+  // ================= CONTACT VALIDATION HELPERS =================
+  // Email simple RFC-like pattern
+  final RegExp _emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  // LinkedIn URL: allow linkedin.com/* or lnkd.in/* with http/https
+  final RegExp _linkedinRegex = RegExp(
+    r'^(https?:\/\/)?(www\.)?(linkedin\.com\/(in|company|pub|school|jobs|profile)\/[^\s]+|lnkd\.in\/[^\s]+)\/?$',
+    caseSensitive: false,
+  );
+
+  String? validateEmail(String? v) {
+    final value = (v ?? '').trim();
+    if (value.isEmpty) return 'Email required';
+    if (!_emailRegex.hasMatch(value)) return 'Invalid email';
+    return null;
+  }
+
+  String? validateLinkedIn(String? v) {
+    final value = (v ?? '').trim();
+    if (value.isEmpty) return 'LinkedIn URL required';
+    // Require scheme
+    final withScheme = value.startsWith('http://') || value.startsWith('https://')
+        ? value
+        : 'https://$value';
+    if (!_linkedinRegex.hasMatch(withScheme)) {
+      return 'Enter a valid LinkedIn URL (e.g., https://www.linkedin.com/in/username or https://lnkd.in/...)';
+    }
+    return null;
+  }
+
+  String? validateDob(String? v) {
+    // Use the same rules as composing dob in payload: real date and not future
+    if (v == null || v.trim().isEmpty) return 'Date of birth required';
+    final d = int.tryParse(dayCtrl.text);
+    final m = int.tryParse(monthCtrl.text);
+    final y = int.tryParse(yearCtrl.text);
+    if (d == null || m == null || y == null) return 'Invalid date of birth';
+    try {
+      final candidate = DateTime(y, m, d);
+      final same = candidate.year == y && candidate.month == m && candidate.day == d;
+      final now = DateTime.now();
+      final notFuture = !candidate.isAfter(DateTime(now.year, now.month, now.day));
+      if (!same || !notFuture) return 'Invalid date of birth';
+    } catch (_) {
+      return 'Invalid date of birth';
+    }
+    return null;
+  }
+
+  String? validateMonth(String? v) {
+    final now = DateTime.now();
+    final month = _toInt(v);
+    if (v == null || v.trim().isEmpty) return 'Month required';
+    if (month == null) return 'Invalid month';
+    if (month < 1 || month > 12) return 'Month must be 1-12';
+
+    final y = _toInt(yearCtrl.text);
+    final d = _toInt(dayCtrl.text);
+    if (y != null) {
+      if (y > now.year) return 'Year cannot exceed ${now.year}';
+      if (y == now.year && month > now.month) {
+        return 'Date cannot be in the future';
+      }
+      if (d != null) {
+        final maxDay = _daysInMonth(y, month);
+        if (d > maxDay) return 'Max $maxDay days in $month/$y';
+      }
+    }
+    return null;
+  }
+
+  String? validateYear(String? v) {
+    final now = DateTime.now();
+    final year = _toInt(v);
+    if (v == null || v.trim().isEmpty) return 'Year required';
+    if (year == null) return 'Invalid year';
+    if (year < 1900) return 'Year must be >= 1900';
+    if (year > now.year) return 'Year cannot exceed ${now.year}';
+
+    final m = _toInt(monthCtrl.text);
+    final d = _toInt(dayCtrl.text);
+    if (m != null && d != null && m >= 1 && m <= 12) {
+      final maxDay = _daysInMonth(year, m);
+      if (d < 1 || d > maxDay) return 'Invalid date';
+      final picked = DateTime(year, m, d);
+      final lastAllowed = DateTime(now.year, now.month, now.day);
+      if (picked.isAfter(lastAllowed)) return 'Date cannot be in the future';
+    }
+    return null;
   }
 
   @override
@@ -545,6 +683,7 @@ Future<void> _showPendingDialog() async {
     cityCtrl.dispose();
     stateCtrl.dispose();
     countryCtrl.dispose();
+    dobCtrl.dispose();
     dayCtrl.dispose();
     monthCtrl.dispose();
     yearCtrl.dispose();
@@ -560,6 +699,7 @@ Future<void> _showPendingDialog() async {
     linkedInCtrl.dispose();  
     achievementsCtrl.dispose(); 
     otherPrimaryFunctionCtrl.dispose();
+    otherPrimaryIndustryCtrl.dispose();
     super.onClose();
   }
 }

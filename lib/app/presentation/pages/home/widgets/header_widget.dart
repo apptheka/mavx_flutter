@@ -16,7 +16,6 @@ class HeaderWidget extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(

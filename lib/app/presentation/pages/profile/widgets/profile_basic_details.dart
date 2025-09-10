@@ -162,7 +162,7 @@ class ProfileBasicDetails extends StatelessWidget {
                                 final payload = {
                                   'id': controller.basicDetailsList.value.id,
                                   'gender': gender,
-                                  'dateOfBirth': dobCtrl.text.trim(),
+                                  'date_of_birth': dobCtrl.text.trim(),
                                   'phone': phoneCtrl.text.trim().replaceAll(
                                     '91',
                                     '',
