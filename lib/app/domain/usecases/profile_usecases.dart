@@ -26,8 +26,8 @@ class ProfileUseCase {
     return await profileRepository.updateEducation(education);
   }
 
-  Future<UserProfile> updateAboutMe(String description) async {
-    return await profileRepository.updateAboutMe(description);
+  Future<UserProfile> updateAboutMe(Map<String, dynamic> aboutMe) async {
+    return await profileRepository.updateAboutMe(aboutMe);
   }
 
   Future<UserProfile> updateLanguages(Map<String, dynamic> languages) async {

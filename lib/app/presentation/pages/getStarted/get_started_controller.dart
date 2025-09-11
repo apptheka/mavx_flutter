@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
@@ -21,6 +22,7 @@ class OnboardItem {
 
 class GetStartedController extends GetxController {
   final PageController pageController = PageController();
+  final StorageService storage = Get.find<StorageService>();
 
   final RxInt current = 0.obs;
 
@@ -68,6 +70,11 @@ class GetStartedController extends GetxController {
         curve: Curves.easeOut,
       );
     } else {
+      // Mark onboarding as seen and navigate to login
+      try {
+        storage.prefs.setBool('onboarding_seen', true); 
+      } catch (_) { 
+      }
       Get.offAllNamed(AppRoutes.login);
     }
   }
@@ -82,6 +89,9 @@ class GetStartedController extends GetxController {
   }
 
   void skipToLast() {
+      try {
+        storage.prefs.setBool('onboarding_seen', true);
+      } catch (_) {}
       Get.offNamed(AppRoutes.login);
   }
 

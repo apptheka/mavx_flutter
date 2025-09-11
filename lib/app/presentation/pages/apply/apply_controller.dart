@@ -70,7 +70,7 @@ class ApplyController extends GetxController {
       // Only Current CTC from Preferences.preferredBudget; Expected CTC left empty for user input
       final pref = pc.preferences.value;
       if ((pref.preferredBudget ?? '').isNotEmpty) {
-        currentCtcCtrl.text = pref.preferredBudget!;
+        currentCtcCtrl.text = _stripZeroDecimals(pref.preferredBudget!);
         expectedCtcCtrl.clear();
       }
       final about = pc.aboutMeList.value;
@@ -78,6 +78,17 @@ class ApplyController extends GetxController {
         aboutYouCtrl.text = about.description!;
       }
     }
+  }
+
+  // Remove trailing .0 or .00 from numeric strings (e.g., 90.00 -> 90)
+  String _stripZeroDecimals(String input) {
+    final s = input.trim();
+    if (!s.contains('.')) return s;
+    final parts = s.split('.');
+    if (parts.length != 2) return s;
+    final frac = parts[1];
+    final allZeros = RegExp(r'^0+$').hasMatch(frac);
+    return allZeros ? parts[0] : s;
   }
 
   Future<void> _loadProject() async {
@@ -151,14 +162,21 @@ class ApplyController extends GetxController {
       // Build payload similar to web; encrypt via extension
       // Determine if this project is a contract-like type
       final type = (project.value?.projectType ?? '').trim().toLowerCase();
-      final isContractLike = type == 'contract' || type == 'contract placement' || type == 'consulting';
+      final isContractLike =
+          type == 'contract' ||
+          type == 'contract placement' ||
+          type == 'consulting';
 
       final payload = {
         'user_id': uid,
         'userId': uid,
         // For non-contract-like, include CTCs; otherwise 0
-        'current_ctc': isContractLike ? 0 : (int.tryParse(currentCtcCtrl.text.trim())),
-        'expected_ctc': isContractLike ? 0 : (int.tryParse(expectedCtcCtrl.text.trim())),
+        'current_ctc': isContractLike
+            ? 0
+            : (int.tryParse(currentCtcCtrl.text.trim())),
+        'expected_ctc': isContractLike
+            ? 0
+            : (int.tryParse(expectedCtcCtrl.text.trim())),
         'updated_cv': (uploadedUrl.value.isNotEmpty
             ? uploadedUrl.value
             : existingResumeUrl.value),
@@ -169,8 +187,12 @@ class ApplyController extends GetxController {
         'project_id': projectId,
         'projectId': projectId,
         // Contract-like include these; else zero/empty
-        'per_hour_cost': isContractLike ? (int.tryParse(perHourCostCtrl.text.trim())) : 0,
-        'week_available': isContractLike ? (int.tryParse(availabilityWeekCtrl.text.trim())) : 0,
+        'per_hour_cost': isContractLike
+            ? (int.tryParse(perHourCostCtrl.text.trim()))
+            : 0,
+        'week_available': isContractLike
+            ? (int.tryParse(availabilityWeekCtrl.text.trim()))
+            : 0,
         'time_available': isContractLike ? availabilityDayCtrl.text.trim() : '',
       };
       final encrypted = payload.toJsonRequest().encript();
@@ -193,7 +215,14 @@ class ApplyController extends GetxController {
       }
       if (ok) {
         Get.back(result: true);
-        Get.snackbar('Applied', msg, duration: const Duration(seconds: 2));
+        Get.snackbar(
+          'Applied',
+          "Application submitted successfully",
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
         // Small delay to let the user see the success and to ensure navigation happens smoothly
         await Future.delayed(const Duration(milliseconds: 900));
       } else {

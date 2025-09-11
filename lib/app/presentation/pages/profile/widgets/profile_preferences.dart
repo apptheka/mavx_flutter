@@ -63,10 +63,10 @@ class ProfilePreferences extends StatelessWidget {
 
         // Dropdown items
         final currencyItems = ['USD', 'INR', 'AUD', 'EUR'];
-        final periodItems = ['hour', 'day', 'week', 'month', 'project'];
-        final availabilityItems = ['Immediate', '1-2 Weeks', '1 Month+'];
-        final durationTypeItems = ['Short Term', 'Medium Term', 'Long Term'];
-        final workTypeItems = ['Recruitment', 'Contract', 'Contract Placement', 'Consulting', 'Full Time'];
+        final periodItems = ['Hour', 'Day', 'Week', 'Month', 'Project'];
+        final availabilityItems = ['Immediate', 'Week', 'Month', 'Flexible'];
+        final durationTypeItems = ['Short term', 'Medium term', 'Long term', 'Ongoing'];
+        final workTypeItems = ['Remote', 'Onsite', 'Hybrid','Full Time','Contract','Recruitment'];
 
         String currency = normalizeToItem(p.budgetCurrency, currencyItems);
         String period = normalizeToItem(p.budgetPeriod, periodItems);
@@ -185,21 +185,21 @@ class ProfilePreferences extends StatelessWidget {
                                   Get.snackbar('Required', 'Looking For and Budget are required');
                                   return;
                                 }
+                                Get.back();
                                 await controller.savePreferences(
                                   lookingFor: looking,
                                   preferredBudget: budget,
-                                  budgetCurrency: currency,
-                                  budgetPeriod: period,
+                                  budgetCurrency: currency ,
+                                  budgetPeriod: period.toLowerCase(),
                                   availabilityHoursPerWeek: int.tryParse(hoursCtrl.text.trim()) ?? 0,
-                                  availabilityType: availabilityType,
+                                  availabilityType: availabilityType.toLowerCase(),
                                   preferredDurationMin: int.tryParse(minCtrl.text.trim()) ?? 0,
                                   preferredDurationMax: int.tryParse(maxCtrl.text.trim()) ?? 0,
-                                  preferredDurationType: durationType.replaceAll(' ', '_'),
-                                  workType: workType,
+                                  preferredDurationType: durationType.replaceAll(' ', '_').toLowerCase(),
+                                  workType: workType.toLowerCase(),
                                 );
-                                Get.back();
                               },
-                              child: const Text('Save Changes'),
+                              child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],

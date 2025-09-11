@@ -293,7 +293,6 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 14),
                               ],
                             ),
                           ),
@@ -316,67 +315,69 @@ class ProfileOnlineProfiles extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 55,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 140,
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  // Validate form before proceeding
+                                  if (!(formKey.currentState?.validate() ??
+                                      false)) {
+                                    return;
+                                  }
+                                  // Build a map of existing platform -> id (normalized)
+                                  final existing = <String, dynamic>{};
+                                  for (final item
+                                      in controller.onlineProfileList) {
+                                    final plat = (item.platformType ?? '')
+                                        .toLowerCase();
+                                    if (plat.isEmpty) continue;
+                                    existing[plat] = item.id;
+                                  }
+
+                                  // Ensure only one entry per platform (last one wins)
+                                  final seen = <String>{};
+                                  for (final p in profiles) {
+                                    final url =
+                                        (p['profileUrl'] as String?)?.trim() ??
+                                        '';
+                                    if (url.isEmpty) continue;
+                                    final platNorm =
+                                        ((p['platformType'] as String?) ??
+                                                'Other')
+                                            .toLowerCase();
+                                    if (seen.contains(platNorm)) {
+                                      continue; // skip duplicates
+                                    }
+                                    seen.add(platNorm);
+                                    await controller.saveOnlineProfiles({
+                                      'id':
+                                          existing[platNorm], // upsert to existing if present
+                                      'platform_type': p['platformType'],
+                                      'profile_url': url,
+                                    });
+                                  }
+                                  // Close once after processing all entries
+                                  if (Get.isOverlaysOpen) Get.back();
+                                },
+                                child: const CommonText(
+                                  'Save',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
                                 ),
                               ),
-                              onPressed: () async {
-                                // Validate form before proceeding
-                                if (!(formKey.currentState?.validate() ??
-                                    false)) {
-                                  return;
-                                }
-                                // Build a map of existing platform -> id (normalized)
-                                final existing = <String, dynamic>{};
-                                for (final item
-                                    in controller.onlineProfileList) {
-                                  final plat = (item.platformType ?? '')
-                                      .toLowerCase();
-                                  if (plat.isEmpty) continue;
-                                  existing[plat] = item.id;
-                                }
-
-                                // Ensure only one entry per platform (last one wins)
-                                final seen = <String>{};
-                                for (final p in profiles) {
-                                  final url =
-                                      (p['profileUrl'] as String?)?.trim() ??
-                                      '';
-                                  if (url.isEmpty) continue;
-                                  final platNorm =
-                                      ((p['platformType'] as String?) ??
-                                              'Other')
-                                          .toLowerCase();
-                                  if (seen.contains(platNorm)) {
-                                    continue; // skip duplicates
-                                  }
-                                  seen.add(platNorm);
-                                  await controller.saveOnlineProfiles({
-                                    'id':
-                                        existing[platNorm], // upsert to existing if present
-                                    'platform_type': p['platformType'],
-                                    'profile_url': url,
-                                  });
-                                }
-                                // Close once after processing all entries
-                                if (Get.isOverlaysOpen) Get.back();
-                              },
-                              child: const CommonText(
-                                'Save',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ],

@@ -199,7 +199,10 @@ class ProfileController extends GetxController {
   Future<void> saveAboutMe(String description) async {
     try {
       loading.value = true;
-      await profileUseCase.updateAboutMe(description);
+      await profileUseCase.updateAboutMe({
+        'id': aboutMeList.value.id,
+        'description': description,
+      });
       await updateProfile();
       showSnackBar(
         title: 'Updated',
@@ -234,6 +237,8 @@ class ProfileController extends GetxController {
     try {
       loading.value = true;
       final payload = {
+        // ensure we update the same preferences row
+        'id': preferences.value.id,
         'looking_for': lookingFor,
         'preferred_budget': preferredBudget,
         'budget_currency': budgetCurrency,
@@ -243,7 +248,7 @@ class ProfileController extends GetxController {
         'preferred_duration_min': preferredDurationMin,
         'preferred_duration_max': preferredDurationMax,
         'preferred_duration_type': preferredDurationType,
-        'work_type': workType,
+        'work_type': workType.toLowerCase(),
       };
       await profileUseCase.updatePreferences(payload);
       await updateProfile();

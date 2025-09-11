@@ -169,8 +169,8 @@ class ProfileBasicDetails extends StatelessWidget {
                                   ),
                                   'email': emailCtrl.text.trim(),
                                 };
-                                await controller.saveBasicDetails(payload);
                                 Get.back();
+                                await controller.saveBasicDetails(payload);
                               },
                               child: const Text(
                                 'Save Changes',
@@ -203,7 +203,7 @@ class ProfileBasicDetails extends StatelessWidget {
             _IconDetailRow(
               icon: IconAssets.gender,
               label: 'Gender',
-              value: gender,
+              value: gender.capitalizeFirst.toString(),
             ),
             const SizedBox(height: 16),
             _IconDetailRow(

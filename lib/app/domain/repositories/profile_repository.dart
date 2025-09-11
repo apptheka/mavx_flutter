@@ -7,7 +7,7 @@ abstract class ProfileRepository {
   Future<UserProfile> updatePreferences(Map<String, dynamic> preferences);
   Future<UserProfile> updateExperience(Map<String, dynamic> experience);
   Future<UserProfile> updateEducation(Map<String, dynamic> education);
-  Future<UserProfile> updateAboutMe(String description);
+  Future<UserProfile> updateAboutMe(Map<String, dynamic> aboutMe);
   Future<UserProfile> updateLanguages(Map<String, dynamic> languages);
   Future<UserProfile> updateOnlineProfiles(Map<String, dynamic> onlineProfiles);
   Future<UserProfile> updateBasicDetails(Map<String, dynamic> basicDetails);

@@ -27,7 +27,10 @@ class ProfileSkills extends StatelessWidget {
         for (final skill in controller.skillList) {
           final raw = (skill.skillName ?? '').trim();
           if (raw.isNotEmpty) {
-            final parts = raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+            final parts = raw
+                .split(',')
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty);
             skills.addAll(parts);
           }
         }
@@ -70,7 +73,7 @@ class ProfileSkills extends StatelessWidget {
                       inputCtrl.clear();
                       addTokens(raw, setSheetState);
                     }
-              
+
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,18 +85,27 @@ class ProfileSkills extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CommonText('Skills', fontSize: 20, fontWeight: FontWeight.w800),
+                                  CommonText(
+                                    'Skills',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                   SizedBox(height: 4),
-                                  CommonText('Add your professional skills - separate multiple skills with commas',
-                                      color: AppColors.textSecondaryColor),
+                                  CommonText(
+                                    'Add your professional skills - separate multiple skills with commas',
+                                    color: AppColors.textSecondaryColor,
+                                  ),
                                 ],
                               ),
                             ),
-                            IconButton(onPressed: Get.back, icon: const Icon(Icons.close))
+                            IconButton(
+                              onPressed: Get.back,
+                              icon: const Icon(Icons.close),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
-              
+
                         // Input + Add button
                         Container(
                           decoration: BoxDecoration(
@@ -133,7 +145,8 @@ class ProfileSkills extends StatelessWidget {
                                             ..selection =
                                                 TextSelection.fromPosition(
                                                   TextPosition(
-                                                    offset: inputCtrl.text.length,
+                                                    offset:
+                                                        inputCtrl.text.length,
                                                   ),
                                                 );
                                         }
@@ -149,7 +162,9 @@ class ProfileSkills extends StatelessWidget {
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           borderSide: BorderSide.none,
                                         ),
                                       ),
@@ -163,7 +178,7 @@ class ProfileSkills extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 10),
-              
+
                               // Chips with delete
                               Wrap(
                                 spacing: 8,
@@ -187,7 +202,7 @@ class ProfileSkills extends StatelessWidget {
                             ],
                           ),
                         ),
-              
+
                         const SizedBox(height: 12),
                         CommonText(
                           'Skill Category *',
@@ -206,8 +221,10 @@ class ProfileSkills extends StatelessWidget {
                             underline: const SizedBox.shrink(),
                             items: const ['Technical', 'Soft', 'Other']
                                 .map(
-                                  (e) =>
-                                      DropdownMenuItem(value: e, child: Text(e)),
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  ),
                                 )
                                 .toList(),
                             onChanged: (v) => setSheetState(() {
@@ -216,22 +233,22 @@ class ProfileSkills extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 14),
-              
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            SizedBox(
-                              width: 140,
-                              height: 44,
-                              child: OutlinedButton(
-                                onPressed: () => Get.back(),
-                                child: CommonText('Cancel', fontWeight: FontWeight.w700),
-                              ),
-                            ),
+
+                        Row( 
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [ 
                             SizedBox(
                               width: 160,
                               height: 44,
                               child: ElevatedButton(
+                                 style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primaryColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            40,
+                                          ),
+                                        ),
+                                      ),
                                 onPressed: () async {
                                   flushInput(); // capture anything left in the field
                                   if (skills.isEmpty) {
@@ -242,7 +259,8 @@ class ProfileSkills extends StatelessWidget {
                                     return;
                                   }
                                   // Merge into an existing record if present
-                                  final existingId = controller.skillList.isNotEmpty
+                                  final existingId =
+                                      controller.skillList.isNotEmpty
                                       ? controller.skillList.first.id
                                       : null;
                                   await controller.saveSkills({
@@ -254,7 +272,11 @@ class ProfileSkills extends StatelessWidget {
                                   });
                                   Get.back();
                                 },
-                                child: CommonText('Save Changes', fontWeight: FontWeight.w700),
+                                child: const CommonText(
+                                  'Save',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -317,7 +339,7 @@ class ProfileSkills extends StatelessWidget {
                       bgColor: chipColors[i % chipColors.length],
                     ),
                 ],
-              ), 
+              ),
             ],
           ),
         );
@@ -339,11 +361,7 @@ class _Chip extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: CommonText(
-        text,
-        fontWeight: FontWeight.w600,
-        fontSize: 12,
-      ),
+      child: CommonText(text, fontWeight: FontWeight.w600, fontSize: 12),
     );
   }
 }

@@ -36,8 +36,11 @@ class ProfileLanguages extends StatelessWidget {
         Get.bottomSheet(
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.7,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                // Allow content to size naturally but cap at 70% of screen height
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -171,31 +174,19 @@ class ProfileLanguages extends StatelessWidget {
                           ],
                           
                           // Add new language button
-                          OutlinedButton.icon(
-                            onPressed: addNewLanguage,
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Language'),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: OutlinedButton.icon(
+                              onPressed: addNewLanguage,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add Language'),
+                            ),
                           ),
                           
                           const SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              SizedBox(
-                                width: 140,
-                                height: 48,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.greyColor,
-                                    foregroundColor: AppColors.primaryColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(40),
-                                    ),
-                                  ),
-                                  onPressed: () => Get.back(),
-                                  child: const CommonText('Cancel' , fontWeight: FontWeight.w700),
-                                ),
-                              ),
+                            children: [ 
                               const SizedBox(width: 16),
                               SizedBox(
                                 width: 140,
@@ -225,7 +216,7 @@ class ProfileLanguages extends StatelessWidget {
                                     }
                                     Get.back();
                                   },
-                                  child: const CommonText('Save' , fontWeight: FontWeight.w700),
+                                  child: const CommonText('Save' , fontWeight: FontWeight.w700, color: AppColors.white, fontSize: 16),
                                 ),
                               ),
                             ],

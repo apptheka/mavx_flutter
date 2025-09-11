@@ -7,11 +7,24 @@ import 'package:mavx_flutter/app/presentation/widgets/app_text_field.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
-  // Inject controller once per page instance
-  LoginController get controller => Get.put(LoginController());
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  late final LoginController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure a single, non-disposed controller instance while app is alive
+    controller = Get.isRegistered<LoginController>()
+        ? Get.find<LoginController>()
+        : Get.put(LoginController(), permanent: true);
+  }
 
   @override
   Widget build(BuildContext context) {

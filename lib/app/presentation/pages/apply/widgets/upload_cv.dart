@@ -11,8 +11,25 @@ class UploadDropArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.width < 360;
     return Obx(() {
-      final hasFile = controller.uploadedFileName.value.isNotEmpty;
+      final hasUploaded = controller.uploadedFileName.value.isNotEmpty;
+      final existingUrl = controller.existingResumeUrl.value;
+      final hasExisting = existingUrl.isNotEmpty;
       final uploading = controller.uploading.value;
+
+      // Derive current file display
+      String currentName() {
+        if (hasUploaded) return controller.uploadedFileName.value;
+        if (hasExisting) return existingUrl.split('/').last;
+        return '';
+      }
+
+      IconData currentIcon() {
+        final name = currentName().toLowerCase();
+        if (name.endsWith('.pdf')) return Icons.picture_as_pdf;
+        if (name.endsWith('.doc') || name.endsWith('.docx')) return Icons.description;
+        if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) return Icons.image;
+        return Icons.insert_drive_file;
+      }
 
       return Container(
         width: double.infinity,
@@ -32,25 +49,72 @@ class UploadDropArea extends StatelessWidget {
         child: InkWell(
           onTap: uploading ? null : controller.pickAndUpload,
           child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.upload,
-                  size: isSmall ? 32 : 36,
-                  color: Colors.black38,
-                ),
-                const SizedBox(height: 6),
-                CommonText(
-                  uploading
-                      ? 'Uploading...'
-                      : (hasFile ? controller.uploadedFileName.value : ''),
-                  color: Colors.black54,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  ), 
-              ],
-            ),
+            child: uploading
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(strokeWidth: 2),
+                      const SizedBox(height: 8),
+                      const CommonText(
+                        'Uploading...',
+                        color: Colors.black54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ],
+                  )
+                : ((hasUploaded || hasExisting)
+                    // Show current resume indicator
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            currentIcon(),
+                            size: isSmall ? 28 : 32,
+                            color: Colors.black54,
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CommonText(
+                                  currentName(),
+                                  color: Colors.black87,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                const SizedBox(height: 2),
+                                const CommonText(
+                                  'Tap to change',
+                                  color: Colors.black45,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    // Default prompt
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.upload,
+                            size: isSmall ? 32 : 36,
+                            color: Colors.black38,
+                          ),
+                          const SizedBox(height: 6),
+                          const CommonText(
+                            'Tap to upload CV',
+                            color: Colors.black54,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ],
+                      )),
           ),
         ),
       );

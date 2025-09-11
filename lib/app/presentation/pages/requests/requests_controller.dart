@@ -14,7 +14,7 @@ class RequestsController extends GetxController {
   final RxString selectedStatus = 'pending'.obs;
 
   // Status options
-  final List<String> statusOptions = ['pending', 'accepted','completed', 'rejected'];
+  final List<String> statusOptions = ['pending', 'accepted', 'rejected'];
 
   @override
   void onInit() {

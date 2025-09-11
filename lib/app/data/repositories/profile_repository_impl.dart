@@ -55,10 +55,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<UserProfile> updateAboutMe(String description) async => _postProfile(
-    AppConstants.aboutMe,
-    {'user_id': await _currentUserId(), 'description': description},
-  );
+  Future<UserProfile> updateAboutMe(Map<String, dynamic> aboutMe) async =>
+      _postProfile(
+        AppConstants.aboutMe,
+        {
+          'user_id': await _currentUserId(),
+          'id': aboutMe['id'],
+          'description': aboutMe['description'],
+        },
+      );
 
   @override
   Future<UserProfile> updateBasicDetails(Map<String, dynamic> details) async {

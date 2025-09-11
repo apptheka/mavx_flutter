@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/domain/usecases/check_auth_status_usecase.dart';
+import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart'; 
 
 class SplashController extends GetxController { 
   final CheckAuthStatusUseCase checkAuthStatusUseCase = Get.find<CheckAuthStatusUseCase>();
+  final StorageService storage = Get.find<StorageService>();
   
   @override
   void onReady() {
@@ -22,10 +24,21 @@ class SplashController extends GetxController {
       if (isLoggedIn) { 
         Get.offAllNamed(AppRoutes.dashboard);
       } else { 
-        Get.offAllNamed(AppRoutes.getStarted);
+        // Show onboarding only once
+        final seen = storage.prefs.getBool('onboarding_seen') ?? false;
+        if (seen) {
+          Get.offAllNamed(AppRoutes.login);
+        } else {
+          Get.offAllNamed(AppRoutes.getStarted);
+        }
       }
     } catch (e) {  
-      Get.offAllNamed(AppRoutes.getStarted);
+      final seen = storage.prefs.getBool('onboarding_seen') ?? false;
+      if (seen) {
+        Get.offAllNamed(AppRoutes.login);
+      } else {
+        Get.offAllNamed(AppRoutes.getStarted);
+      }
     }
   }
 } 

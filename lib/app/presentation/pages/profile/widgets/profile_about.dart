@@ -5,6 +5,7 @@ import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.d
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class ProfileAbout extends StatelessWidget {
   final ProfileController controller;
@@ -60,30 +61,30 @@ class ProfileAbout extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SizedBox(
-                            width: 140,
-                            height: 44,
-                            child: OutlinedButton(
-                              onPressed: () => Get.back(),
-                              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700)),
-                            ),
-                          ),
                           SizedBox(
                             width: 160,
                             height: 44,
                             child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primaryColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            40,
+                                          ),
+                                        ),
+                                      ),
                               onPressed: () async {
                                 final desc = textCtrl.text.trim();
                                 if (desc.isEmpty) {
                                   Get.snackbar('Required', 'About Me is required');
                                   return;
                                 }
-                                await controller.saveAboutMe(desc);
                                 Get.back();
+                                await controller.saveAboutMe(desc);
                               },
-                              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+                              child:const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
