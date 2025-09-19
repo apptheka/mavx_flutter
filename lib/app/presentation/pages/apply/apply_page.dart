@@ -4,6 +4,7 @@ import 'package:mavx_flutter/app/presentation/pages/apply/apply_controller.dart'
 import 'package:mavx_flutter/app/presentation/pages/apply/widgets/header.dart';
 import 'package:mavx_flutter/app/presentation/pages/apply/widgets/labeledField.dart';
 import 'package:mavx_flutter/app/presentation/pages/apply/widgets/upload_cv.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class ApplyPage extends GetView<ApplyController> {
   const ApplyPage({super.key});
@@ -169,10 +170,11 @@ class ApplyPage extends GetView<ApplyController> {
                                       value: c.holdingOffer.value,
                                       onChanged: (v) => c.holdingOffer.value = v ?? false,
                                     )),
-                                const Expanded(
-                                  child: Text(
+                                Expanded(
+                                  child: CommonText(
                                     'Currently holding an offer',
-                                    style: TextStyle(fontWeight: FontWeight.w600),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -194,9 +196,11 @@ class ApplyPage extends GetView<ApplyController> {
                                 final url = c.existingResumeUrl.value;
                                 if (url.isEmpty) return const SizedBox.shrink();
                                 final name = url.split('/').last;
-                                return Text(
+                                return CommonText(
                                   'Using resume: $name',
-                                  style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black54,
                                 );
                               }),
                               const SizedBox(height: 12),
@@ -207,12 +211,11 @@ class ApplyPage extends GetView<ApplyController> {
                                   return ElevatedButton.icon(
                                     onPressed: c.uploading.value ? null : c.pickAndUpload,
                                     icon: const Icon(Icons.upload, color: Colors.white),
-                                    label: Text(
+                                    label: CommonText(
                                       c.uploading.value ? 'Uploading...' : 'Upload New CV',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF0B2944),
@@ -239,9 +242,11 @@ class ApplyPage extends GetView<ApplyController> {
                                             borderRadius: BorderRadius.circular(30),
                                           ),
                                         ),
-                                        child: const Text(
+                                        child: CommonText(
                                           'Back',
-                                          style: TextStyle(fontWeight: FontWeight.w700),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -281,9 +286,11 @@ class ApplyPage extends GetView<ApplyController> {
                                             borderRadius: BorderRadius.circular(30),
                                           ),
                                         ),
-                                        child: Obx(() => Text(
+                                        child: Obx(() => CommonText(
                                               c.applying.value ? 'Applying...' : 'Apply',
-                                              style: const TextStyle(fontWeight: FontWeight.w700),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
                                             )),
                                       ),
                                     ),

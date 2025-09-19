@@ -46,7 +46,7 @@ class ProjectDetailController extends GetxController {
     error.value = '';
     try {
       final response = await projectsUseCase.projectById(id);
-      project.value = response.data!;
+      project.value = response.data?.data ?? [];
     } catch (_) {
       error.value = 'Failed to load project';
     } finally {
@@ -102,7 +102,7 @@ class ProjectDetailController extends GetxController {
     error.value = '';
     try {
       final data = await projectsUseCase.projects();
-      final all = data.data ?? <ProjectModel>[];
+      final all = data.data?.data ?? <ProjectModel>[];
       final currentId = project.isNotEmpty ? project.first.id : null;
       List<ProjectModel> filtered;
       if (projectType.trim().isEmpty) {

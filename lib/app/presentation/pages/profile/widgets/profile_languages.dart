@@ -141,7 +141,7 @@ class ProfileLanguages extends StatelessWidget {
                                               value: languages[i]['canRead'],
                                               onChanged: (v) => setSheetState(() => languages[i]['canRead'] = v ?? false),
                                             ),
-                                            const Text('Can Read'),
+                                            const CommonText('Can Read', fontSize: 14),
                                           ],
                                         ),
                                         Row(
@@ -151,7 +151,7 @@ class ProfileLanguages extends StatelessWidget {
                                               value: languages[i]['canWrite'],
                                               onChanged: (v) => setSheetState(() => languages[i]['canWrite'] = v ?? false),
                                             ),
-                                            const Text('Can Write'),
+                                            const CommonText('Can Write', fontSize: 14),
                                           ],
                                         ),
                                         Row(
@@ -161,7 +161,7 @@ class ProfileLanguages extends StatelessWidget {
                                               value: languages[i]['canSpeak'],
                                               onChanged: (v) => setSheetState(() => languages[i]['canSpeak'] = v ?? false),
                                             ),
-                                            const Text('Can Speak'),
+                                            const CommonText('Can Speak', fontSize: 14),
                                           ],
                                         ),
                                       ],
@@ -179,7 +179,7 @@ class ProfileLanguages extends StatelessWidget {
                             child: OutlinedButton.icon(
                               onPressed: addNewLanguage,
                               icon: const Icon(Icons.add),
-                              label: const Text('Add Language'),
+                              label: const CommonText('Add Language', fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ),
                           
@@ -235,9 +235,10 @@ class ProfileLanguages extends StatelessWidget {
       child: Obx(() {
         final langs = controller.languageList;
         if (langs.isEmpty) {
-          return const Text(
+          return const CommonText(
             'No languages added yet.',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            fontSize: 14,
+            color: AppColors.textSecondaryColor,
           );
         }
         String detailsFor(int? r, int? w, int? s) {

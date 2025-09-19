@@ -92,11 +92,12 @@ class ProfileExperience extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        CommonText(
                           'Experience',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
                         ), 
-                        const Text('Add your professional experience', style: TextStyle(color: AppColors.textSecondaryColor)),
+                        CommonText('Add your professional experience', color: AppColors.textSecondaryColor),
                         const SizedBox(height: 12),
             
                         for (int i = 0; i < rows.length; i++) ...[
@@ -112,11 +113,11 @@ class ProfileExperience extends StatelessWidget {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: Text(
+                                      child: CommonText(
                                         rows[i]['id'] != null
                                             ? 'Edit Experience ${i + 1} (ID: ${rows[i]['id']})'
                                             : 'New Experience ${i + 1}',
-                                        style: const TextStyle(fontWeight: FontWeight.w700),
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     if (rows[i]['id'] != null)
@@ -185,7 +186,7 @@ class ProfileExperience extends StatelessWidget {
                                           value: rows[i]['isRemote'] as bool,
                                           onChanged: (v) => setSheetState(() => rows[i]['isRemote'] = v ?? false),
                                         ),
-                                        const Text('Remote Work'),
+                                        const CommonText('Remote Work', fontSize: 14),
                                       ],
                                     ),
                                   ],
@@ -216,7 +217,7 @@ class ProfileExperience extends StatelessWidget {
                                       value: rows[i]['isCurrent'] as bool,
                                       onChanged: (v) => setSheetState(() => rows[i]['isCurrent'] = v ?? false),
                                     ),
-                                    const Text('Currently working here'),
+                                    const CommonText('Currently working here', fontSize: 14),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -237,7 +238,7 @@ class ProfileExperience extends StatelessWidget {
                         OutlinedButton.icon(
                           onPressed: addRow,
                           icon: const Icon(Icons.add),
-                          label: const Text('Add experience'),
+                          label: const CommonText('Add experience', fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 14),
                         Row(
@@ -297,9 +298,9 @@ class ProfileExperience extends StatelessWidget {
       child: Obx(() {
         final exps = controller.experienceList;
         if (exps.isEmpty) {
-          return const Text(
+          return CommonText(
             'No experience added yet.',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           );
         }
         Color startFor(int i) => [
@@ -367,7 +368,7 @@ class ProfileExperience extends StatelessWidget {
 // Helpers for bottom sheet inputs
 Widget _label(String text) => Padding(
   padding: const EdgeInsets.only(bottom: 6),
-  child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+  child: CommonText(text, fontSize: 14, fontWeight: FontWeight.w700),
 );
  
 

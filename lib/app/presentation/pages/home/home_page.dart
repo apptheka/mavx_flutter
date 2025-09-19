@@ -230,6 +230,12 @@ class _TopMatchesList extends StatelessWidget {
                     compact: true,
                     id: p.id ?? index,
                     applied: applied,
+                    skillsJson: p.skillsJson,
+                    duration: p.duration,
+                    durationType: p.durationType,
+                    budget: p.budget,
+                    projectCost: p.projectCost,
+                    creationDate: p.creationDate,
                   ),
                 );
               },
@@ -278,7 +284,7 @@ class _RecommendedList extends StatelessWidget {
                   final isSelected = selectedIndex == index;
                   return ChoiceChip(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-                    label: Text(filters[index]),
+                    label: CommonText(filters[index]),
                     selected: isSelected,
                     showCheckmark: false,
                     onSelected: controller.isLoadingProjects.value
@@ -345,6 +351,12 @@ class _RecommendedList extends StatelessWidget {
                           showApply: true,
                           id: items[i].id ?? i,
                           applied: controller.appliedIds.contains(items[i].id ?? -1),
+                          skillsJson: items[i].skillsJson,
+                          duration: items[i].duration,
+                          durationType: items[i].durationType,
+                          budget: items[i].budget,
+                          projectCost: items[i].projectCost,
+                          creationDate: items[i].creationDate,
                         ),
                         if (i != items.length - 1) const SizedBox(height: 12),
                       ],
@@ -381,6 +393,12 @@ class _RecommendedList extends StatelessWidget {
                       compact: true,
                       id: p.id ?? i,
                       applied: controller.appliedIds.contains(p.id ?? -1),
+                      skillsJson: p.skillsJson,
+                      duration: p.duration,
+                      durationType: p.durationType,
+                      budget: p.budget,
+                      projectCost: p.projectCost,
+                      creationDate: p.creationDate,
                     );
                   },
                 );

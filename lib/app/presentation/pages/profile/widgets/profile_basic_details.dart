@@ -141,23 +141,18 @@ class ProfileBasicDetails extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SizedBox(
-                            width: 140,
-                            height: 44,
-                            child: OutlinedButton(
-                              onPressed: () => Get.back(),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ),
                           SizedBox(
                             width: 160,
                             height: 44,
                             child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
+                              ),
                               onPressed: () async {
                                 final payload = {
                                   'id': controller.basicDetailsList.value.id,
@@ -172,9 +167,10 @@ class ProfileBasicDetails extends StatelessWidget {
                                 Get.back();
                                 await controller.saveBasicDetails(payload);
                               },
-                              child: const Text(
-                                'Save Changes',
-                                style: TextStyle(fontWeight: FontWeight.w700),
+                              child: const CommonText(
+                                'Save',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),

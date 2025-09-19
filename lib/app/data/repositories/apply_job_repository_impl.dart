@@ -87,7 +87,7 @@ class ApplyJobRepositoryImpl implements ApplyJobRepository{
         final detailsEnc = await apiProvider.get('${AppConstants.getUserApplyProjects}/$userId');
         final detailsJson = jsonDecode(detailsEnc.decrypt());
         final ProjectResponse response = ProjectResponse.fromJson(detailsJson);
-        final List<ProjectModel> projects = response.data ?? [];
+        final List<ProjectModel> projects = response.data?.data ?? [];
         if (appliedIds.isNotEmpty) {
           return projects.where((p) => p.id != null && appliedIds.contains(p.id!)).toList();
         }
@@ -100,8 +100,8 @@ class ApplyJobRepositoryImpl implements ApplyJobRepository{
             final enc = await apiProvider.get('${AppConstants.project}/$id');
             final json = jsonDecode(enc.decrypt());
             final resp = ProjectResponse.fromJson(json);
-            if (resp.data != null && resp.data!.isNotEmpty) {
-              result.addAll(resp.data!);
+            if (resp.data != null && resp.data!.data != null && resp.data!.data!.isNotEmpty) {
+              result.addAll(resp.data!.data!);
             }
           } catch (_) {
             // skip this id on error

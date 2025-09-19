@@ -39,9 +39,9 @@ class ProfileAbout extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('About Me', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                                CommonText('About Me', fontSize: 20, fontWeight: FontWeight.w800),
                                 SizedBox(height: 4),
-                                Text('Tell us about yourself and your career goals', style: TextStyle(color: AppColors.textSecondaryColor)),
+                                CommonText('Tell us about yourself and your career goals', color: AppColors.textSecondaryColor),
                               ],
                             ),
                           ),
@@ -100,27 +100,35 @@ class ProfileAbout extends StatelessWidget {
       },
       child: Obx(() {
         if (controller.loading.value) {
-          return const Text(
+          return const CommonText(
             'Loading... ',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondaryColor,
           );
         }
         if (controller.error.value.isNotEmpty) {
-          return Text(
+          return CommonText(
             controller.error.value,
-            style: const TextStyle(color: Colors.redAccent),
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.redAccent,
           );
         }
         final desc = controller.aboutMeList.value.description?.trim();
         if (desc == null || desc.isEmpty) {
-          return const Text(
+          return CommonText(
             'No bio added yet.',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondaryColor,
           );
         }
-        return Text(
+        return CommonText(
           desc,
-          style: const TextStyle(color: AppColors.textSecondaryColor, height: 1.4),
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondaryColor,
         );
       }),
     );

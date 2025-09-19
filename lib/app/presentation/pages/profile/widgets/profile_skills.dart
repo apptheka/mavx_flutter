@@ -22,8 +22,10 @@ class ProfileSkills extends StatelessWidget {
         String category = 'Technical';
         final TextEditingController inputCtrl = TextEditingController();
 
-        // Flatten existing comma-separated skills into individual tokens
+        // Flatten existing comma-separated skills into individual tokens from both sources
         final List<String> skills = [];
+        
+        // Add skills from skillList (profile API)
         for (final skill in controller.skillList) {
           final raw = (skill.skillName ?? '').trim();
           if (raw.isNotEmpty) {
@@ -32,6 +34,26 @@ class ProfileSkills extends StatelessWidget {
                 .map((e) => e.trim())
                 .where((e) => e.isNotEmpty);
             skills.addAll(parts);
+          }
+        }
+        
+        // Add skills from registeredProfile.skillsCsv (registered API)
+        final registeredSkills = controller.registeredProfile.value.skillsCsv;
+        if (registeredSkills != null && registeredSkills.trim().isNotEmpty) {
+          final csvParts = registeredSkills
+              .split(',')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          
+          // Add only unique skills (case-insensitive check)
+          for (final skill in csvParts) {
+            final exists = skills.any(
+              (s) => s.toLowerCase() == skill.toLowerCase(),
+            );
+            if (!exists) {
+              skills.add(skill);
+            }
           }
         }
 
@@ -237,46 +259,41 @@ class ProfileSkills extends StatelessWidget {
                         Row( 
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [ 
-                            SizedBox(
-                              width: 160,
-                              height: 44,
-                              child: ElevatedButton(
-                                 style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            40,
-                                          ),
-                                        ),
-                                      ),
-                                onPressed: () async {
-                                  flushInput(); // capture anything left in the field
-                                  if (skills.isEmpty) {
-                                    Get.snackbar(
-                                      'Required',
-                                      'Please enter at least one skill',
-                                    );
-                                    return;
-                                  }
-                                  // Merge into an existing record if present
-                                  final existingId =
-                                      controller.skillList.isNotEmpty
-                                      ? controller.skillList.first.id
-                                      : null;
-                                  await controller.saveSkills({
-                                    'id': existingId,
-                                    'skill_category': category,
-                                    // Send as a single comma-separated string to update same row
-                                    'skill_name': skills.join(', '),
-                                    // Do NOT send the bulk list to prevent new rows
-                                  });
-                                  Get.back();
-                                },
-                                child: const CommonText(
-                                  'Save',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryColor,
+                                minimumSize: const Size(160, 44),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
                                 ),
+                              ),
+                              onPressed: () async {
+                                flushInput(); // capture anything left in the field
+                                if (skills.isEmpty) {
+                                  Get.snackbar(
+                                    'Required',
+                                    'Please enter at least one skill',
+                                  );
+                                  return;
+                                }
+                                // Merge into an existing record if present
+                                final existingId =
+                                    controller.skillList.isNotEmpty
+                                    ? controller.skillList.first.id
+                                    : null;
+                                await controller.saveSkills({
+                                  'id': existingId,
+                                  'skill_category': category,
+                                  // Send as a single comma-separated string to update same row
+                                  'skill_name': skills.join(', '),
+                                  // Do NOT send the bulk list to prevent new rows
+                                });
+                                Get.back();
+                              },
+                              child: const CommonText(
+                                'Save',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -294,15 +311,8 @@ class ProfileSkills extends StatelessWidget {
 
       child: Obx(() {
         final skills = controller.skillList;
-        if (skills.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: CommonText(
-              'No skills added yet.',
-              color: AppColors.textSecondaryColor,
-            ),
-          );
-        }
+        final registeredSkills = controller.registeredProfile.value.skillsCsv;
+        
         final chipColors = const [
           Color(0xFFF6EAD5),
           Color(0xFFEFE7DE),
@@ -311,8 +321,11 @@ class ProfileSkills extends StatelessWidget {
           Color(0xFFE3F1FF),
           Color(0xFFE7EFF8),
         ];
-        // Flatten skills: if any skill_name contains commas, split into individual tags
+        
+        // Flatten skills: combine skills from both sources
         final List<String> flat = [];
+        
+        // Add skills from skillList (profile API)
         for (final s in skills) {
           final raw = (s.skillName ?? '').trim();
           if (raw.isEmpty) continue;
@@ -322,6 +335,36 @@ class ProfileSkills extends StatelessWidget {
               .where((e) => e.isNotEmpty)
               .toList();
           flat.addAll(parts);
+        }
+        
+        // Add skills from registeredProfile.skillsCsv (registered API)
+        if (registeredSkills != null && registeredSkills.trim().isNotEmpty) {
+          final csvParts = registeredSkills
+              .split(',')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          
+          // Add only unique skills (case-insensitive check)
+          for (final skill in csvParts) {
+            final exists = flat.any(
+              (s) => s.toLowerCase() == skill.toLowerCase(),
+            );
+            if (!exists) {
+              flat.add(skill);
+            }
+          }
+        }
+        
+        // Check if we have any skills to display
+        if (flat.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: CommonText(
+              'No skills added yet.',
+              color: AppColors.textSecondaryColor,
+            ),
+          );
         }
 
         return Padding(

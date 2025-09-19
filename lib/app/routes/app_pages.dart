@@ -2,6 +2,8 @@ import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_
 import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/otp/otp_binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/otp/otp_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/requests/requests.binding.dart';
@@ -117,6 +119,11 @@ class AppPages {
       page: () => const ChangePassPage(),
       binding: ChangePassBinding(),
       arguments: Get.arguments,
+    ),
+    GetPage(
+      name: AppRoutes.myProject,
+      page: () => const MyProjectsPage(),
+      binding: MyProjectsBinding(),
     ),
   ];
 }

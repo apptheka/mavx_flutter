@@ -93,9 +93,9 @@ class ProfilePreferences extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Project Preferences', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      const CommonText('Project Preferences', fontSize: 18, fontWeight: FontWeight.w800),
                       const SizedBox(height: 6),
-                      const Text('Set your project and work preferences', style: TextStyle(color: AppColors.textSecondaryColor)),
+                      const CommonText('Set your project and work preferences', color: AppColors.textSecondaryColor),
                       const SizedBox(height: 12),
                       
                       _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
@@ -290,7 +290,7 @@ class _LabeledField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        CommonText(label, fontSize: 14, fontWeight: FontWeight.w700),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
@@ -324,7 +324,7 @@ class _LabeledDropdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        CommonText(label, fontSize: 14, fontWeight: FontWeight.w700),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: value,

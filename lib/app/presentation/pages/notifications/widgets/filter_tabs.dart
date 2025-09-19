@@ -24,7 +24,7 @@ class FilterTabs extends GetView<NotificationsController> {
             const Spacer(),
             TextButton(
               onPressed: controller.markAllAsRead,
-              child: const Text('Mark all as read'),
+              child: const CommonText('Mark all as read', fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ],
         ),

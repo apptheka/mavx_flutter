@@ -7,7 +7,9 @@ import 'package:mavx_flutter/app/domain/usecases/get_all_industries_usecase.dart
 import 'package:mavx_flutter/app/domain/usecases/get_all_specification_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
+import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class RegisterController extends GetxController {
   final GetAllSpecificationUseCase getAllSpecificationUseCase = Get.find<GetAllSpecificationUseCase>();
@@ -53,6 +55,7 @@ class RegisterController extends GetxController {
   final alternateEmailCtrl = TextEditingController();
   final experienceCtrl = TextEditingController();
   final ctcCtrl = TextEditingController();
+  final skillsCtrl = TextEditingController();
 
   // Step 2 country code state
   final RxString dialCode = '+91'.obs; // default India
@@ -211,6 +214,18 @@ class RegisterController extends GetxController {
       ); 
     }
 
+    // Normalize skills into a consistent comma-separated string
+    String? normalizeSkillsCsv(String? raw) {
+      final input = raw ?? '';
+      final tokens = input
+          .split(RegExp(r'[\n,]+'))
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (tokens.isEmpty) return null;
+      return tokens.join(', ');
+    }
+
     final payload = <String, dynamic>{
       'fullName': nullIfEmpty(firstNameCtrl.text),
       'lastName': nullIfEmpty(lastNameCtrl.text),
@@ -224,6 +239,7 @@ class RegisterController extends GetxController {
       'alternateEmail': nullIfEmpty(alternateEmailCtrl.text),
       'experience': parseInt(experienceCtrl.text),
       'ctc': nullIfEmpty(ctcCtrl.text),
+      'skills_csv': normalizeSkillsCsv(skillsCtrl.text),
       'linkedin': nullIfEmpty(linkedInUrl), 
       'roleType': nullIfEmpty(roleTypeCtrl.value),
       'primaryFunction': parseInt(primaryFunctionCtrl.value),
@@ -261,10 +277,10 @@ class RegisterController extends GetxController {
         if (status == 'pending') {
           await _showPendingDialog();
           // After acknowledging, send user to login
-          Get.offAllNamed('/login');
+          Get.offNamed('/login');
         } else {
           // Consider any non-pending as approved
-          Get.offAllNamed('/home');
+          Get.offNamed('/home');
         }
       }else if(result.status == 400){
         Get.snackbar(
@@ -323,14 +339,11 @@ Future<void> _showPendingDialog() async {
             const SizedBox(height: 20),
             
             // Title
-            Text(
+            CommonText(
               'Profile Under Review',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
-              ),
-              textAlign: TextAlign.center,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade800,
             ),
             const SizedBox(height: 16),
             
@@ -338,7 +351,7 @@ Future<void> _showPendingDialog() async {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: Colors.blue.shade100,
@@ -353,25 +366,17 @@ Future<void> _showPendingDialog() async {
                     size: 24,
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  CommonText(
                     'Your profile is currently being reviewed by our team.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade700,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  CommonText(
                     'You\'ll receive a notification once approved and can log in afterward.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ), 
                 ],
               ),
             ),
@@ -381,7 +386,7 @@ Future<void> _showPendingDialog() async {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.back(),
+                onPressed: () => Get.offAllNamed(AppRoutes.login),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,
@@ -391,12 +396,10 @@ Future<void> _showPendingDialog() async {
                   ),
                   elevation: 2,
                 ),
-                child: const Text(
+                child: CommonText(
                   'Got it',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -677,6 +680,8 @@ Future<void> _showPendingDialog() async {
 
   @override
   void onClose() {
+    // Ensure no text field remains focused as controllers are about to be disposed
+    FocusManager.instance.primaryFocus?.unfocus();
     firstNameCtrl.dispose();
     lastNameCtrl.dispose();
     passwordCtrl.dispose();
@@ -700,6 +705,7 @@ Future<void> _showPendingDialog() async {
     achievementsCtrl.dispose(); 
     otherPrimaryFunctionCtrl.dispose();
     otherPrimaryIndustryCtrl.dispose();
+    skillsCtrl.dispose();
     super.onClose();
   }
 }

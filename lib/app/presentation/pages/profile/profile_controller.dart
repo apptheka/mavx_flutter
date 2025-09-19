@@ -5,6 +5,7 @@ import 'package:mavx_flutter/app/data/models/complete_profile_model.dart';
 import 'package:mavx_flutter/app/data/models/user_registered_model.dart';
 import 'package:mavx_flutter/app/domain/usecases/profile_usecases.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class ProfileController extends GetxController {
@@ -61,24 +62,18 @@ class ProfileController extends GetxController {
     }
   }
 
-  Future<void> fetchRegisteredProfile() async {
-    // Do not toggle the global loading/error flags here to avoid
-    // masking the main profile load state on the page.
+  Future<void> fetchRegisteredProfile() async { 
     try {
       final response = await profileUseCase.getRegisteredProfile();
       log("response========> ${response.toString()}");
       registeredProfile.value = response;
     } catch (e) {
-      log("error========> ${e.toString()}");
-      // Keep UI visible even if registered profile fetch fails.
-      // Avoid setting the shared error flag here.
+      log("error========> ${e.toString()}"); 
     }
   }
 
   void _recalculateCompletion() {
-    int completionScore = 10; // base score for registration data
-
-    // Weights mirroring the web logic
+    int completionScore = 10;  
     const int wBasicDetails = 5;
     const int wAboutMe = 20;
     const int wExperience = 20;
@@ -121,8 +116,7 @@ class ProfileController extends GetxController {
       completionScore += wOnlineProfiles;
     }
 
-    final pref = preferences.value;
-    // If any preference fields present
+    final pref = preferences.value; 
     if ((pref.lookingFor != null && pref.lookingFor!.trim().isNotEmpty) ||
         (pref.preferredBudget != null &&
             pref.preferredBudget!.trim().isNotEmpty) ||
@@ -135,9 +129,7 @@ class ProfileController extends GetxController {
     }
 
     if (completionScore > 100) completionScore = 100;
-    profileCompletion.value = completionScore;
-
-    // Show a one-time popup when profile reaches 100% (persisted across restarts)
+    profileCompletion.value = completionScore; 
     if (completionScore == 100 && !_profileCompleteNotified) {
       _profileCompleteNotified = true;
       // Persist flag
@@ -152,14 +144,15 @@ class ProfileController extends GetxController {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Text('Profile Complete!'),
-              content: const Text(
+              title: const CommonText('Profile Complete!', fontSize: 18, fontWeight: FontWeight.w600),
+              content: const CommonText(
                 'Your profile is complete. Great job!\n\nThis will improve your chances of being discovered for future jobs.',
+                fontSize: 14,
               ),
               actions: [
                 TextButton(
                   onPressed: () => Get.back(),
-                  child: const Text('OK'),
+                  child: const CommonText('OK', fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

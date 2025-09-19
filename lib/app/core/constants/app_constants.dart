@@ -2,9 +2,9 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  static const String baseUrl = 'http://192.168.1.6:3001/v1/api';
-  static const String baseUrlImage = 'http://192.168.1.6:3001/';
-  static const String fileUploading = 'http://192.168.1.6:3001/file-uploading';
+  static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
+  static const String baseUrlImage = 'https://apis.apptheka.com/mavx/public/';
+  static const String fileUploading = 'https://apis.apptheka.com/mavx/file-uploading';
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';
@@ -33,6 +33,7 @@ class AppConstants {
   static const String request = '/user/expert-requests';
   static const String fcmRegister = '/notifications/device/register';
   static const String topicSubscribe = '/notifications/topic/subscribe';
+  static const String myProjects = '/user/expert-hires?status=confirmed';
 
   // Storage Keys
   static const String tokenKey = 'token';

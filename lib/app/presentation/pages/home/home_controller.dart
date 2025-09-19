@@ -95,7 +95,7 @@ class HomeController extends GetxController {
     try {
       if (showGlobalLoader) isLoadingProjects.value = true;
       final resp = await _projectsUseCase.projects();
-      final list = resp.data ?? [];
+      final list = resp.data?.data ?? [];
       allProjects.assignAll(list);
       _recomputeMatches();
       applyFilter(selectedFilter.value);
@@ -112,7 +112,7 @@ Future<void> refreshTopMatches() async {
   try {
     // Fetch fresh projects but only recompute topMatches, keep otherProjects as-is
     final resp = await _projectsUseCase.projects();
-    final list = resp.data ?? [];
+    final list = resp.data?.data ?? [];
 
     final profileController = Get.isRegistered<ProfileController>()
         ? Get.find<ProfileController>()

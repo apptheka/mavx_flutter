@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
@@ -23,6 +24,12 @@ class JobCard extends StatelessWidget {
   final bool showBookmark;
   final bool? bookmarkedOverride;
   final VoidCallback? onBookmarkPressed;
+  final String? skillsJson;
+  final int? duration;
+  final String? durationType;
+  final double? budget;
+  final double? projectCost;
+  final DateTime? creationDate;
 
   const JobCard({
     super.key,
@@ -39,6 +46,12 @@ class JobCard extends StatelessWidget {
     this.showBookmark = true,
     this.bookmarkedOverride,
     this.onBookmarkPressed,
+    this.skillsJson,
+    this.duration,
+    this.durationType,
+    this.budget,
+    this.projectCost,
+    this.creationDate,
   });
 
   Color _getProjectTypeColor(String projectType) {
@@ -142,12 +155,11 @@ class JobCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: Text(
-                              company,
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: isSmallScreen ? 12 : 14,
-                              ),
+                            child: CommonText(
+                              "Veltrix Global",
+                              fontSize: isSmallScreen ? 12 : 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black54,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -214,53 +226,79 @@ class JobCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: compact ? 6 : spacingSmall),
-            const Divider(height: 16, color: Color(0xFFE6E9EF)),
+            
+            // Skills Section
+            if (skillsJson != null && skillsJson!.isNotEmpty) ...[
+              _buildSkillsSection(isSmallScreen),
+              SizedBox(height: compact ? 6 : 8),
+            ],
+            
+            const Divider(height: 12, color: Color(0xFFE6E9EF)),
+            SizedBox(height: compact ? 2 : 6),
+            
+            // Project Type
+            if (tags.isNotEmpty)
+              CommonText(
+                tags.first,
+                color: _getProjectTypeColor(tags.first),
+                fontWeight: FontWeight.w700,
+                fontSize: isSmallScreen ? 12 : 14,
+              ),
             SizedBox(height: compact ? 4 : 6),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 280) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (tags.isNotEmpty)
-                        CommonText(
-                          tags.first,
-                          color: _getProjectTypeColor(tags.first),
-                          fontWeight: FontWeight.w700,
-                          fontSize: isSmallScreen ? 12 : 14,
-                          ), 
-                    ],
-                  );
-                }
-
-                return Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: isSmallScreen ? 6 : 10,
-                  runSpacing: 6,
-                  children: [
-                    if (tags.isNotEmpty)
-                      CommonText(
-                        tags.first,
-                        color: _getProjectTypeColor(tags.first),
-                        fontWeight: FontWeight.w700,
-                        fontSize: isSmallScreen ? 12 : 14,
-                        ), 
+            
+            // Duration and Budget
+            if (compact) ...[
+              // More compact layout for similar projects
+              CommonText(
+                _getDurationText(),
+                color: Colors.black87,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (budget != null || projectCost != null) ...[
+                const SizedBox(height: 2),
+                CommonText(
+                  _getBudgetText(),
+                  color: Colors.black87,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ] else ...[
+              // Regular layout for home page
+              Row(
+                children: [
+                  Expanded(
+                    child: CommonText(
+                      _getDurationText(),
+                      color: Colors.black87,
+                      fontSize: isSmallScreen ? 12 : 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (budget != null || projectCost != null) ...[
+                    const SizedBox(width: 8),
+                    CommonText(
+                      _getBudgetText(),
+                      color: Colors.black87,
+                      fontSize: isSmallScreen ? 12 : 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ],
-                );
-              },
-            ),
-            SizedBox(height: compact ? 4 : 6),
-            CommonText(
-              'For 6 Months',
-              color: Colors.black87,
-              fontSize: isSmallScreen ? 12 : 14,
-            ),
-            SizedBox(height: compact ? 2 : 4),
-            CommonText(
-              'Posted: 1 hour ago',
-              color: Colors.black54,
-              fontSize: isSmallScreen ? 10 : 12,
-            ),
+                ],
+              ),
+            ],
+            SizedBox(height: compact ? 0 : 4),
+            // if (!compact)
+            //   CommonText(
+            //     _getPostedText(),
+            //     color: Colors.black54,
+            //     fontSize: isSmallScreen ? 10 : 12,
+            //   ),
             if (showApply) ...[
               SizedBox(height: compact ? spacingSmall : spacingMedium),
               LayoutBuilder(
@@ -415,5 +453,88 @@ class JobCard extends StatelessWidget {
         fontWeight: FontWeight.w700,
         ), 
     );
+  }
+
+  Widget _buildSkillsSection(bool isSmallScreen) {
+    if (skillsJson == null || skillsJson!.isEmpty) return const SizedBox.shrink();
+    
+    try {
+      final List<dynamic> skills = jsonDecode(skillsJson!);
+      // Show fewer skills in compact mode to prevent overflow
+      final limitedSkills = skills.take(compact ? 2 : 3).toList();
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CommonText(
+            'Key Skills',
+            fontSize: compact ? 11 : (isSmallScreen ? 12 : 13),
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+          SizedBox(height: compact ? 4 : 6),
+          Wrap(
+            spacing: compact ? 4 : 6,
+            runSpacing: compact ? 2 : 4,
+            children: limitedSkills.map((skill) => _skillChip(skill.toString(), isSmallScreen)).toList(),
+          ),
+        ],
+      );
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
+  }
+
+  Widget _skillChip(String skill, bool isSmallScreen) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 4 : (isSmallScreen ? 6 : 8),
+        vertical: compact ? 2 : (isSmallScreen ? 3 : 4),
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6EAD5),
+        borderRadius: BorderRadius.circular(compact ? 8 : 12),
+      ),
+      child: CommonText(
+        skill,
+        fontSize: compact ? 9 : (isSmallScreen ? 10 : 11),
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  String _getDurationText() {
+    if (duration != null) {
+      return 'For $duration ${durationType ?? 'months'}';
+    }
+    return 'For 6 Months';
+  }
+
+  String _getBudgetText() {
+    if (budget != null) {
+      return '₹${budget!.toStringAsFixed(0)}';
+    } else if (projectCost != null) {
+      return '₹${projectCost!.toStringAsFixed(0)}';
+    }
+    return '₹200000';
+  }
+
+  String _getPostedText() {
+    if (creationDate != null) {
+      final now = DateTime.now();
+      final difference = now.difference(creationDate!);
+      
+      if (difference.inDays > 0) {
+        return 'Posted: ${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+      } else if (difference.inHours > 0) {
+        return 'Posted: ${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+      } else {
+        return 'Posted: ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+      }
+    }
+    return 'Posted: 1 hour ago';
   }
 }

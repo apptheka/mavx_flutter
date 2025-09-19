@@ -73,23 +73,21 @@ class Header extends StatelessWidget {
                     height: 12,
                     color: Colors.black12,
                   ),
-                  RichText(
-                    text: TextSpan(
-                      text: 'Project Type : ',
-                      style: TextStyle(
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CommonText(
+                        'Project Type : ',
                         color: Colors.black54,
                         fontSize: subtitleSize,
                       ),
-                      children: [
-                        TextSpan(
-                          text: projectType?.trim().isNotEmpty == true ? projectType! : 'N/A',
-                          style: TextStyle(
-                            color: Color(0xFF3B82F6),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
+                      CommonText(
+                        projectType?.trim().isNotEmpty == true ? projectType! : 'N/A',
+                        color: Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w700,
+                        fontSize: subtitleSize,
+                      ),
+                    ],
                   ),
                 ],
               ),

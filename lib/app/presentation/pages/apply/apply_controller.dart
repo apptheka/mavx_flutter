@@ -95,8 +95,8 @@ class ApplyController extends GetxController {
     try {
       loadingProject.value = true;
       final resp = await _projectsUseCase.projectById(projectId);
-      if (resp.data != null && resp.data!.isNotEmpty) {
-        project.value = resp.data!.first;
+      if (resp.data != null && resp.data!.data != null && resp.data!.data!.isNotEmpty) {
+        project.value = resp.data!.data!.first;
       }
     } catch (e) {
       // ignore but keep UI robust

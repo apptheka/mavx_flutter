@@ -74,19 +74,15 @@ class ProfileEducation extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          CommonText(
                             'Education',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
                           ),
                           const SizedBox(height: 6),
-                          const Text(
+                          CommonText(
                             'Add your educational background',
-                            style: TextStyle(
-                              color: AppColors.textSecondaryColor,
-                            ),
+                            color: AppColors.textSecondaryColor,
                           ),
                           const SizedBox(height: 12),
           
@@ -105,15 +101,13 @@ class ProfileEducation extends StatelessWidget {
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: Text(
+                                        child: CommonText(
                                           rows[i]['id'] != null
                                               ? 'Edit Education ${i + 1} (ID: ${rows[i]['id']})'
                                               : 'New Education ${i + 1}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w700,
                                           ),
-                                        ),
-                                      ),
+                                        ), 
                                       IconButton(
                                         onPressed: () {
                                           controller.deleteEducation(
@@ -195,11 +189,9 @@ class ProfileEducation extends StatelessWidget {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
+                                            CommonText(
                                               'Start Date *',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              fontWeight: FontWeight.w700,
                                             ),
                                             const SizedBox(height: 6),
                                             DateBox(
@@ -238,11 +230,9 @@ class ProfileEducation extends StatelessWidget {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
+                                            CommonText(
                                               'End Date',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              fontWeight: FontWeight.w700,
                                             ),
                                             const SizedBox(height: 6),
                                             DateBox(
@@ -285,7 +275,7 @@ class ProfileEducation extends StatelessWidget {
                                               v ?? false,
                                         ),
                                       ),
-                                      const Text('Currently studying here'),
+                                      const CommonText('Currently studying here', fontSize: 14),
                                     ],
                                   ),
                                 ],
@@ -299,7 +289,7 @@ class ProfileEducation extends StatelessWidget {
                             child: OutlinedButton.icon(
                               onPressed: addRow,
                               icon: const Icon(Icons.add),
-                              label: const Text('Add Education'),
+                              label: const CommonText('Add Education', fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ),
           
@@ -377,9 +367,9 @@ class ProfileEducation extends StatelessWidget {
       child: Obx(() {
         final items = controller.educationList;
         if (items.isEmpty) {
-          return const Text(
+          return CommonText(
             'No education added yet.',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           );
         }
         String yearStr(DateTime? s, DateTime? e, int? isCurrent) {

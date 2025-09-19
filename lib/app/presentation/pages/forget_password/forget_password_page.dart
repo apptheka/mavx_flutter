@@ -67,12 +67,11 @@ class ForgetPasswordPage extends GetView<ForgetPasswordController> {
                               if (controller.emailError.value.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
+                                  child: CommonText(
                                     controller.emailError.value,
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.red,
                                   ),
                                 ),
                             ],

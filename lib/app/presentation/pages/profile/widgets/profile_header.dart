@@ -50,7 +50,7 @@ class ProfileHeader extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      ), 
+                    ),
                   ),
                   IconButton(
                     onPressed: () async {
@@ -69,44 +69,50 @@ class ProfileHeader extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                   Obx(() {
-                final avatar = homeController.avatarUrl; // full http(s) if valid
-                final rawProfilePath = homeController.user.value?.profile.trim();
-                String? url;
-                if (avatar != null && avatar.isNotEmpty) {
-                  url = avatar;
-                } else if (rawProfilePath != null &&
-                    rawProfilePath.isNotEmpty &&
-                    rawProfilePath.toLowerCase() != 'null') {
-                  url = "${AppConstants.baseUrlImage}$rawProfilePath";
-                }
+                  Obx(() {
+                    final avatar =
+                        homeController.avatarUrl; // full http(s) if valid
+                    final rawProfilePath = homeController.user.value?.profile
+                        .trim();
+                    String? url;
+                    if (avatar != null && avatar.isNotEmpty) {
+                      url = avatar;
+                    } else if (rawProfilePath != null &&
+                        rawProfilePath.isNotEmpty &&
+                        rawProfilePath.toLowerCase() != 'null') {
+                      url = "${AppConstants.baseUrlImage}$rawProfilePath";
+                    }
 
-                return CircleAvatar(
-                  radius: 26,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  backgroundImage: (url != null && !url.toLowerCase().endsWith('.svg'))
-                      ? NetworkImage(url)
-                      : null,
-                  child: Builder(builder: (context) {
-                    if (url == null || url.isEmpty) {
-                      return Image.asset(ImageAssets.userAvatar);
-                    }
-                    if (url.toLowerCase().endsWith('.svg')) {
-                      return ClipOval(
-                        child: SvgPicture.network(
-                          url,
-                          width: 46,
-                          height: 46,
-                          fit: BoxFit.cover,
-                          placeholderBuilder: (_) => Image.asset(ImageAssets.userAvatar),
-                        ),
-                      );
-                    }
-                    // For raster images, child remains null to show backgroundImage
-                    return const SizedBox.shrink();
+                    return CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      backgroundImage:
+                          (url != null && !url.toLowerCase().endsWith('.svg'))
+                          ? NetworkImage(url)
+                          : null,
+                      child: Builder(
+                        builder: (context) {
+                          if (url == null || url.isEmpty) {
+                            return Image.asset(ImageAssets.userAvatar);
+                          }
+                          if (url.toLowerCase().endsWith('.svg')) {
+                            return ClipOval(
+                              child: SvgPicture.network(
+                                url,
+                                width: 46,
+                                height: 46,
+                                fit: BoxFit.cover,
+                                placeholderBuilder: (_) =>
+                                    Image.asset(ImageAssets.userAvatar),
+                              ),
+                            );
+                          }
+                          // For raster images, child remains null to show backgroundImage
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    );
                   }),
-                );
-              }),
                   const SizedBox(width: 12),
                   Expanded(child: _NameAndStatus(controller: controller)),
                 ],
@@ -121,7 +127,8 @@ class ProfileHeader extends StatelessWidget {
                   final expText = (rp.experience != null)
                       ? '${rp.experience} Years of experience'
                       : 'Years of experience';
-                  final locText = (rp.location != null && rp.location!.trim().isNotEmpty)
+                  final locText =
+                      (rp.location != null && rp.location!.trim().isNotEmpty)
                       ? rp.location!.trim()
                       : 'Location';
                   return Row(
@@ -131,155 +138,141 @@ class ProfileHeader extends StatelessWidget {
                         text: expText,
                       ),
                       const SizedBox(width: 18),
-                      _IconText(
-                        iconAsset: IconAssets.location,
-                        text: locText,
-                      ),
+                      _IconText(iconAsset: IconAssets.location, text: locText),
                     ],
                   );
                 }),
               ),
             ],
           ),
-        ), 
+        ),
       ],
     );
   }
 
-Future<void> _logoutDialog(AuthRepository authRepository) async {
-  return Get.dialog(
-    BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-      child: AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        contentPadding: const EdgeInsets.all(24),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
+  Future<void> _logoutDialog(AuthRepository authRepository) async {
+    return Get.dialog(
+      BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: const EdgeInsets.all(24),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.logout_rounded,
+                  color: Colors.red.shade600,
+                  size: 24,
+                ),
               ),
-              child: Icon(
-                Icons.logout_rounded,
-                color: Colors.red.shade600,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Logout',
-              style: TextStyle(
+              const SizedBox(width: 12),
+              const CommonText(
+                'Logout',
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            CommonText(
-              'Are you sure you want to logout?',
-              fontSize: 16,
-              color: Colors.grey.shade700, 
-            ),
-            const SizedBox(height: 4),
-            CommonText(
-              'You will need to login again to access your account.',
-              fontSize: 14,
-              color: Colors.grey.shade500,
-            ),
-          ],
-        ),
-        actions: [
-          Row(
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Get.back(),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: Colors.grey.shade300,
-                        width: 1,
+              const SizedBox(height: 8),
+              CommonText(
+                'Are you sure you want to logout?',
+                fontSize: 16,
+                color: Colors.grey.shade700,
+              ),
+              const SizedBox(height: 4),
+              CommonText(
+                'You will need to login again to access your account.',
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey.shade300, width: 1),
                       ),
                     ),
-                  ),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
+                    child: const CommonText(
+                      'Cancel',
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.back();
-                    authRepository.logout();
-                    Get.snackbar(
-                      "Logout",
-                      "You have been logged out successfully",
-                      duration: const Duration(seconds: 3),
-                      icon: const Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.white,
-                        size: 28,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      authRepository.logout();
+                      Get.snackbar(
+                        'Logout',
+                        'You have been logged out successfully',
+                        duration: const Duration(seconds: 3),
+                        icon: const Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        colorText: Colors.white,
+                        backgroundColor: Colors.green.shade600,
+                        snackPosition: SnackPosition.BOTTOM,
+                        margin: const EdgeInsets.all(16),
+                        borderRadius: 12,
+                        animationDuration: const Duration(milliseconds: 300),
+                      );
+                      Get.offAllNamed(AppRoutes.login);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      colorText: Colors.white,
-                      backgroundColor: Colors.green.shade600,
-                      snackPosition: SnackPosition.BOTTOM,
-                      margin: const EdgeInsets.all(16),
-                      borderRadius: 12,
-                      animationDuration: const Duration(milliseconds: 300),
-                    );
-                    Get.offAllNamed(AppRoutes.login);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  child: const Text(
-                    'Logout',
-                    style: TextStyle(
+                    child: const CommonText(
+                      'Logout',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ],
+          actionsPadding: const EdgeInsets.only(
+            left: 24,
+            right: 24,
+            bottom: 20,
+            top: 8,
           ),
-        ],
-        actionsPadding: const EdgeInsets.only(
-          left: 24,
-          right: 24,
-          bottom: 20,
-          top: 8,
         ),
-      ),
-    ),
-    barrierDismissible: false,
-  );
-}
+      ));
+    }
 }
 
 class _NameAndStatus extends StatelessWidget {
@@ -307,32 +300,21 @@ class _NameAndStatus extends StatelessWidget {
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
               );
-            }), 
+            }),
+            const Spacer(),
+            IconButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.myProject);
+              },
+              icon: Image.asset(
+                IconAssets.role,
+                height: 22,
+                width: 22,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
-        // const SizedBox(height: 4),
-        // Obx(() {
-        //   final raw = controller.registeredProfile.value.primaryFunction.toString();
-        //   // Remove stray numerals and whitespace, and guard against literal 'null'
-        //   final text = (raw)
-        //       .replaceAll('1', '')
-        //       .trim();
-        //   if (text.isEmpty || text.toLowerCase() == 'null') {
-        //     return const SizedBox.shrink();
-        //   }
-        //   return Row(
-        //     children: [
-        //       Image.asset(IconAssets.role, height: 15, width: 15),
-        //       const SizedBox(width: 8),
-        //       CommonText(
-        //         text,
-        //         fontSize: 15,
-        //         fontWeight: FontWeight.w600,
-        //         color: Colors.grey,
-        //       ),
-        //     ],
-        //   );
-        // }),
       ],
     );
   }

@@ -6,6 +6,7 @@ import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/search_bar_widget.dart';
+import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/pages/requests/requests_badge_controller.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
@@ -176,14 +177,11 @@ class HeaderWidget extends GetView<HomeController> {
                                 border: Border.all(color: Colors.white, width: 1),
                               ),
                               constraints: const BoxConstraints(minWidth: 18, minHeight: 16),
-                              child: Text(
+                              child: CommonText(
                                 count > 99 ? '99+' : '$count',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                textAlign: TextAlign.center,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.white,
                               ),
                             ),
                           ),
@@ -194,7 +192,7 @@ class HeaderWidget extends GetView<HomeController> {
 
                 if (listenable == null) {
                   // Fallback: render without live updates
-                  final count = NotificationStorageService.unreadCount();
+                  final count = NotificationStorageService.unreadCount(); 
                   return buildIconWithCount(count);
                 }
 

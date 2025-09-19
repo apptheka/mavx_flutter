@@ -393,9 +393,9 @@ class ProfileOnlineProfiles extends StatelessWidget {
         final items = controller.onlineProfileList;
         // Single source of truth: only backend items are displayed
         if (items.isEmpty) {
-          return const Text(
+          return CommonText(
             'No online profiles added yet.',
-            style: TextStyle(color: AppColors.textSecondaryColor),
+            color: AppColors.textSecondaryColor,
           );
         }
 

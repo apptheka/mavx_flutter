@@ -52,25 +52,25 @@ class AboutSection extends StatelessWidget {
               desc,
               color: AppColors.textSecondaryColor, 
             ),
-            const SizedBox(height: 12),
-            const _SubTitle('Responsibilities'),
-            const _Bullet(text: 'Develop strategy with stakeholders'),
-            const _Bullet(text: 'Lead CRM tooling rollout'),
-            const _Bullet(text: 'Optimize onboarding & marketing'),
-            const _Bullet(text: 'Collaborate with engineering and marketing'),
-            const SizedBox(height: 12),
-            const _SubTitle('Preferred Skills'),
-            const Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _Skill('P&L Analysis'),
-                _Skill('Process Design'),
-                _Skill('Sales Enablement'),
-                _Skill('Change Management'),
-                _Skill('Strategic Communication'),
-              ],
-            ),
+            // const SizedBox(height: 12),
+            // const _SubTitle('Responsibilities'),
+            // const _Bullet(text: 'Develop strategy with stakeholders'),
+            // const _Bullet(text: 'Lead CRM tooling rollout'),
+            // const _Bullet(text: 'Optimize onboarding & marketing'),
+            // const _Bullet(text: 'Collaborate with engineering and marketing'),
+            // const SizedBox(height: 12),
+            // const _SubTitle('Preferred Skills'),
+            // const Wrap(
+            //   spacing: 8,
+            //   runSpacing: 8,
+            //   children: [
+            //     _Skill('P&L Analysis'),
+            //     _Skill('Process Design'),
+            //     _Skill('Sales Enablement'),
+            //     _Skill('Change Management'),
+            //     _Skill('Strategic Communication'),
+            //   ],
+            // ),
           ],
         ),
       );
@@ -83,35 +83,47 @@ class TimelineSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Card(
-      child: Column(
-        children: const [
-          _TimelineItem(
-            iconPath: IconAssets.calendar,
-            title: 'Start Date',
-            value: 'Aug 1, 2025',
+    final controller = Get.find<ProjectDetailController>();
+    return Obx(() {
+      if (controller.loading.value && controller.project.isEmpty) {
+        return const _Card(child: Center(child: CircularProgressIndicator()));
+      }
+
+      if (controller.error.isNotEmpty) {
+        return _Card(
+          child: CommonText(
+            controller.error.value,
+            color: AppColors.textSecondaryColor,
           ),
-          SizedBox(height: 24),
-          _TimelineItem(
-            iconPath: IconAssets.globe,
-            value: 'Phase 1: Aug 1 - Aug 15, 2025',
-            title: 'Discovery',
-          ),
-          SizedBox(height: 24),
-          _TimelineItem(
-            iconPath: IconAssets.mvp,
-            value: 'Sep 1, 2025',
-            title: 'MVP Launch',
-          ),
-          SizedBox(height: 24),
-          _TimelineItem(
-            iconPath: IconAssets.presentation,
-            value: 'Oct 10, 2025',
-            title: 'Final Review Presentation',
-          ),
-        ],
-      ),
-    );
+        );
+      }
+
+      final project = controller.project.isNotEmpty ? controller.project.first : null;
+      
+      return _Card(
+        child: Column(
+          children: [
+            _TimelineItem(
+              iconPath: IconAssets.calendar,
+              title: 'Start Date',
+              value: project?.estStartDate != null 
+                  ? _formatDate(project!.estStartDate!)
+                  : project?.startDate != null
+                      ? _formatDate(project!.startDate!)
+                      : 'TBD',
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
 
@@ -281,9 +293,9 @@ class SimilarProjectsSection extends StatelessWidget {
           if (controller.error.isNotEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(
+              child: CommonText(
                 controller.error.value,
-                style: const TextStyle(color: AppColors.textSecondaryColor),
+                color: AppColors.textSecondaryColor,
               ),
             );
           }
@@ -291,9 +303,9 @@ class SimilarProjectsSection extends StatelessWidget {
           if (items.isEmpty) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text(
+              child: CommonText(
                 'No similar projects found.',
-                style: TextStyle(color: AppColors.textSecondaryColor),
+                color: AppColors.textSecondaryColor,
               ),
             );
           }
@@ -301,30 +313,39 @@ class SimilarProjectsSection extends StatelessWidget {
           return LayoutBuilder(
             builder: (context, constraints) {
               final screenWidth = constraints.maxWidth;
-              final double itemWidth = screenWidth > 0
-                  ? (screenWidth - 15).clamp(200.0, 650.0) // min 280, max 600
-                  : MediaQuery.of(context).size.width - 15; // 16px side margins
               
+              // Better responsive card width calculation
+              final double itemWidth = screenWidth > 600 
+                  ? (screenWidth / 2) - 24  // Two cards on larger screens
+                  : screenWidth - 32;      // Single card with margins on smaller screens
+              
+              // Use intrinsic height instead of fixed height
               return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.3,
+                height: 280, // Increased height to accommodate new content
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal, 
-                  padding: EdgeInsets.only(right: 15),
+                  padding: const EdgeInsets.only(right: 16),
                   itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final it = controller.similarProjects[index];
                     return SizedBox(
-                      width: itemWidth,
+                      width: itemWidth.clamp(280.0, 400.0), // Min 280, max 400
                       child: JobCard(
                         title: it.projectTitle ?? '',
                         description: it.description ?? '',
                         company: it.projectType ?? '',
                         tags: [it.projectType ?? ''],
                         status: it.projectType ?? '',
-                        compact: true,
+                        compact: true, 
                         id: it.id ?? 0,  
                         applied: it.id != null && controller.appliedIds.contains(it.id!),
+                        skillsJson: it.skillsJson,
+                        duration: it.duration,
+                        durationType: it.durationType,
+                        budget: it.budget,
+                        projectCost: it.projectCost,
+                        creationDate: it.creationDate,
                         onTap: () {
                           // Replace current detail page with the selected similar project's detail
                           Get.offNamed(AppRoutes.projectDetail, arguments: it.id);
@@ -370,19 +391,7 @@ class _Card extends StatelessWidget {
     );
   }
 }
-
-class _SubTitle extends StatelessWidget {
-  final String text;
-  const _SubTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: CommonText(text, fontSize: 15, fontWeight: FontWeight.w800),
-    );
-  }
-}
+ 
 
 class _Bullet extends StatelessWidget {
   final String text;
@@ -411,27 +420,7 @@ class _Bullet extends StatelessWidget {
   }
 }
 
-class _Skill extends StatelessWidget {
-  final String text;
-  const _Skill(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle, color: AppColors.green, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: CommonText(text, fontSize: 13, fontWeight: FontWeight.w400),
-          ),
-        ],
-      ),
-    );
-  }
-}
+ 
 
 class _TimelineItem extends StatelessWidget {
   final String iconPath;

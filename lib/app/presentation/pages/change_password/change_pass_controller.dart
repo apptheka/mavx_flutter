@@ -96,7 +96,7 @@ class ChangePassController extends GetxController {
       // Navigate to login on next frame to avoid gesture/IME races
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Get.currentRoute != AppRoutes.login) {
-          Get.offAllNamed(AppRoutes.login);
+          Get.offNamed(AppRoutes.login);
         }
       });
     } catch (e) {
@@ -115,6 +115,9 @@ class ChangePassController extends GetxController {
 
   @override
   void onClose() {
+    // Release focus/IME before disposing controllers to avoid callbacks during route pop
+    Get.focusScope?.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     newPasswordController.dispose();
     confirmPasswordController.dispose();
     super.onClose();

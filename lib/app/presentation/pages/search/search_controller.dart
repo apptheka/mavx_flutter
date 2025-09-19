@@ -232,7 +232,7 @@ class SearchPageController extends GetxController {
               page: _page,
               limit: _limit,
             );
-      final results = resp.data ?? <ProjectModel>[];
+      final results = resp.data?.data ?? <ProjectModel>[];
       if (reset) {
         jobs.assignAll(results);
         filteredJobs.assignAll(results);

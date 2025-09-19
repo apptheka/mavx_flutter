@@ -197,16 +197,14 @@ class GetStartedPage extends GetView<GetStartedController> {
                             elevation: 0,
                           ),
                           onPressed: controller.next,
-                          child: Text(
+                          child: CommonText(
                             controller.isLast ? 'Next' : 'Get Started',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isSmallScreen ? 16 : 17,
-                              fontWeight: FontWeight.w700,
+                            fontSize: isSmallScreen ? 16 : 17,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.white,
                             ),
                           ),
-                        ),
-                      ),
+                        ), 
 
                     SizedBox(height: isSmallScreen ? 12 : 40),
 

@@ -1,4 +1,3 @@
- 
 class UserRegisteredModel {
   final int? id;
   final String? fullName;
@@ -26,6 +25,7 @@ class UserRegisteredModel {
   final String? idType;
   final String? idFile;
   final String? profile;
+  final String? skillsCsv; 
   final DateTime? createdAt;
   final String? password;
   final String? status;
@@ -57,6 +57,7 @@ class UserRegisteredModel {
     this.idType,
     this.idFile,
     this.profile,
+    this.skillsCsv,  
     this.createdAt,
     this.password,
     this.status,
@@ -97,6 +98,7 @@ class UserRegisteredModel {
       idType: json['idType']?.toString(),
       idFile: json['idFile']?.toString(),
       profile: json['profile']?.toString(),
+      skillsCsv: json['skills_csv']?.toString(), // <-- Added field
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,
@@ -133,6 +135,7 @@ class UserRegisteredModel {
       'idType': idType,
       'idFile': idFile,
       'profile': profile,
+      'skills_csv': skillsCsv,  
       'created_at': createdAt?.toIso8601String(),
       'password': password,
       'status': status,

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/domain/usecases/login_usecase.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class LoginController extends GetxController {
@@ -108,12 +109,13 @@ class LoginController extends GetxController {
   Future<void> _showPendingDialog() async {
     return Get.dialog(
       AlertDialog(
-        title: const Text('Profile Under Review'),
-        content: const Text(
+        title: const CommonText('Profile Under Review', fontSize: 18, fontWeight: FontWeight.w600),
+        content: const CommonText(
           'Your profile is under review. You will be notified once approved. You can log in after approval.',
+          fontSize: 14,
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('OK')),
+          TextButton(onPressed: () => Get.back(), child: const CommonText('OK', fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
       barrierDismissible: false,

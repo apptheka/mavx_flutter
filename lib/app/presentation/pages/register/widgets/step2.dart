@@ -69,13 +69,10 @@ class RegisterStep2 extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Flexible(
-                            child: Text(
+                            child: CommonText(
                               c.dialCode.value,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500, 
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -171,6 +168,36 @@ class RegisterStep2 extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            CommonText("Skills", fontSize: 13, fontWeight: FontWeight.w600),
+            const SizedBox(height: 8),
+            AppTextField(
+              hintText: 'e.g., JavaScript, React',
+              controller: c.skillsCtrl,
+              textCapitalization: TextCapitalization.words,
+              inputFormatters: [
+                // prevent actual newlines; we only want comma-separated input
+                FilteringTextInputFormatter.deny(RegExp(r'\n')),
+              ],
+              validator: (v) {
+                final raw = (v ?? '').trim();
+                final tokens = raw
+                    .split(RegExp(r'[\n,]+'))
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList();
+                if (tokens.isEmpty) {
+                  return 'Please enter at least one skill';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 6),
+            const CommonText(
+              'Tip: Separate multiple skills with commas. Example: JavaScript, React, Node.js',
+              fontSize: 12,
+              color: Colors.black54,
             ),
             const SizedBox(height: 16),
           ],

@@ -51,8 +51,7 @@ class SavedPage extends GetView<SavedController> {
                                 Get.find<HomeController>().refreshPage();
                               }
                               Get.back(result: true);
-                            },
-                            tooltip: 'Back',
+                            }, 
                           ),
                           const SizedBox(width: 16),
                           const Expanded(
@@ -86,15 +85,17 @@ class SavedPage extends GetView<SavedController> {
                                   children: [
                                     const SizedBox(height: 200),
                                     Center(
-                                      child: Text(
+                                      child: CommonText(
                                         c.error.value,
-                                        style: const TextStyle(color: Colors.red),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.red,
                                       ),
                                     ),
                                   ],
                                 )
                               : c.saved.isEmpty
-                                  ? NoDataLottie(text: 'No saved projects yet', onPressed: () => Get.back(result: true))
+                                  ? NoDataLottie(title: 'No Saved Projects Found',buttonText: 'Save Projects', onPressed: () => Get.back(result: true))
                                   : ListView.separated(
                                       padding: const EdgeInsets.all(12),
                                       separatorBuilder: (_, __) => const SizedBox(height: 12),

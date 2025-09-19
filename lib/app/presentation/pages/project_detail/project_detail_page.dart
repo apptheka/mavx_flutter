@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mavx_flutter/app/domain/usecases/projects_usecase.dart';
 import 'package:mavx_flutter/app/presentation/pages/project_detail/widgets/detial_header.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/pages/project_detail/widgets/header_section.dart';
@@ -61,14 +60,14 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                         // ),
                         // const SizedBox(height: 12),
                         // const ClientOverviewSection(),
-                        const SizedBox(height: 12),
-                        const CommonText(
-                          'Why You\'re a Great Fit',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        const SizedBox(height: 12),
-                        const GreatFitSection(),
+                        // const SizedBox(height: 12),
+                        // const CommonText(
+                        //   'Why You\'re a Great Fit',
+                        //   fontSize: 20,
+                        //   fontWeight: FontWeight.w800,
+                        // ),
+                        // const SizedBox(height: 12),
+                        // const GreatFitSection(),
                         const SizedBox(height: 20),
                         Obx(() {
                           final isBookmarked = homeCtrl.bookmarkedIds.contains(projectId);

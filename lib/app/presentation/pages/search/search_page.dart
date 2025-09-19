@@ -182,9 +182,7 @@ class SearchPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Expanded(
-                                child: controller.filtersLoading.value
-                                    ? const Center(child: CircularProgressIndicator())
-                                    : const RightOptionsList(),
+                                child: const CommonText('Clear All', fontSize: 14, fontWeight: FontWeight.w600),
                               ), 
                             ],
                           ),
@@ -207,7 +205,12 @@ class SearchPage extends StatelessWidget {
                             controller.clearFilters();
                             Get.back();
                           },
-                          child: const Text('Clear All'),
+                          child: CommonText(
+                            'Clear All',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -223,9 +226,11 @@ class SearchPage extends StatelessWidget {
                               controller.applyStagedFilters();
                               Get.back();
                             },
-                            child: const Text(
+                            child: CommonText(
                               'Apply Filter',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
                           ),
                         ),

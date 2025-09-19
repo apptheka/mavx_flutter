@@ -15,77 +15,87 @@ class RegisterPage extends GetView<RegisterController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // Constrain content width for tablets/web and keep comfy horizontal padding on phones
-            final maxContentWidth = 640.0;
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: maxContentWidth),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 16),
-                              _buildHeader(),
-                              const SizedBox(height: 8),
-                              Obx(() {
-                                switch (controller.currentStep.value) {
-                                  case 1:
-                                    return const RegisterStep1();
-                                  case 2:
-                                    return const RegisterStep2();
-                                  case 3:
-                                    return const RegisterStep3();
-                                  case 4:
-                                  default:
-                                    return const RegisterStep4();
-                                }
-                              }),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const StepNav(),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CommonText(
-                            'Already have an account?',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textSecondaryColor,
-                          ),
-                          const SizedBox(width: 4),
-                          InkWell(
-                            onTap: () {
-                              Get.back(); // Go back to the previous screen
-                            },
-                            child: CommonText(
-                              'Sign In',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textButtonColor,
+    return WillPopScope(
+      onWillPop: () async {
+        FocusManager.instance.primaryFocus?.unfocus();
+        await Future.delayed(const Duration(milliseconds: 10));
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Constrain content width for tablets/web and keep comfy horizontal padding on phones
+              final maxContentWidth = 640.0;
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxContentWidth),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 16),
+                                _buildHeader(),
+                                const SizedBox(height: 8),
+                                Obx(() {
+                                  switch (controller.currentStep.value) {
+                                    case 1:
+                                      return const RegisterStep1();
+                                    case 2:
+                                      return const RegisterStep2();
+                                    case 3:
+                                      return const RegisterStep3();
+                                    case 4:
+                                    default:
+                                      return const RegisterStep4();
+                                  }
+                                }),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const StepNav(),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CommonText(
+                              'Already have an account?',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textSecondaryColor,
+                            ),
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () async {
+                                // Release focus before popping to avoid disposed controller callbacks
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                await Future.delayed(const Duration(milliseconds: 10));
+                                Get.back(); // Go back to the previous screen
+                              },
+                              child: CommonText(
+                                'Sign In',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textButtonColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
