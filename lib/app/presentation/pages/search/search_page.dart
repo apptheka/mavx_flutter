@@ -171,21 +171,27 @@ class SearchPage extends StatelessWidget {
                       // Right content
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const CommonText(
-                                'Category',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                              const SizedBox(height: 8),
-                              Expanded(
-                                child: const CommonText('Clear All', fontSize: 14, fontWeight: FontWeight.w600),
-                              ), 
-                            ],
-                          ),
+                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                          child: Obx(() {
+                            if (controller.filtersLoading.value) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            // Decide which list to show and handle empty state
+                            final isType = controller.leftMenuIndex.value == 0;
+                            final hasData = isType
+                                ? controller.projectTypes.isNotEmpty
+                                : controller.industries.isNotEmpty;
+                            if (!hasData) {
+                              return const Center(
+                                child: CommonText(
+                                  'No options available',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            }
+                            return const RightOptionsList();
+                          }),
                         ),
                       ),
                     ],

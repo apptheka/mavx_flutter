@@ -5,8 +5,10 @@ import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
-import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart'as search;
-import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart'as saved;
+import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart'
+    as search;
+import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart'
+    as saved;
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 import 'package:mavx_flutter/app/presentation/pages/applications/applications_controller.dart';
 
@@ -80,7 +82,7 @@ class JobCard extends StatelessWidget {
     final controller = Get.find<HomeController>();
 
     // Responsive sizing
-    final cardPadding = isSmallScreen ? 8.0 : 12.0;
+    final cardPadding = isSmallScreen ? 8.0 : 12.0; 
     final logoSize = isSmallScreen ? 32.0 : 36.0;
     final titleFontSize = isSmallScreen ? 14.0 : 16.0;
     final spacingSmall = isSmallScreen ? 6.0 : 8.0;
@@ -140,7 +142,7 @@ class JobCard extends StatelessWidget {
                         fontSize: titleFontSize,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0B2944),
-                     
+
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -226,16 +228,16 @@ class JobCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: compact ? 6 : spacingSmall),
-            
+
             // Skills Section
             if (skillsJson != null && skillsJson!.isNotEmpty) ...[
               _buildSkillsSection(isSmallScreen),
               SizedBox(height: compact ? 6 : 8),
             ],
-            
+
             const Divider(height: 12, color: Color(0xFFE6E9EF)),
             SizedBox(height: compact ? 2 : 6),
-            
+
             // Project Type
             if (tags.isNotEmpty)
               CommonText(
@@ -245,7 +247,7 @@ class JobCard extends StatelessWidget {
                 fontSize: isSmallScreen ? 12 : 14,
               ),
             SizedBox(height: compact ? 4 : 6),
-            
+
             // Duration and Budget
             if (compact) ...[
               // More compact layout for similar projects
@@ -256,18 +258,7 @@ class JobCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ),
-              if (budget != null || projectCost != null) ...[
-                const SizedBox(height: 2),
-                CommonText(
-                  _getBudgetText(),
-                  color: Colors.black87,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              ), 
             ] else ...[
               // Regular layout for home page
               Row(
@@ -279,16 +270,7 @@ class JobCard extends StatelessWidget {
                       fontSize: isSmallScreen ? 12 : 14,
                       fontWeight: FontWeight.w600,
                     ),
-                  ),
-                  if (budget != null || projectCost != null) ...[
-                    const SizedBox(width: 8),
-                    CommonText(
-                      _getBudgetText(),
-                      color: Colors.black87,
-                      fontSize: isSmallScreen ? 12 : 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ],
+                  ), 
                 ],
               ),
             ],
@@ -328,21 +310,32 @@ class JobCard extends StatelessWidget {
                                         hc.appliedIds.refresh();
                                         hc.refreshAppliedIds();
                                       }
-                                      if (Get.isRegistered<search.SearchPageController>()) {
-                                        final sc = Get.find<search.SearchPageController>();
+                                      if (Get.isRegistered<
+                                        search.SearchPageController
+                                      >()) {
+                                        final sc =
+                                            Get.find<
+                                              search.SearchPageController
+                                            >();
                                         sc.appliedIds.add(id);
                                         sc.appliedIds.refresh();
                                         // Force list to rebuild so button reflects 'Applied'
                                         sc.filteredJobs.refresh();
                                         sc.refreshAppliedIds();
                                       }
-                                      if (Get.isRegistered<saved.SavedController>()) {
+                                      if (Get.isRegistered<
+                                        saved.SavedController
+                                      >()) {
                                         // refresh saved list to remove applied items
-                                        Get.find<saved.SavedController>().fetchSaved();
+                                        Get.find<saved.SavedController>()
+                                            .fetchSaved();
                                       }
                                       // Refresh Applications tab data if controller exists
-                                      if (Get.isRegistered<ApplicationsController>()) {
-                                        Get.find<ApplicationsController>().fetchData();
+                                      if (Get.isRegistered<
+                                        ApplicationsController
+                                      >()) {
+                                        Get.find<ApplicationsController>()
+                                            .fetchData();
                                       }
                                     }
                                   },
@@ -389,18 +382,29 @@ class JobCard extends StatelessWidget {
                                       hc.appliedIds.refresh();
                                       hc.refreshAppliedIds();
                                     }
-                                    if (Get.isRegistered<search.SearchPageController>()) {
-                                      final sc = Get.find<search.SearchPageController>();
+                                    if (Get.isRegistered<
+                                      search.SearchPageController
+                                    >()) {
+                                      final sc =
+                                          Get.find<
+                                            search.SearchPageController
+                                          >();
                                       sc.appliedIds.add(id);
                                       sc.appliedIds.refresh();
                                       sc.filteredJobs.refresh();
                                       sc.refreshAppliedIds();
                                     }
-                                    if (Get.isRegistered<saved.SavedController>()) {
-                                      Get.find<saved.SavedController>().fetchSaved();
+                                    if (Get.isRegistered<
+                                      saved.SavedController
+                                    >()) {
+                                      Get.find<saved.SavedController>()
+                                          .fetchSaved();
                                     }
-                                    if (Get.isRegistered<ApplicationsController>()) {
-                                      Get.find<ApplicationsController>().fetchData();
+                                    if (Get.isRegistered<
+                                      ApplicationsController
+                                    >()) {
+                                      Get.find<ApplicationsController>()
+                                          .fetchData();
                                     }
                                   }
                                 },
@@ -451,18 +455,19 @@ class JobCard extends StatelessWidget {
         color: color,
         fontSize: isSmall ? 10 : 12,
         fontWeight: FontWeight.w700,
-        ), 
+      ),
     );
   }
 
   Widget _buildSkillsSection(bool isSmallScreen) {
-    if (skillsJson == null || skillsJson!.isEmpty) return const SizedBox.shrink();
-    
+    if (skillsJson == null || skillsJson!.isEmpty)
+      return const SizedBox.shrink();
+
     try {
       final List<dynamic> skills = jsonDecode(skillsJson!);
       // Show fewer skills in compact mode to prevent overflow
       final limitedSkills = skills.take(compact ? 2 : 3).toList();
-      
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -476,7 +481,9 @@ class JobCard extends StatelessWidget {
           Wrap(
             spacing: compact ? 4 : 6,
             runSpacing: compact ? 2 : 4,
-            children: limitedSkills.map((skill) => _skillChip(skill.toString(), isSmallScreen)).toList(),
+            children: limitedSkills
+                .map((skill) => _skillChip(skill.toString(), isSmallScreen))
+                .toList(),
           ),
         ],
       );
@@ -520,21 +527,5 @@ class JobCard extends StatelessWidget {
       return '₹${projectCost!.toStringAsFixed(0)}';
     }
     return '₹200000';
-  }
-
-  String _getPostedText() {
-    if (creationDate != null) {
-      final now = DateTime.now();
-      final difference = now.difference(creationDate!);
-      
-      if (difference.inDays > 0) {
-        return 'Posted: ${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-      } else if (difference.inHours > 0) {
-        return 'Posted: ${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-      } else {
-        return 'Posted: ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-      }
-    }
-    return 'Posted: 1 hour ago';
   }
 }

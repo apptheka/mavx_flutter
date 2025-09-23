@@ -65,6 +65,8 @@ class RequestData {
   final String? description;
   final int? budget;
   final String? projectType;
+  final int? duration;
+  final String? durationType;
 
   RequestData({
     this.id,
@@ -79,6 +81,8 @@ class RequestData {
     this.description,
     this.budget,
     this.projectType,
+    this.duration,
+    this.durationType,
   });
 
   factory RequestData.fromJson(Map<String, dynamic>? json) {
@@ -100,6 +104,8 @@ class RequestData {
       description: json['description']?.toString(),
       budget: int.tryParse(json['budget']?.toString() ?? ''),
       projectType: json['project_type']?.toString(),
+      duration: int.tryParse(json['duration']?.toString() ?? ''),
+      durationType: json['duration_type']?.toString(),
     );
   }
 
@@ -117,6 +123,8 @@ class RequestData {
       'description': description,
       'budget': budget,
       'project_type': projectType,
+      'duration': duration,
+      'duration_type': durationType,
     };
   }
 }

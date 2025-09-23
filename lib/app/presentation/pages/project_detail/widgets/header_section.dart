@@ -123,8 +123,7 @@ class HeaderSection extends StatelessWidget {
               children: _buildSkillChips(it.skillsJson!),
             ),
             const SizedBox(height: 8),
-          ],
-          const SizedBox(height: 12),
+          ], 
           Divider(height: 2,color: AppColors.textTertiaryColor.withValues(alpha: 0.4),thickness: 1,),
           const SizedBox(height: 12),
           Row(
@@ -148,35 +147,16 @@ class HeaderSection extends StatelessWidget {
                     ),
                   ],
                 ),
+              ), 
+              Container(
+                height: 50,
+                color: AppColors.textTertiaryColor.withValues(alpha: 0.4),
+                width: 1,
               ),
               const SizedBox(width: 16),
+           
               Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CommonText(
-                      'Budget',
-                      color: AppColors.textSecondaryColor,
-                      fontSize: 13,
-                    ),
-                    const SizedBox(height: 4),
-                    CommonText(
-                      (it?.budget != null)
-                          ? '₹${it!.budget!.toStringAsFixed(0)}'
-                          : (it?.projectCost != null)
-                              ? '₹${it!.projectCost!.toStringAsFixed(0)}'
-                              : '₹200000',
-                      color: AppColors.textPrimaryColor,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
+                flex: 6,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -200,18 +180,12 @@ class HeaderSection extends StatelessWidget {
             ],
           ),
  
-          const SizedBox(height: 6),
-          if (it?.creationDate != null) ...[
-            _IconText(
-              text: 'Posted: ${_formatDate(it!.creationDate!)}',
-            ),
-            const SizedBox(height: 10),
-            Divider(
-              height: 2,
+          const SizedBox(height: 12), 
+          Divider(
+              height: 1,
               color: AppColors.textTertiaryColor.withValues(alpha: 0.4),
               thickness: 1,
             ),
-          ],
           const SizedBox(height: 12),
           Row(
             children: [

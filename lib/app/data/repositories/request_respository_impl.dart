@@ -29,6 +29,7 @@ class RequestRepositoryImpl implements RequestRepository {
           'message': 'Success',
         };
       }
+      log("Response Map: ${responseMap.toString()}");
       final RequestResponse requestResponse = RequestResponse.fromJson(
         responseMap,
       );

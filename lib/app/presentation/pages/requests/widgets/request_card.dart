@@ -195,131 +195,136 @@ class _RequestCardState extends State<RequestCard>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: isReject
-                          ? [
-                              const Color(0xFFF44336).withOpacity(0.2),
-                              const Color(0xFFF44336).withOpacity(0.1),
-                            ]
-                          : [
-                              const Color(0xFF33C481).withOpacity(0.2),
-                              const Color(0xFF33C481).withOpacity(0.1),
-                            ],
-                    ),
-                  ),
-                  child: Icon(
-                    isReject ? Icons.close_rounded : Icons.check_rounded,
-                    size: 35,
-                    color: isReject
-                        ? const Color(0xFFF44336)
-                        : const Color(0xFF33C481),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                CommonText(
-                  '${action.capitalize} Request',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0B2944),
-                ),
-                const SizedBox(height: 8),
-                CommonText(
-                  'Are you sure you want to ${action.toLowerCase()} this project request?',
-                  fontSize: 14,
-                  color: Colors.black54,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  lineHeight: 1.4,
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE6E9EF)),
-                    color: const Color(0xFFF8FAFC),
-                  ),
-                  child: TextField(
-                    controller: noteController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText:
-                          'Add a note for your ${action.toLowerCase()} decision...',
-                      hintStyle: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 14,
+                    Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: isReject
+                              ? [
+                                  const Color(0xFFF44336).withOpacity(0.2),
+                                  const Color(0xFFF44336).withOpacity(0.1),
+                                ]
+                              : [
+                                  const Color(0xFF33C481).withOpacity(0.2),
+                                  const Color(0xFF33C481).withOpacity(0.1),
+                                ],
+                        ),
                       ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(12),
+                      child: Icon(
+                        isReject ? Icons.close_rounded : Icons.check_rounded,
+                        size: 35,
+                        color: isReject
+                            ? const Color(0xFFF44336)
+                            : const Color(0xFF33C481),
+                      ),
                     ),
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: TextButton(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          style: TextButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: Color(0xFFE6E9EF)),
-                            ),
-                          ),
-                          child: const CommonText(
-                            'Cancel',
+                    const SizedBox(height: 20),
+                    CommonText(
+                      '${action.capitalize} Request',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0B2944),
+                    ),
+                    const SizedBox(height: 8),
+                    CommonText(
+                      'Are you sure you want to ${action.toLowerCase()} this project request?',
+                      fontSize: 14,
+                      color: Colors.black54,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      lineHeight: 1.4,
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE6E9EF)),
+                        color: const Color(0xFFF8FAFC),
+                      ),
+                      child: TextField(
+                        controller: noteController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText:
+                              'Add a note for your ${action.toLowerCase()} decision...',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280),
                           ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final note = noteController.text.trim();
-                            controller.updateRequestStatus(
-                              // projectId in path, expertId in payload
-                              widget.request.projectId ?? 0,
-                              widget.request.expertId ?? 0,
-                              isReject ? 'rejected' : 'accepted',
-                              note,
-                            );
-                            Get.back();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isReject
-                                ? const Color(0xFFF44336)
-                                : const Color(0xFF33C481),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: TextButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(
+                                    color: Color(0xFFE6E9EF),
+                                  ),
+                                ),
+                              ),
+                              child: const CommonText(
+                                'Cancel',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280),
+                              ),
                             ),
                           ),
-                          child: CommonText(
-                            action.capitalize!,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final note = noteController.text.trim();
+                                controller.updateRequestStatus(
+                                  // projectId in path, expertId in payload
+                                  widget.request.projectId ?? 0,
+                                  widget.request.expertId ?? 0,
+                                  isReject ? 'rejected' : 'accepted',
+                                  note,
+                                );
+                                Get.back();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isReject
+                                    ? const Color(0xFFF44336)
+                                    : const Color(0xFF33C481),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: CommonText(
+                                action.capitalize!,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
                   ],
                 ),
               ),
@@ -444,6 +449,7 @@ class _RequestCardState extends State<RequestCard>
                           ),
                           const SizedBox(width: 4),
                           Expanded(
+                            flex: 2,
                             child: CommonText(
                               widget.request.projectType ?? '-',
                               color: _getProjectTypeColor(
@@ -454,6 +460,22 @@ class _RequestCardState extends State<RequestCard>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          Container(
+                            width: 1,
+                            height: 20,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 20),
+                          if (widget.request.duration != null)
+                            Expanded(
+                              flex: 3,
+                              child: CommonText(
+                                'Duration: ${widget.request.duration} ${widget.request.durationType}',
+                                color: Colors.black87,
+                                fontSize: isSmallScreen ? 12 : 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                         ],
                       ),
                     ],
@@ -464,8 +486,7 @@ class _RequestCardState extends State<RequestCard>
               ],
             ),
             SizedBox(height: widget.compact ? 6 : spacingSmall),
-            const Divider(height: 16, color: Color(0xFFE6E9EF)), 
-
+            const Divider(height: 16, color: Color(0xFFE6E9EF)),
 
             if ((widget.request.message ?? '').isNotEmpty) ...[
               SizedBox(height: widget.compact ? 6 : 8),
@@ -486,31 +507,6 @@ class _RequestCardState extends State<RequestCard>
             ],
 
             SizedBox(height: widget.compact ? 4 : 6),
-            Row(
-              children: [
-                if (widget.request.budget != null)
-                  CommonText(
-                    'Budget: ₹${widget.request.budget}',
-                    color: Colors.black87,
-                    fontSize: isSmallScreen ? 12 : 14,
-                    fontWeight: FontWeight.w700,
-                  )
-                else
-                  CommonText(
-                    'Budget: TBD',
-                    color: Colors.black87,
-                    fontSize: isSmallScreen ? 12 : 14,
-                  ),
-                const Spacer(),
-                if (widget.request.createdAt != null)
-                  CommonText(
-                    'Posted: ${_formatDate(widget.request.createdAt!)}',
-                    color: Colors.black54,
-                    fontSize: isSmallScreen ? 10 : 12,
-                  ),
-              ],
-            ),
-            SizedBox(height: widget.compact ? 2 : 4),
 
             // Action Buttons Section
             if (widget.request.status?.toLowerCase() == 'pending') ...[
@@ -541,7 +537,9 @@ class _RequestCardState extends State<RequestCard>
                                             color: Color(0xFFF44336),
                                           ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(30),
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
                                           ),
                                         ),
                                         child: CommonText(
@@ -561,9 +559,13 @@ class _RequestCardState extends State<RequestCard>
                                         onPressed: () =>
                                             _handleButtonTap('accept'),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF0B2944),
+                                          backgroundColor: const Color(
+                                            0xFF0B2944,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(30),
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
                                           ),
                                         ),
                                         child: CommonText(
@@ -595,7 +597,8 @@ class _RequestCardState extends State<RequestCard>
                                     borderRadius: BorderRadius.circular(30),
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
+                                    horizontal: 12,
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -644,7 +647,7 @@ class _RequestCardState extends State<RequestCard>
                                       color: Colors.white,
                                     ),
                                   ],
-                                )
+                                ),
                               ),
                             ),
                           ],
@@ -671,10 +674,11 @@ class _RequestCardState extends State<RequestCard>
                                     height: 50,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: (_currentAction == 'reject'
-                                              ? const Color(0xFFF44336)
-                                              : const Color(0xFF33C481))
-                                          .withOpacity(0.2),
+                                      color:
+                                          (_currentAction == 'reject'
+                                                  ? const Color(0xFFF44336)
+                                                  : const Color(0xFF33C481))
+                                              .withOpacity(0.2),
                                     ),
                                     child: Icon(
                                       _currentAction == 'reject'
@@ -695,7 +699,8 @@ class _RequestCardState extends State<RequestCard>
                     ),
 
                   // Loading indicator (after the initial icon animation completes)
-                  if (_isAnimating && _animationController.status == AnimationStatus.completed)
+                  if (_isAnimating &&
+                      _animationController.status == AnimationStatus.completed)
                     Positioned.fill(
                       child: Center(
                         child: RotationTransition(
@@ -706,10 +711,11 @@ class _RequestCardState extends State<RequestCard>
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: (_currentAction == 'reject'
-                                        ? const Color(0xFFF44336)
-                                        : const Color(0xFF33C481))
-                                    .withOpacity(0.3),
+                                color:
+                                    (_currentAction == 'reject'
+                                            ? const Color(0xFFF44336)
+                                            : const Color(0xFF33C481))
+                                        .withOpacity(0.3),
                                 width: 2.5,
                               ),
                             ),
