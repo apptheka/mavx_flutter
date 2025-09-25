@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/widgets/timesheet_bottom_sheet.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
@@ -66,19 +67,30 @@ class MyProjectsPage extends StatelessWidget {
                                     .toList()[index];
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: JobCard(
+                                  child: JobCard( 
                                     id: p.projectId ?? p.id ?? 0,
                                     title: p.projectTitle ?? '',
                                     description: p.description ?? '',
                                     company: p.projectType ?? '',
                                     tags: [p.projectType ?? ''],
                                     status: 'Confirmed',
-                                    applied: false,
-                                    showBookmark: false,
+                                    applied: true,
+                                    showBookmark: false, 
                                     onTap: () => Get.toNamed(
                                       AppRoutes.projectDetail,
                                       arguments: p.projectId ?? p.id ?? 0,
                                     ),
+                                    onSchedulePressed: () {
+                                      final pid = p.projectId ?? p.id ?? 0;
+                                      final pname = p.projectTitle ?? 'Project';
+                                      Get.bottomSheet(
+                                        TimesheetBottomSheet(
+                                          projectId: pid,
+                                          projectName: pname,
+                                        ),
+                                        isScrollControlled: true,
+                                      );
+                                    },
                                   ),
                                 );
                               },

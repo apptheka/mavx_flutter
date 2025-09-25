@@ -2,9 +2,12 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
+  // static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
+  static const String baseUrl = 'http://192.168.1.3:3001/v1/api';
   static const String baseUrlImage = 'https://apis.apptheka.com/mavx/public/';
   static const String fileUploading = 'https://apis.apptheka.com/mavx/file-uploading';
+  // Timesheet endpoint for insert - local development server
+  static const String timesheet = '/timesheet';
   static const String login = '/user/login';
   static const String register = '/user/register';
   static const String sendOtp = '/user/send-otp';

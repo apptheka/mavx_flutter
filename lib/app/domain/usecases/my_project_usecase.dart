@@ -9,4 +9,8 @@ class MyProjectUsecase {
   Future<List<ProjectModel>> getMyConfirmedProjects() {
     return myProjectRepository.getMyConfirmedProjects();
   }
+
+  Future<bool> createProjectSchedule(Map<String, dynamic> payload) {
+    return myProjectRepository.createProjectSchedule(payload);
+  }
 }

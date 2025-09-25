@@ -32,6 +32,7 @@ class JobCard extends StatelessWidget {
   final double? budget;
   final double? projectCost;
   final DateTime? creationDate;
+  final VoidCallback? onSchedulePressed;
 
   const JobCard({
     super.key,
@@ -54,6 +55,7 @@ class JobCard extends StatelessWidget {
     this.budget,
     this.projectCost,
     this.creationDate,
+    this.onSchedulePressed,
   });
 
   Color _getProjectTypeColor(String projectType) {
@@ -82,7 +84,7 @@ class JobCard extends StatelessWidget {
     final controller = Get.find<HomeController>();
 
     // Responsive sizing
-    final cardPadding = isSmallScreen ? 8.0 : 12.0; 
+    final cardPadding = isSmallScreen ? 8.0 : 12.0;
     final logoSize = isSmallScreen ? 32.0 : 36.0;
     final titleFontSize = isSmallScreen ? 14.0 : 16.0;
     final spacingSmall = isSmallScreen ? 6.0 : 8.0;
@@ -137,14 +139,31 @@ class JobCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CommonText(
-                        title,
-                        fontSize: titleFontSize,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0B2944),
-
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CommonText(
+                              title,
+                              fontSize: titleFontSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0B2944),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (status == 'Confirmed')
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: GestureDetector(
+                                onTap: onSchedulePressed,
+                                child: Icon(
+                                  Icons.schedule,
+                                  color: Colors.grey,
+                                  size: isSmallScreen ? 20 : 24,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -258,7 +277,7 @@ class JobCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ), 
+              ),
             ] else ...[
               // Regular layout for home page
               Row(
@@ -270,7 +289,7 @@ class JobCard extends StatelessWidget {
                       fontSize: isSmallScreen ? 12 : 14,
                       fontWeight: FontWeight.w600,
                     ),
-                  ), 
+                  ),
                 ],
               ),
             ],
@@ -290,144 +309,158 @@ class JobCard extends StatelessWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _matchBadge(status ?? '92% Match', isSmallScreen),
-                        SizedBox(height: compact ? 6 : spacingSmall),
-                        SizedBox(
-                          height: buttonHeight,
-                          child: ElevatedButton(
-                            onPressed: applied
-                                ? null
-                                : () async {
-                                    final res = await Get.toNamed(
-                                      AppRoutes.apply,
-                                      arguments: id,
-                                    );
-                                    if (res == true) {
-                                      // Optimistically mark as applied in current views
-                                      if (Get.isRegistered<HomeController>()) {
-                                        final hc = Get.find<HomeController>();
-                                        hc.appliedIds.add(id);
-                                        hc.appliedIds.refresh();
-                                        hc.refreshAppliedIds();
-                                      }
-                                      if (Get.isRegistered<
-                                        search.SearchPageController
-                                      >()) {
-                                        final sc =
-                                            Get.find<
+                        if (!(status != null &&
+                            status!.toLowerCase() == 'confirmed'))
+                          _matchBadge(status ?? '92% Match', isSmallScreen),
+                        if (!(status != null &&
+                            status!.toLowerCase() == 'confirmed'))
+                          SizedBox(height: compact ? 6 : spacingSmall),
+                        (status != null && status!.toLowerCase() == 'confirmed')
+                            ? _confirmedBadge(isSmallScreen)
+                            : SizedBox(
+                                height: buttonHeight,
+                                child: ElevatedButton(
+                                  onPressed: applied
+                                      ? null
+                                      : () async {
+                                          final res = await Get.toNamed(
+                                            AppRoutes.apply,
+                                            arguments: id,
+                                          );
+                                          if (res == true) {
+                                            // Optimistically mark as applied in current views
+                                            if (Get.isRegistered<
+                                              HomeController
+                                            >()) {
+                                              final hc =
+                                                  Get.find<HomeController>();
+                                              hc.appliedIds.add(id);
+                                              hc.appliedIds.refresh();
+                                              hc.refreshAppliedIds();
+                                            }
+                                            if (Get.isRegistered<
                                               search.SearchPageController
-                                            >();
-                                        sc.appliedIds.add(id);
-                                        sc.appliedIds.refresh();
-                                        // Force list to rebuild so button reflects 'Applied'
-                                        sc.filteredJobs.refresh();
-                                        sc.refreshAppliedIds();
-                                      }
-                                      if (Get.isRegistered<
-                                        saved.SavedController
-                                      >()) {
-                                        // refresh saved list to remove applied items
-                                        Get.find<saved.SavedController>()
-                                            .fetchSaved();
-                                      }
-                                      // Refresh Applications tab data if controller exists
-                                      if (Get.isRegistered<
-                                        ApplicationsController
-                                      >()) {
-                                        Get.find<ApplicationsController>()
-                                            .fetchData();
-                                      }
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B2944),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                            >()) {
+                                              final sc =
+                                                  Get.find<
+                                                    search.SearchPageController
+                                                  >();
+                                              sc.appliedIds.add(id);
+                                              sc.appliedIds.refresh();
+                                              // Force list to rebuild so button reflects 'Applied'
+                                              sc.filteredJobs.refresh();
+                                              sc.refreshAppliedIds();
+                                            }
+                                            if (Get.isRegistered<
+                                              saved.SavedController
+                                            >()) {
+                                              Get.find<saved.SavedController>()
+                                                  .fetchSaved();
+                                            }
+                                            if (Get.isRegistered<
+                                              ApplicationsController
+                                            >()) {
+                                              Get.find<ApplicationsController>()
+                                                  .fetchData();
+                                            }
+                                          }
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0B2944),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isSmallScreen ? 12 : 16,
+                                    ),
+                                  ),
+                                  child: CommonText(
+                                    applied ? 'Applied' : 'Apply',
+                                    fontSize: isSmallScreen ? 12 : 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isSmallScreen ? 12 : 16,
-                              ),
-                            ),
-                            child: CommonText(
-                              applied ? 'Applied' : 'Apply',
-                              fontSize: isSmallScreen ? 12 : 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
                       ],
                     );
                   }
                   return Row(
                     children: [
-                      _matchBadge(status ?? '92% Match', isSmallScreen),
+                      if (!(status != null &&
+                          status!.toLowerCase() == 'confirmed'))
+                        _matchBadge(status ?? '92% Match', isSmallScreen),
                       const Spacer(),
-                      SizedBox(
-                        width: isSmallScreen ? 80 : 100,
-                        height: compact
-                            ? (isSmallScreen ? 32 : 35)
-                            : buttonHeight,
-                        child: ElevatedButton(
-                          onPressed: applied
-                              ? null
-                              : () async {
-                                  final res = await Get.toNamed(
-                                    AppRoutes.apply,
-                                    arguments: id,
-                                  );
-                                  if (res == true) {
-                                    if (Get.isRegistered<HomeController>()) {
-                                      final hc = Get.find<HomeController>();
-                                      hc.appliedIds.add(id);
-                                      hc.appliedIds.refresh();
-                                      hc.refreshAppliedIds();
-                                    }
-                                    if (Get.isRegistered<
-                                      search.SearchPageController
-                                    >()) {
-                                      final sc =
-                                          Get.find<
+                      (status != null && status!.toLowerCase() == 'confirmed')
+                          ? _confirmedBadge(isSmallScreen)
+                          : SizedBox(
+                              width: isSmallScreen ? 80 : 100,
+                              height: compact
+                                  ? (isSmallScreen ? 32 : 35)
+                                  : buttonHeight,
+                              child: ElevatedButton(
+                                onPressed: applied
+                                    ? null
+                                    : () async {
+                                        final res = await Get.toNamed(
+                                          AppRoutes.apply,
+                                          arguments: id,
+                                        );
+                                        if (res == true) {
+                                          if (Get.isRegistered<
+                                            HomeController
+                                          >()) {
+                                            final hc =
+                                                Get.find<HomeController>();
+                                            hc.appliedIds.add(id);
+                                            hc.appliedIds.refresh();
+                                            hc.refreshAppliedIds();
+                                          }
+                                          if (Get.isRegistered<
                                             search.SearchPageController
-                                          >();
-                                      sc.appliedIds.add(id);
-                                      sc.appliedIds.refresh();
-                                      sc.filteredJobs.refresh();
-                                      sc.refreshAppliedIds();
-                                    }
-                                    if (Get.isRegistered<
-                                      saved.SavedController
-                                    >()) {
-                                      Get.find<saved.SavedController>()
-                                          .fetchSaved();
-                                    }
-                                    if (Get.isRegistered<
-                                      ApplicationsController
-                                    >()) {
-                                      Get.find<ApplicationsController>()
-                                          .fetchData();
-                                    }
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(
-                              isSmallScreen ? 80 : 100,
-                              isSmallScreen ? 32 : 35,
+                                          >()) {
+                                            final sc =
+                                                Get.find<
+                                                  search.SearchPageController
+                                                >();
+                                            sc.appliedIds.add(id);
+                                            sc.appliedIds.refresh();
+                                            sc.filteredJobs.refresh();
+                                            sc.refreshAppliedIds();
+                                          }
+                                          if (Get.isRegistered<
+                                            saved.SavedController
+                                          >()) {
+                                            Get.find<saved.SavedController>()
+                                                .fetchSaved();
+                                          }
+                                          if (Get.isRegistered<
+                                            ApplicationsController
+                                          >()) {
+                                            Get.find<ApplicationsController>()
+                                                .fetchData();
+                                          }
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: Size(
+                                    isSmallScreen ? 80 : 100,
+                                    isSmallScreen ? 32 : 35,
+                                  ),
+                                  backgroundColor: const Color(0xFF0B2944),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isSmallScreen ? 12 : 16,
+                                  ),
+                                ),
+                                child: CommonText(
+                                  applied ? 'Applied' : 'Apply',
+                                  fontSize: isSmallScreen ? 12 : 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
-                            backgroundColor: const Color(0xFF0B2944),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 12 : 16,
-                            ),
-                          ),
-                          child: CommonText(
-                            applied ? 'Applied' : 'Apply',
-                            fontSize: isSmallScreen ? 12 : 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
                     ],
                   );
                 },
@@ -455,6 +488,33 @@ class JobCard extends StatelessWidget {
         color: color,
         fontSize: isSmall ? 10 : 12,
         fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _confirmedBadge(bool isSmall) {
+    const color = Color(0xFF33C481);
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmall ? 12 : 14,
+        vertical: isSmall ? 6 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle, size: isSmall ? 14 : 16, color: color),
+          const SizedBox(width: 6),
+          CommonText(
+            'Confirmed',
+            color: color,
+            fontSize: isSmall ? 12 : 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ],
       ),
     );
   }
@@ -518,14 +578,5 @@ class JobCard extends StatelessWidget {
       return 'For $duration ${durationType ?? 'months'}';
     }
     return 'For 6 Months';
-  }
-
-  String _getBudgetText() {
-    if (budget != null) {
-      return '₹${budget!.toStringAsFixed(0)}';
-    } else if (projectCost != null) {
-      return '₹${projectCost!.toStringAsFixed(0)}';
-    }
-    return '₹200000';
   }
 }

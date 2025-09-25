@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
@@ -22,7 +21,7 @@ class RequestRepositoryImpl implements RequestRepository {
       Map<String, dynamic> responseMap;
       if (decriptValue is Map<String, dynamic>) {
         responseMap = decriptValue;
-      } else {
+      } else {  
         responseMap = {
           'data': decriptValue,
           'status': 200,
