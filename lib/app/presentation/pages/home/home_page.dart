@@ -6,6 +6,7 @@ import 'package:mavx_flutter/app/presentation/pages/home/widgets/profile_complet
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/stats_row.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/section_header.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
@@ -219,6 +220,13 @@ class _TopMatchesList extends StatelessWidget {
                 final applied = Get.find<HomeController>().appliedIds.contains(
                   p.id ?? -1,
                 );
+                // Determine if this project is already confirmed
+                final myCtrl = Get.isRegistered<MyProjectsController>()
+                    ? Get.find<MyProjectsController>()
+                    : Get.put(MyProjectsController(), permanent: true);
+                final isConfirmed = myCtrl.projects.any(
+                  (cp) => (cp.projectId ?? cp.id ?? 0) == (p.id ?? -1),
+                );
                 return SizedBox(
                   width: itemWidth,
                   child: JobCard(
@@ -226,7 +234,8 @@ class _TopMatchesList extends StatelessWidget {
                     description: p.description ?? (p.projectTitle ?? '-'),
                     company: p.projectCoordinator ?? '—',
                     tags: [Get.find<HomeController>().chipFor(p)],
-                    showApply: true,
+                    showApply: !isConfirmed,
+                    status: isConfirmed ? 'confirmed' : null,
                     compact: true,
                     id: p.id ?? index,
                     applied: applied,
@@ -343,12 +352,21 @@ class _RecommendedList extends StatelessWidget {
                   return Column(
                     children: [
                       for (int i = 0; i < items.length && i < 3; i++) ...[
-                        JobCard(
+                        // Determine confirmed for each
+                        Builder(builder: (context) {
+                          final myCtrl = Get.isRegistered<MyProjectsController>()
+                              ? Get.find<MyProjectsController>()
+                              : Get.put(MyProjectsController(), permanent: true);
+                          final isConfirmed = myCtrl.projects.any(
+                            (cp) => (cp.projectId ?? cp.id ?? 0) == (items[i].id ?? -1),
+                          );
+                          return JobCard(
                           title: items[i].projectTitle ?? '-',
                           description: items[i].description ?? (items[i].projectTitle ?? '-'),
                           company: items[i].projectCoordinator ?? '—',
                           tags: [labelForProjectType(items[i])],
-                          showApply: true,
+                          showApply: !isConfirmed,
+                          status: isConfirmed ? 'confirmed' : null,
                           id: items[i].id ?? i,
                           applied: controller.appliedIds.contains(items[i].id ?? -1),
                           skillsJson: items[i].skillsJson,
@@ -357,7 +375,8 @@ class _RecommendedList extends StatelessWidget {
                           budget: items[i].budget,
                           projectCost: items[i].projectCost,
                           creationDate: items[i].creationDate,
-                        ),
+                          );
+                        }),
                         if (i != items.length - 1) const SizedBox(height: 12),
                       ],
                     ],
@@ -384,12 +403,19 @@ class _RecommendedList extends StatelessWidget {
                   ),
                   itemBuilder: (_, i) {
                     final p = items[i];
+                    final myCtrl = Get.isRegistered<MyProjectsController>()
+                        ? Get.find<MyProjectsController>()
+                        : Get.put(MyProjectsController(), permanent: true);
+                    final isConfirmed = myCtrl.projects.any(
+                      (cp) => (cp.projectId ?? cp.id ?? 0) == (p.id ?? -1),
+                    );
                     return JobCard(
                       title: p.projectTitle ?? '-',
                       description: p.description ?? (p.projectTitle ?? '-'),
                       company: p.projectCoordinator ?? '—',
                       tags: [labelForProjectType(p)],
-                      showApply: true,
+                      showApply: !isConfirmed,
+                      status: isConfirmed ? 'confirmed' : null,
                       compact: true,
                       id: p.id ?? i,
                       applied: controller.appliedIds.contains(p.id ?? -1),

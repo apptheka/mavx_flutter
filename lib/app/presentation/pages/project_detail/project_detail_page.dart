@@ -7,6 +7,7 @@ import 'package:mavx_flutter/app/presentation/pages/project_detail/widgets/about
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 
 class ProjectDetailPage extends GetView<ProjectDetailController> {
   const ProjectDetailPage({super.key});
@@ -16,6 +17,9 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
     // Ensure the controller is available for all child widgets via Get.find
     final int projectId = Get.arguments is int ? Get.arguments as int : 0;
     final homeCtrl = Get.find<HomeController>();
+    final myProjectsCtrl = Get.isRegistered<MyProjectsController>()
+        ? Get.find<MyProjectsController>()
+        : Get.put(MyProjectsController(), permanent: true);
     final topInset = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -27,7 +31,7 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const DetailHeader(),
+                DetailHeader(isConfirmed: myProjectsCtrl.projects.any((p) => (p.projectId ?? p.id ?? 0) == projectId)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
@@ -70,6 +74,27 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                         // const GreatFitSection(),
                         const SizedBox(height: 20),
                         Obx(() {
+                          final isConfirmed = myProjectsCtrl.projects.any(
+                            (p) => (p.projectId ?? p.id ?? 0) == projectId,
+                          );
+                          if (isConfirmed) {
+                            // Show a non-interactive Confirmed button
+                            return Align(
+                              alignment: Alignment.centerLeft,
+                              child: ElevatedButton.icon(
+                                onPressed: null,
+                                icon: const Icon(Icons.check_circle_outline),
+                                label: const Text('Confirmed'),
+                                style: ElevatedButton.styleFrom(
+                                  disabledBackgroundColor: AppColors.green.withValues(alpha: 0.15),
+                                  disabledForegroundColor: AppColors.green,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
                           final isBookmarked = homeCtrl.bookmarkedIds.contains(projectId);
                           return ActionsSection(
                             text: isBookmarked ? 'Remove from Bookmarks' : 'Save for Later',

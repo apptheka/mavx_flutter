@@ -1,10 +1,8 @@
-import 'dart:io';
-
+import 'dart:io'; 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/firebase_messaging_service.dart';
@@ -26,7 +24,7 @@ void main() async {
   await NotificationStorageService.init();
   await _initializeHive();
 
-    // Initialize Firebase Messaging service
+  // Initialize Firebase Messaging service
   await FirebaseMessagingService().initialize();
 
   // Initialize storage
@@ -57,23 +55,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 Future<void> _initializeHive() async {
   try {
     Directory directory = await pathProvider.getApplicationDocumentsDirectory();
     await Hive.initFlutter(directory.path);
 
     // Open all required boxes
-    final boxes = [
-      HiveConstant.CACHE,
-    ];
+    final boxes = [HiveConstant.CACHE];
 
     for (final boxName in boxes) {
       if (!Hive.isBoxOpen(boxName)) {
         await Hive.openBox(boxName);
       }
     }
-  } catch (e, stackTrace) {
+  } catch (e) {
     rethrow;
   }
 }

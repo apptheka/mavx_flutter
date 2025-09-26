@@ -77,6 +77,7 @@ class SearchPage extends StatelessWidget {
                                   description: cleanDescription,
                                   company: company,
                                   tags: tags,
+                                  skillsJson: job.skillsJson,
                                   showApply: true,
                                   compact: false,
                                   id: job.id!,

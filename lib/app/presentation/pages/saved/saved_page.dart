@@ -108,6 +108,7 @@ class SavedPage extends GetView<SavedController> {
                                           description: p.description ?? (p.projectTitle ?? '-'),
                                           company: p.projectCordinator ?? '—',
                                           tags: [p.projectType ?? '-'],
+                                          skillsJson: p.skillsJson,
                                           showApply: true,
                                           // Always show bookmark icon in saved list
                                           showBookmark: true,

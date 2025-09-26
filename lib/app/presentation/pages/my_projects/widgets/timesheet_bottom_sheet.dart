@@ -1,137 +1,65 @@
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mavx_flutter/app/data/repositories/file_repository_impl.dart';
-import 'package:mavx_flutter/app/domain/usecases/my_project_usecase.dart';
-import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/data/models/timesheet_model.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
+// Controller group for a single timesheet entry form
+ 
 class TimesheetBottomSheet extends StatefulWidget {
   final int projectId;
   final String projectName;
+  final List<Timesheet> existingTimesheets;
 
   const TimesheetBottomSheet({
     super.key,
     required this.projectId,
     required this.projectName,
+    this.existingTimesheets = const [],
   });
 
   @override
   State<TimesheetBottomSheet> createState() => _TimesheetBottomSheetState();
 }
 
-class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
-    with TickerProviderStateMixin {
-  late final TabController _tabController;
-
-  // Manual form controllers
-  final TextEditingController _dateCtrl = TextEditingController();
-  final TextEditingController _taskCtrl = TextEditingController();
-  final TextEditingController _startCtrl = TextEditingController();
-  final TextEditingController _endCtrl = TextEditingController();
-  final TextEditingController _hoursCtrl = TextEditingController();
-  final TextEditingController _rateCtrl = TextEditingController();
-  final TextEditingController _amountCtrl = TextEditingController();
-
-  // Upload tab
-  String? _pickedFilePath;
-  String? _uploadedUrl;
-  bool _uploading = false;
-
+class _TimesheetBottomSheetState extends State<TimesheetBottomSheet> {
+  final List<MyProjectsController> _entries = [];
   bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    
-    // Listen to tab changes and clear form data
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        _clearFormData();
+    // Prefill all entries; if none, add one empty entry
+    if (widget.existingTimesheets.isNotEmpty) {
+      for (final t in widget.existingTimesheets) {
+        final c = MyProjectsController();
+        c.timesheetId = t.id; // carry existing id for upsert
+        c.date.text = t.workDate;
+        c.task.text = t.taskDescription;
+        c.start.text = t.startTime;
+        c.end.text = t.endTime;
+        c.hours.text = t.totalHours;
+        c.rate.text = t.hourlyRate;
+        c.amount.text = t.amount;
+        _attachListeners(c);
+        _entries.add(c);
+        _recalcEntry(c);
       }
-    });
-    
-    // Default date today
-    final now = DateTime.now();
-    _dateCtrl.text = _yyyyMmDd(now);
-    _recalc();
-  }
-
-  void _clearFormData() {
-    // Clear time and calculation fields when switching tabs
-    _startCtrl.clear();
-    _endCtrl.clear();
-    _hoursCtrl.clear();
-    _rateCtrl.clear();
-    _amountCtrl.clear();
-    _taskCtrl.clear();
-    
-    // Reset upload state
-    _pickedFilePath = null;
-    _uploadedUrl = null;
-    _uploading = false;
-    
-    // Keep the date as it's common for both tabs
-    final now = DateTime.now();
-    _dateCtrl.text = _yyyyMmDd(now);
-    
-    setState(() {});
+    } else {
+      _addEmptyEntry();
+    }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _dateCtrl.dispose();
-    _taskCtrl.dispose();
-    _startCtrl.dispose();
-    _endCtrl.dispose();
-    _hoursCtrl.dispose();
-    _rateCtrl.dispose();
-    _amountCtrl.dispose();
+    for (final e in _entries) {
+      e.dispose();
+    }
     super.dispose();
   }
 
   String _yyyyMmDd(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-  void _recalc() {
-    DateTime? parseTime(String t) {
-      if (t.isEmpty) return null;
-      final parts = t.split(':');
-      if (parts.length < 3) return null;
-      final h = int.tryParse(parts[0]);
-      final m = int.tryParse(parts[1]);
-      final s = int.tryParse(parts[2]);
-      if (h == null || m == null || s == null || h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
-      return DateTime(2024, 1, 1, h, m, s);
-    }
-
-    final startTime = parseTime(_startCtrl.text.trim());
-    final endTime = parseTime(_endCtrl.text.trim());
-    final rate = double.tryParse(_rateCtrl.text.trim());
-    
-    if (startTime != null && endTime != null) {
-      // Calculate duration in seconds
-      Duration duration;
-      if (endTime.isAfter(startTime)) {
-        duration = endTime.difference(startTime);
-      } else {
-        // Handle overnight shifts (end time next day)
-        final nextDayEnd = endTime.add(const Duration(days: 1));
-        duration = nextDayEnd.difference(startTime);
-      }
-      
-      final hours = duration.inSeconds / 3600.0;
-      _hoursCtrl.text = hours.toStringAsFixed(2);
-      
-      if (rate != null && rate > 0) {
-        _amountCtrl.text = (hours * rate).toStringAsFixed(2);
-      }
-    }
-    setState(() {});
-  }
 
   Future<void> _pickTime(TextEditingController controller, String label) async {
     final currentTime = TimeOfDay.now();
@@ -163,99 +91,89 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
     if (picked != null) {
       // Format as HH:MM:SS (defaulting seconds to 00)
       controller.text = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00';
-      _recalc();
+      // Find entry belonging to this controller and recalc
+      for (final c in _entries) {
+        if (controller == c.start || controller == c.end) {
+          _recalcEntry(c);
+          break;
+        }
+      }
     }
   }
 
-  Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _pickedFilePath = result.files.single.path!;
-      });
-    }
+  void _addEmptyEntry() {
+    final now = DateTime.now();
+    final c = MyProjectsController();
+    c.date.text = _yyyyMmDd(now);
+    _attachListeners(c);
+    _entries.add(c);
+    setState(() {});
   }
 
-  Future<void> _uploadPdf() async {
-    if (_pickedFilePath == null) return;
-    setState(() => _uploading = true);
-    try {
-      final repo = FileRepositoryImpl();
-      final url = await repo.uploadFile(
-        fieldName: 'file',
-        filePath: _pickedFilePath!,
-      );
-      setState(() => _uploadedUrl = url);
-      Get.snackbar(
-        'Upload',
-        'PDF uploaded successfully',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Upload Failed',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      setState(() => _uploading = false);
+  void _recalcEntry(MyProjectsController c) {
+    DateTime? parseTime(String t) {
+      if (t.isEmpty) return null;
+      final parts = t.split(':');
+      if (parts.length < 3) return null;
+      final h = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      final s = int.tryParse(parts[2]);
+      if (h == null || m == null || s == null || h < 0 || h > 23 || m < 0 || m > 59 || s < 0 || s > 59) return null;
+      return DateTime(2024, 1, 1, h, m, s);
     }
+    final startTime = parseTime(c.start.text.trim());
+    final endTime = parseTime(c.end.text.trim());
+    final rate = double.tryParse(c.rate.text.trim());
+    if (startTime != null && endTime != null) {
+      Duration duration;
+      if (endTime.isAfter(startTime)) {
+        duration = endTime.difference(startTime);
+      } else {
+        final nextDayEnd = endTime.add(const Duration(days: 1));
+        duration = nextDayEnd.difference(startTime);
+      }
+      final hours = duration.inSeconds / 3600.0;
+      c.hours.text = hours.toStringAsFixed(2);
+      if (rate != null && rate > 0) {
+        c.amount.text = (hours * rate).toStringAsFixed(2);
+      }
+    }
+    setState(() {});
+  }
+
+  void _attachListeners(MyProjectsController c) {
+    c.start.addListener(() => _recalcEntry(c));
+    c.end.addListener(() => _recalcEntry(c));
+    c.rate.addListener(() => _recalcEntry(c));
   }
 
   Future<void> _submit() async {
     if (_submitting) return;
     setState(() => _submitting = true);
     try {
-      final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.registeredProfile.value.id ?? 0;
-      if (expertId == 0) {
-        Get.snackbar(
-          'Profile',
-          'Expert ID not found. Please relogin.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return;
-      }
+      // Prepare entries payloads for controller
+      final entries = _entries.map((c) => {
+            'id': c.timesheetId,
+            'workDate': c.date.text.trim(),
+            'taskDescription': c.task.text.trim().isNotEmpty ? c.task.text.trim() : 'Work log',
+            'startTime': c.start.text.trim(),
+            'endTime': c.end.text.trim(),
+            'totalHours': double.tryParse(c.hours.text.trim()) ?? 0,
+            'hourlyRate': double.tryParse(c.rate.text.trim()) ?? 0,
+            'amount': double.tryParse(c.amount.text.trim()) ?? 0,
+          }).toList();
 
-      final payload = <String, dynamic>{
-        'expertId': expertId,
-        'projectId': widget.projectId,
-        'projectName': widget.projectName,
-        'workDate': _dateCtrl.text.trim(),
-        // Tab index 0 = Upload PDF, 1 = Manual
-        'taskDescription': _tabController.index == 1
-            ? (_taskCtrl.text.trim().isNotEmpty
-                  ? _taskCtrl.text.trim()
-                  : 'Work log')
-            : (_uploadedUrl != null
-                  ? 'Timesheet PDF: $_uploadedUrl'
-                  : 'Timesheet PDF attached'),
-        'startTime': _startCtrl.text.trim(),
-        'endTime': _endCtrl.text.trim(),
-        'totalHours': double.tryParse(_hoursCtrl.text.trim()) ?? 0,
-        'hourlyRate': double.tryParse(_rateCtrl.text.trim()) ?? 0,
-        'amount': double.tryParse(_amountCtrl.text.trim()) ?? 0,
-      };
-
-      // If upload tab (index 0), include documentUrl for backend that supports it
-      if (_tabController.index == 0 && _uploadedUrl != null) {
-        payload['documentUrl'] = _uploadedUrl;
-      }
-
-      final usecase = Get.find<MyProjectUsecase>();
-      final ok = await usecase.createProjectSchedule(payload);
-      if (ok) {
+      final ctrl = Get.find<MyProjectsController>();
+      final success = await ctrl.saveTimesheetEntries(
+        projectId: widget.projectId,
+        projectName: widget.projectName,
+        entries: entries,
+      );
+      if (success > 0) {
         Get.back();
         Get.snackbar(
           'Timesheet',
-          'Saved successfully',
+          'Saved ${success}/${_entries.length} entries',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -263,7 +181,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
       } else {
         Get.snackbar(
           'Timesheet',
-          'Save failed',
+          'Save failed for all entries',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -298,8 +216,8 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
+      child: SizedBox(
+        height: 600,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,44 +292,42 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F6FA),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  color: const Color(0xFF0B2944),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                indicatorPadding: const EdgeInsets.all(4),
-                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                labelColor: Colors.white,
-                unselectedLabelColor: const Color(0xFF0B2944),
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                tabs: const [
-                  SizedBox(width: 160, child: Tab(text: 'Upload PDF')),
-                  SizedBox(width: 160, child: Tab(text: 'Manual')),
-                ],  
+            // All entry forms
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _entries.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+                        child: CommonText(
+                          'Timesheet ${index + 1}',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0B2944),
+                        ),
+                      ),
+                      _manualForm(context, _entries[index]),
+                    ],
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             SizedBox(
-              height: 360,
-              child: TabBarView(
-                controller: _tabController,
-                children: [_uploadForm(context), _manualForm(context)],
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: _addEmptyEntry,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Entry'),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -475,8 +391,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
     );
   }
 
-  Widget _manualForm(BuildContext context) {
-    final isSmall = MediaQuery.of(context).size.width < 360;
+  Widget _manualForm(BuildContext context, MyProjectsController ctrls) {
     InputDecoration deco(String hint) => InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.black45, fontWeight: FontWeight.w600),
@@ -503,7 +418,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
             children: [
               Expanded(
                 child: TextField(
-                  controller: _dateCtrl,
+                  controller: ctrls.date,
                   decoration: deco('Work Date (YYYY-MM-DD)'),
                   readOnly: true,
                   onTap: () async {
@@ -515,7 +430,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
                       lastDate: DateTime(now.year + 1),
                     );
                     if (picked != null) {
-                      _dateCtrl.text = _yyyyMmDd(picked);
+                      ctrls.date.text = _yyyyMmDd(picked);
                     }
                   },
                 ),
@@ -524,7 +439,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
           ),
           const SizedBox(height: 10),
           TextField(
-            controller: _taskCtrl,
+            controller: ctrls.task,
             decoration: deco('Task Description'),
             maxLines: 2,
           ),
@@ -533,23 +448,23 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
             children: [
               Expanded(
                 child: TextField(
-                  controller: _startCtrl,
+                  controller: ctrls.start,
                   decoration: deco('Start Time').copyWith(
                     prefixIcon: const Icon(Icons.access_time, size: 20),
                   ),
                   readOnly: true,
-                  onTap: () => _pickTime(_startCtrl, 'Start Time'),
+                  onTap: () => _pickTime(ctrls.start, 'Start Time'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  controller: _endCtrl,
+                  controller: ctrls.end,
                   decoration: deco('End Time').copyWith(
                     prefixIcon: const Icon(Icons.access_time_filled, size: 20),
                   ),
                   readOnly: true,
-                  onTap: () => _pickTime(_endCtrl, 'End Time'),
+                  onTap: () => _pickTime(ctrls.end, 'End Time'),
                 ),
               ),
             ],
@@ -559,7 +474,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
             children: [
               Expanded(
                 child: TextField(
-                  controller: _hoursCtrl,
+                  controller: ctrls.hours,
                   decoration: deco('Total Hours').copyWith(
                     prefixIcon: const Icon(Icons.schedule, size: 20),
                   ),
@@ -570,12 +485,12 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  controller: _rateCtrl,
+                  controller: ctrls.rate,
                   decoration: deco('Hourly Rate').copyWith(
                     prefixIcon: const Icon(Icons.attach_money, size: 20),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (_) => _recalc(),
+                  onChanged: (_) => _recalcEntry(ctrls),
                 ),
               ),
             ],
@@ -585,7 +500,7 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
             children: [
               Expanded(
                 child: TextField(
-                  controller: _amountCtrl,
+                  controller: ctrls.amount,
                   decoration: deco('Total Amount').copyWith(
                     prefixIcon: const Icon(Icons.payments, size: 20),
                   ),
@@ -600,68 +515,5 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet>
     );
   }
 
-  Widget _uploadForm(BuildContext context) {
-    final isSmall = MediaQuery.of(context).size.width < 360;
-    return Column(
-      children: [  
-        Container(
-          height: 160,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFD),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE6E9EF)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2)),
-            ],
-          ),
-          child: InkWell(
-            onTap: _uploading
-                ? null
-                : (_pickedFilePath == null ? _pickPdf : _uploadPdf),
-            child: Center(
-              child: _uploading
-                  ? const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(strokeWidth: 2),
-                        SizedBox(height: 8),
-                        CommonText(
-                          'Uploading...',
-                          color: Colors.black54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _uploadedUrl != null
-                              ? Icons.check_circle
-                              : Icons.picture_as_pdf,
-                          size: 36,
-                          color: Colors.black45,
-                        ),
-                        const SizedBox(height: 8),
-                        CommonText(
-                          _uploadedUrl != null
-                              ? 'Uploaded successfully'
-                              : (_pickedFilePath != null
-                                    ? 'Tap to upload PDF'
-                                    : 'Tap to pick a PDF'),
-                          color: Colors.black54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ), 
-         
-      ],
-    );
-  }
+  // upload form removed per request
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/job_card.dart';
-import 'package:mavx_flutter/app/presentation/pages/my_projects/widgets/timesheet_bottom_sheet.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
@@ -13,7 +12,7 @@ class MyProjectsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MyProjectsController controller = Get.put(MyProjectsController());
+    final MyProjectsController controller = Get.put(MyProjectsController(), permanent: true);
     final topInset = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -67,7 +66,7 @@ class MyProjectsPage extends StatelessWidget {
                                     .toList()[index];
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: JobCard( 
+                                  child: JobCard(  
                                     id: p.projectId ?? p.id ?? 0,
                                     title: p.projectTitle ?? '',
                                     description: p.description ?? '',
@@ -76,6 +75,13 @@ class MyProjectsPage extends StatelessWidget {
                                     status: 'Confirmed',
                                     applied: true,
                                     showBookmark: false, 
+                                    showInvoiceButton: controller.finalApproved[(p.projectId ?? p.id ?? 0)] == true &&
+                                        !controller.invoicedProjects.contains(p.projectId ?? p.id ?? 0),
+                                    onInvoicePressed: () {
+                                      final pid = p.projectId ?? p.id ?? 0;
+                                      final pname = p.projectTitle ?? 'Project';
+                                      controller.openInvoiceBottomSheet(projectId: pid, projectName: pname);
+                                    },
                                     onTap: () => Get.toNamed(
                                       AppRoutes.projectDetail,
                                       arguments: p.projectId ?? p.id ?? 0,
@@ -83,12 +89,9 @@ class MyProjectsPage extends StatelessWidget {
                                     onSchedulePressed: () {
                                       final pid = p.projectId ?? p.id ?? 0;
                                       final pname = p.projectTitle ?? 'Project';
-                                      Get.bottomSheet(
-                                        TimesheetBottomSheet(
-                                          projectId: pid,
-                                          projectName: pname,
-                                        ),
-                                        isScrollControlled: true,
+                                      controller.openTimesheetBottomSheet(
+                                        projectId: pid,
+                                        projectName: pname,
                                       );
                                     },
                                   ),

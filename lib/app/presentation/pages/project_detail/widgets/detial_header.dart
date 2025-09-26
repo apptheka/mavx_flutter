@@ -8,7 +8,8 @@ import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detai
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class DetailHeader extends StatelessWidget {
-  const DetailHeader({super.key});
+  const DetailHeader({super.key, required this.isConfirmed});
+  final bool isConfirmed;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +58,7 @@ class DetailHeader extends StatelessWidget {
             }
             return Row(
               children: [
+                if(!isConfirmed)
                 IconButton(
                   onPressed: () {
                     homeCtrl.toggleBookmark(projectId);

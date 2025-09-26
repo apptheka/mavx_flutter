@@ -78,6 +78,7 @@ class ApplicationsPage extends StatelessWidget {
                                             title: p.projectTitle ?? '',
                                             description: p.description ?? '',
                                             company: p.projectType ?? '',
+                                            skillsJson: p.skillsJson,
                                             tags: [p.projectType ?? ''],
                                             status: applied ? 'Applied' : null,
                                             applied: applied,

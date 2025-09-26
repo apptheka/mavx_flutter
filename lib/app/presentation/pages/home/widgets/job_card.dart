@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/core/constants/image_assets.dart';
+import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart'
@@ -33,6 +34,8 @@ class JobCard extends StatelessWidget {
   final double? projectCost;
   final DateTime? creationDate;
   final VoidCallback? onSchedulePressed;
+  final bool showInvoiceButton;
+  final VoidCallback? onInvoicePressed;
 
   const JobCard({
     super.key,
@@ -56,6 +59,8 @@ class JobCard extends StatelessWidget {
     this.projectCost,
     this.creationDate,
     this.onSchedulePressed,
+    this.showInvoiceButton = false,
+    this.onInvoicePressed,
   });
 
   Color _getProjectTypeColor(String projectType) {
@@ -153,12 +158,14 @@ class JobCard extends StatelessWidget {
                           ),
                           if (status == 'Confirmed')
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
                               child: GestureDetector(
                                 onTap: onSchedulePressed,
                                 child: Icon(
                                   Icons.schedule,
-                                  color: Colors.grey,
+                                  color: Colors.black,
                                   size: isSmallScreen ? 20 : 24,
                                 ),
                               ),
@@ -190,7 +197,7 @@ class JobCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (showBookmark && !applied)
+                if (showBookmark && !applied && !(status != null && status!.toLowerCase() == 'confirmed'))
                   if (bookmarkedOverride != null)
                     IconButton(
                       onPressed:
@@ -316,71 +323,40 @@ class JobCard extends StatelessWidget {
                             status!.toLowerCase() == 'confirmed'))
                           SizedBox(height: compact ? 6 : spacingSmall),
                         (status != null && status!.toLowerCase() == 'confirmed')
-                            ? _confirmedBadge(isSmallScreen)
-                            : SizedBox(
-                                height: buttonHeight,
-                                child: ElevatedButton(
-                                  onPressed: applied
-                                      ? null
-                                      : () async {
-                                          final res = await Get.toNamed(
-                                            AppRoutes.apply,
-                                            arguments: id,
-                                          );
-                                          if (res == true) {
-                                            // Optimistically mark as applied in current views
-                                            if (Get.isRegistered<
-                                              HomeController
-                                            >()) {
-                                              final hc =
-                                                  Get.find<HomeController>();
-                                              hc.appliedIds.add(id);
-                                              hc.appliedIds.refresh();
-                                              hc.refreshAppliedIds();
-                                            }
-                                            if (Get.isRegistered<
-                                              search.SearchPageController
-                                            >()) {
-                                              final sc =
-                                                  Get.find<
-                                                    search.SearchPageController
-                                                  >();
-                                              sc.appliedIds.add(id);
-                                              sc.appliedIds.refresh();
-                                              // Force list to rebuild so button reflects 'Applied'
-                                              sc.filteredJobs.refresh();
-                                              sc.refreshAppliedIds();
-                                            }
-                                            if (Get.isRegistered<
-                                              saved.SavedController
-                                            >()) {
-                                              Get.find<saved.SavedController>()
-                                                  .fetchSaved();
-                                            }
-                                            if (Get.isRegistered<
-                                              ApplicationsController
-                                            >()) {
-                                              Get.find<ApplicationsController>()
-                                                  .fetchData();
-                                            }
-                                          }
-                                        },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0B2944),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (showInvoiceButton) ...[
+                                    SizedBox(height: spacingSmall),
+                                    SizedBox(
+                                      height: buttonHeight,
+                                      child: OutlinedButton(
+                                        onPressed: onInvoicePressed,
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(
+                                            color: Color(0xFF0B2944),
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Invoice',
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF0B2944),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: isSmallScreen ? 12 : 16,
-                                    ),
-                                  ),
-                                  child: CommonText(
-                                    applied ? 'Applied' : 'Apply',
-                                    fontSize: isSmallScreen ? 12 : 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
+                                    _confirmedBadge(isSmallScreen),
+                                  ],
+                                ],
+                              )
+                            : SizedBox.shrink(),
                       ],
                     );
                   }
@@ -391,7 +367,37 @@ class JobCard extends StatelessWidget {
                         _matchBadge(status ?? '92% Match', isSmallScreen),
                       const Spacer(),
                       (status != null && status!.toLowerCase() == 'confirmed')
-                          ? _confirmedBadge(isSmallScreen)
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (showInvoiceButton) ...[
+                                  SizedBox(
+                                    height: isSmallScreen ? 32 : 35,
+                                    child: OutlinedButton(
+                                      onPressed: onInvoicePressed,
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(
+                                          color: AppColors.secondaryColor,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            24,
+                                          ),
+                                        ),
+                                      ),
+                                      child: CommonText(
+                                        'Invoice',
+                                        fontSize: isSmallScreen ? 12 : 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.secondaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 8),
+                                _confirmedBadge(isSmallScreen),
+                              ],
+                            )
                           : SizedBox(
                               width: isSmallScreen ? 80 : 100,
                               height: compact
