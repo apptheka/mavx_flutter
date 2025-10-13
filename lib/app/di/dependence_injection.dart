@@ -3,6 +3,7 @@ import 'package:mavx_flutter/app/data/providers/api_provider.dart'
     show ApiProvider;
 import 'package:mavx_flutter/app/data/repositories/apply_job_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/auth_repository_impl.dart';
+import 'package:mavx_flutter/app/data/repositories/bank_details_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/bookmark_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/industries_repository_impl.dart';
 import 'package:mavx_flutter/app/data/repositories/my_projects_repository_impl.dart';
@@ -13,6 +14,7 @@ import 'package:mavx_flutter/app/data/repositories/specification_repository_impl
 import 'package:mavx_flutter/app/data/repositories/file_repository_impl.dart';
 import 'package:mavx_flutter/app/domain/repositories/apply_job_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
+import 'package:mavx_flutter/app/domain/repositories/bank_details_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/bookmarks_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/industries_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/my_project_repository.dart';
@@ -21,6 +23,7 @@ import 'package:mavx_flutter/app/domain/repositories/projects_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/request_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/specification_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/file_repository.dart';
+import 'package:mavx_flutter/app/domain/usecases/bank_details_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/bookmark_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/delete_bookmark_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/get_all_bookmarks_usecase.dart';
@@ -62,6 +65,7 @@ class DependenceInjection {
     Get.lazyPut<ApplyJobRepository>(() => ApplyJobRepositoryImpl(), fenix: true);
     Get.lazyPut<RequestRepository>(() => RequestRepositoryImpl(), fenix: true);
     Get.lazyPut<MyProjectRepository>(() => MyProjectsRepositoryImpl(), fenix: true);
+    Get.lazyPut<BankDetailsRepository>(() => BankDetailsRepositoryImpl(), fenix: true);
 
     //Usecases
     Get.lazyPut(() => LoginUseCase(Get.find()), fenix: true);
@@ -79,5 +83,6 @@ class DependenceInjection {
     Get.lazyPut(() => RequestsUseCase(Get.find()), fenix: true);
     Get.lazyPut(()=> OtpRequestUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => MyProjectUsecase(Get.find()), fenix: true);
+    Get.lazyPut(() => BankDetailsUseCase(Get.find()), fenix: true);
   }
 }

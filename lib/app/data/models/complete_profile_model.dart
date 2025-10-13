@@ -9,6 +9,7 @@ class UserProfile {
   final List<OnlineProfile>? onlineProfiles;
   final BasicDetails? basicDetails;
   final List<Skill>? skills;
+  final BankDetails? bankDetails;
 
   UserProfile({
     this.preferences,
@@ -19,6 +20,7 @@ class UserProfile {
     this.onlineProfiles,
     this.basicDetails,
     this.skills,
+    this.bankDetails,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -27,25 +29,32 @@ class UserProfile {
     if (root is Map && root['data'] != null) {
       root = root['data'];
     }
-    final Map<String, dynamic> data =
-        root is Map<String, dynamic> ? root : <String, dynamic>{};
+    final Map<String, dynamic> data = root is Map<String, dynamic>
+        ? root
+        : <String, dynamic>{};
 
     return UserProfile(
       preferences: (data['preferences'] ?? data['preference']) != null
           ? Preferences.fromJson(
               Map<String, dynamic>.from(
-                  (data['preferences'] ?? data['preference']) as Map))
+                (data['preferences'] ?? data['preference']) as Map,
+              ),
+            )
           : null,
       aboutMe: (data['aboutMe'] ?? data['about_me']) != null
           ? AboutMe.fromJson(
               Map<String, dynamic>.from(
-                  (data['aboutMe'] ?? data['about_me']) as Map))
+                (data['aboutMe'] ?? data['about_me']) as Map,
+              ),
+            )
           : null,
       experience: (data['experience'] ?? data['experiences']) != null
           ? List<Experience>.from(
               ((data['experience'] ?? data['experiences']) as List)
                   .whereType<Map>()
-                  .map((x) => Experience.fromJson(Map<String, dynamic>.from(x))),
+                  .map(
+                    (x) => Experience.fromJson(Map<String, dynamic>.from(x)),
+                  ),
             )
           : [],
       education: (data['education'] ?? data['educations']) != null
@@ -62,26 +71,33 @@ class UserProfile {
                   .map((x) => Language.fromJson(Map<String, dynamic>.from(x))),
             )
           : [],
-      onlineProfiles: (data['onlineProfiles'] ?? data['online_profiles']) != null
+      onlineProfiles:
+          (data['onlineProfiles'] ?? data['online_profiles']) != null
           ? List<OnlineProfile>.from(
               ((data['onlineProfiles'] ?? data['online_profiles']) as List)
                   .whereType<Map>()
-                  .map((x) => OnlineProfile.fromJson(
-                      Map<String, dynamic>.from(x))),
+                  .map(
+                    (x) => OnlineProfile.fromJson(Map<String, dynamic>.from(x)),
+                  ),
             )
           : [],
       basicDetails: (data['basicDetails'] ?? data['basic_details']) != null
           ? BasicDetails.fromJson(
               Map<String, dynamic>.from(
-                  (data['basicDetails'] ?? data['basic_details']) as Map))
+                (data['basicDetails'] ?? data['basic_details']) as Map,
+              ),
+            )
           : null,
       skills: (data['skills'] ?? data['skill']) != null
           ? List<Skill>.from(
-              ((data['skills'] ?? data['skill']) as List)
-                  .whereType<Map>()
-                  .map((x) => Skill.fromJson(Map<String, dynamic>.from(x))),
+              ((data['skills'] ?? data['skill']) as List).whereType<Map>().map(
+                (x) => Skill.fromJson(Map<String, dynamic>.from(x)),
+              ),
             )
           : [],
+      bankDetails: data['bankDetails'] != null
+          ? BankDetails.fromJson(Map<String, dynamic>.from(data['bankDetails']))
+          : null,
     );
   }
 
@@ -95,6 +111,7 @@ class UserProfile {
       'onlineProfiles': onlineProfiles?.map((x) => x.toJson()).toList(),
       'basicDetails': basicDetails?.toJson(),
       'skills': skills?.map((x) => x.toJson()).toList(),
+      'bankDetails': bankDetails?.toJson(),
     };
   }
 }
@@ -251,9 +268,12 @@ class Experience {
       companyName: json['company_name'],
       role: json['role'],
       employmentType: json['employment_type'],
-      startDate:
-          json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+      startDate: json['start_date'] != null
+          ? DateTime.tryParse(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.tryParse(json['end_date'])
+          : null,
       isCurrent: json['is_current'],
       isRemote: json['is_remote'],
       description: json['description'],
@@ -313,9 +333,12 @@ class Education {
       userId: json['user_id'],
       institutionName: json['institution_name'],
       degree: json['degree'],
-      startDate:
-          json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+      startDate: json['start_date'] != null
+          ? DateTime.tryParse(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.tryParse(json['end_date'])
+          : null,
       isCurrent: json['is_current'],
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
@@ -533,6 +556,94 @@ class Skill {
       'user_id': userId,
       'skill_name': skillName,
       'skill_category': skillCategory,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+}
+
+class BankDetails {
+  final int? id;
+  final int? userId;
+  final String? accountHolderName;
+  final String? bankName;
+  final String? accountNumber;
+  final String? ifsc;
+  final String? branch;
+  final String? bankAddress;
+  final String? country;
+  final String? currency;
+  final String? swift;
+  final String? iban;
+  final String? routingNumber;
+  final String? intermediaryBank;
+  final String? notes;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  BankDetails({
+    this.id,
+    this.userId,
+    this.accountHolderName,
+    this.bankName,
+    this.accountNumber,
+    this.ifsc,
+    this.branch,
+    this.bankAddress,
+    this.country,
+    this.currency,
+    this.swift,
+    this.iban,
+    this.routingNumber,
+    this.intermediaryBank,
+    this.notes,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory BankDetails.fromJson(Map<String, dynamic> json) {
+    return BankDetails(
+      id: json['id'],
+      userId: json['user_id'],
+      accountHolderName: json['account_holder_name'],
+      bankName: json['bank_name'],
+      accountNumber: json['account_number'],
+      ifsc: json['ifsc'],
+      branch: json['branch'],
+      bankAddress: json['bank_address'],
+      country: json['country'],
+      currency: json['currency'],
+      swift: json['swift'],
+      iban: json['iban'],
+      routingNumber: json['routing_number'],
+      intermediaryBank: json['intermediary_bank'],
+      notes: json['notes'],
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'account_holder_name': accountHolderName,
+      'bank_name': bankName,
+      'account_number': accountNumber,
+      'ifsc': ifsc,
+      'branch': branch,
+      'bank_address': bankAddress,
+      'country': country,
+      'currency': currency,
+      'swift': swift,
+      'iban': iban,
+      'routing_number': routingNumber,
+      'intermediary_bank': intermediaryBank,
+      'notes': notes,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

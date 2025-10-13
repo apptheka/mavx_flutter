@@ -12,6 +12,7 @@ abstract class ProfileRepository {
   Future<UserProfile> updateOnlineProfiles(Map<String, dynamic> onlineProfiles);
   Future<UserProfile> updateBasicDetails(Map<String, dynamic> basicDetails);
   Future<UserProfile> updateSkills(Map<String, dynamic> skills);
+  Future<UserProfile> updateBankDetails(Map<String, dynamic> bankDetails);
   
   // Deletions
   Future<UserProfile> deleteExperience(int id);

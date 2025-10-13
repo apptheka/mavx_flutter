@@ -4,12 +4,14 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/data/models/complete_profile_model.dart';
 import 'package:mavx_flutter/app/data/models/user_registered_model.dart';
 import 'package:mavx_flutter/app/domain/usecases/profile_usecases.dart';
+import 'package:mavx_flutter/app/domain/usecases/bank_details_usecase.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class ProfileController extends GetxController {
   final ProfileUseCase profileUseCase = Get.find<ProfileUseCase>();
+  final BankDetailsUseCase bankDetailsUseCase = Get.find<BankDetailsUseCase>();
   final Rx<AboutMe> aboutMeList = AboutMe().obs;
   final RxList<Experience> experienceList = RxList<Experience>();
   final RxList<Education> educationList = RxList<Education>();
@@ -18,11 +20,12 @@ class ProfileController extends GetxController {
   final RxList<OnlineProfile> onlineProfileList = RxList<OnlineProfile>();
   final Rx<BasicDetails> basicDetailsList = BasicDetails().obs;
   final Rx<Preferences> preferences = Preferences().obs;
+  final Rx<BankDetails> bankDetails = BankDetails().obs;
   final Rx<UserRegisteredModel> registeredProfile = UserRegisteredModel().obs;
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
   final RxInt profileCompletion = 0.obs;
-  bool _profileCompleteNotified = false; // persisted flag
+  bool _profileCompleteNotified = false; // persisted flag 
 
   @override
   void onInit() {
@@ -54,6 +57,7 @@ class ProfileController extends GetxController {
       );
       basicDetailsList.value = response.basicDetails ?? BasicDetails();
       preferences.value = response.preferences ?? Preferences();
+      bankDetails.value = response.bankDetails ?? BankDetails();
       _recalculateCompletion();
     } catch (_) {
       error.value = 'Failed to load profile';
@@ -180,6 +184,7 @@ class ProfileController extends GetxController {
       );
       basicDetailsList.value = response.basicDetails ?? BasicDetails();
       preferences.value = response.preferences ?? Preferences();
+      bankDetails.value = response.bankDetails ?? BankDetails();
       _recalculateCompletion();
     } catch (_) {
       error.value = 'Failed to load profile';
@@ -461,6 +466,30 @@ class ProfileController extends GetxController {
       showSnackBar(
         title: 'Error',
         message: 'Failed to update skills',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> saveBankDetails(Map<String, dynamic> bank) async {
+    try {
+      loading.value = true;
+      await profileUseCase.updateBankDetails(bank);
+      await updateProfile();
+      Get.back();
+      showSnackBar(
+        title: 'Updated',
+        message: 'Bank details saved',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (_) {
+      showSnackBar(
+        title: 'Error',
+        message: 'Failed to update bank details',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

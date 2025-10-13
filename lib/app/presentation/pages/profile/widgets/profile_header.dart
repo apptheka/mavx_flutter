@@ -275,9 +275,12 @@ class ProfileHeader extends StatelessWidget {
     }
 }
 
+
 class _NameAndStatus extends StatelessWidget {
   final ProfileController controller;
-  const _NameAndStatus({required this.controller});
+    _NameAndStatus({required this.controller});
+  
+  final AuthRepository authRepository = Get.find<AuthRepository>();
 
   @override
   Widget build(BuildContext context) {
@@ -302,14 +305,15 @@ class _NameAndStatus extends StatelessWidget {
               );
             }),
             const Spacer(),
+            
             IconButton(
               onPressed: () {
                 Get.toNamed(AppRoutes.myProject);
               },
               icon: Image.asset(
                 IconAssets.role,
-                height: 22,
-                width: 22,
+                height: 25,
+                width: 25,
                 color: Colors.white,
               ),
             ),

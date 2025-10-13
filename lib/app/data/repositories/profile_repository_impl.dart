@@ -259,4 +259,24 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return UserProfile();
     }
   }
+  
+  @override
+  Future<UserProfile> updateBankDetails(Map<String, dynamic> bankDetails) async =>
+      _postProfile(AppConstants.bankDetails, {
+        'user_id': await _currentUserId(),
+        'id': bankDetails['id'],
+        'account_holder_name': bankDetails['account_holder_name'] ?? bankDetails['accountHolderName'],
+        'bank_name': bankDetails['bank_name'] ?? bankDetails['bankName'],
+        'account_number': bankDetails['account_number'] ?? bankDetails['accountNumber'],
+        'ifsc': bankDetails['ifsc'],
+        'branch': bankDetails['branch'],
+        'bank_address': bankDetails['bank_address'] ?? bankDetails['bankAddress'],
+        'country': bankDetails['country'],
+        'currency': bankDetails['currency'],
+        'swift': bankDetails['swift'],
+        'iban': bankDetails['iban'],
+        'routing_number': bankDetails['routing_number'] ?? bankDetails['routingNumber'],
+        'intermediary_bank': bankDetails['intermediary_bank'] ?? bankDetails['intermediaryBank'],
+        'notes': bankDetails['notes'],
+      });
 }

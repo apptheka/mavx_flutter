@@ -62,4 +62,8 @@ class ProfileUseCase {
   Future<UserProfile> deleteOnlineProfile(int id) async {
     return await profileRepository.deleteOnlineProfile(id);
   }
+
+  Future<UserProfile> updateBankDetails(Map<String, dynamic> bankDetails) async {
+    return await profileRepository.updateBankDetails(bankDetails);
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/widgets/profile_bank_details.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/profile_header.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/profile_preferences.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/widgets/profile_resume.dart';
@@ -56,6 +57,7 @@ class ProfilePage extends StatelessWidget {
                               ProfileEducation(controller: controller),
                               ProfileLanguages(controller: controller),
                               ProfileOnlineProfiles(controller: controller),
+                              ProfileBankDetails(controller: controller),
                               ProfileBasicDetails(controller: controller),
                               const SizedBox(height: 12),
                             ],

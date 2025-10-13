@@ -2,8 +2,8 @@ class AppConstants {
   static const String appName = "Mavx";
 
   // API URLs
-  // static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
-  static const String baseUrl = 'http://192.168.1.3:3001/v1/api';
+  static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
+  // static const String baseUrl = 'http://192.168.1.3:3001/v1/api';
   static const String baseUrlImage = 'https://apis.apptheka.com/mavx/public/';
   static const String fileUploading = 'https://apis.apptheka.com/mavx/file-uploading';
   // Timesheet endpoint for insert - local development server
@@ -39,6 +39,7 @@ class AppConstants {
   static const String timesheet = '/timesheet/upsert';
   static const String getTimesheet = '/timesheet/project/{projectId}/expert/{expertId}';
   static const String invoice = '/invoice';
+  static const String bankDetails = '/profile/bank-details';
 
   // Storage Keys
   static const String tokenKey = 'token';
