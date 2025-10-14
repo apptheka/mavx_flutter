@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,12 +10,17 @@ import 'package:mavx_flutter/app/domain/usecases/my_project_usecase.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/widgets/invoice_bottom_sheet.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/widgets/timesheet_bottom_sheet.dart';
+import 'package:mavx_flutter/app/domain/usecases/expense_usecase.dart';
+import 'package:mavx_flutter/app/data/repositories/expense_repository_impl.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/widgets/expenses_bottom_sheet.dart';
 
 class MyProjectsController extends GetxController {
-  MyProjectsController({MyProjectUsecase? usecase})
-      : _usecase = usecase ?? _ensureUsecase();
+  MyProjectsController({MyProjectUsecase? usecase, ExpenseUseCase? expenseUseCase})
+      : _usecase = usecase ?? _ensureUsecase(),
+        _expenseUseCase = expenseUseCase ?? _ensureExpenseUsecase();
 
   final MyProjectUsecase _usecase;
+  final ExpenseUseCase _expenseUseCase;
   // Session-scoped persistence to keep submitted invoice state across
   // controller/widget recreations within the same app session
   static final Set<int> _invoicedProjectsStatic = <int>{};
@@ -41,6 +48,120 @@ class MyProjectsController extends GetxController {
       return Get.find<MyProjectUsecase>();
     } catch (_) {
       return Get.put(MyProjectUsecase(Get.put(MyProjectsRepositoryImpl())));
+    }
+  }
+
+  Future<void> openExpensesBottomSheet({
+    required int projectId,
+    required String projectName,
+  }) async {
+    int expertId = 0;
+    try {
+      for (final p in projects) {
+        final pid = p.projectId ?? p.id ?? 0;
+        if (pid == projectId) {
+          expertId = p.expertId ?? 0;
+          break;
+        }
+      }
+      if (expertId == 0) {
+        final profile = Get.find<ProfileController>(tag: null);
+        expertId = profile.registeredProfile.value.id ?? 0;
+      }
+      log("expertId used for expenses: $expertId");
+      if (expertId == 0) {
+        Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
+        return;
+      }
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+      final resp = await _expenseUseCase.getExpenses(projectId, expertId);
+      if (Get.isDialogOpen == true) Get.back();
+      final result = await Get.bottomSheet(
+        ExpensesBottomSheet(
+          projectId: projectId,
+          projectName: projectName,
+          existingExpenses: resp.data,
+        ),
+        isScrollControlled: true,
+      );
+
+      // Handle submit from bottom sheet
+      if (result is List<Map<String, dynamic>>) {
+        // Enrich payloads
+        final enriched = result.map((p) {
+          final map = Map<String, dynamic>.from(p);
+          map['projectId'] = projectId;
+          map['expertId'] = expertId;
+          // Coerce amount to number if string
+          final amt = map['amount'];
+          if (amt is String) {
+            final v = double.tryParse(amt.trim());
+            if (v != null) map['amount'] = v;
+          }
+          return map;
+        }).toList();
+
+        Get.dialog(
+          const Center(child: CircularProgressIndicator()),
+          barrierDismissible: false,
+        );
+        final ok = await _expenseUseCase.upsertExpenses(enriched);
+        if (Get.isDialogOpen == true) Get.back();
+        if (ok) {
+          // Refresh and optionally show a toast
+          final refreshed = await _expenseUseCase.getExpenses(projectId, expertId);
+          // No dedicated state holder here; rely on reopening or caller refreshing
+          Get.snackbar('Expenses', 'Expenses saved successfully');
+        } else {
+          Get.snackbar('Expenses', 'Failed to save expenses');
+        }
+      }
+    } catch (_) {
+      if (Get.isDialogOpen == true) Get.back();
+      final result = await Get.bottomSheet(
+        ExpensesBottomSheet(
+          projectId: projectId,
+          projectName: projectName,
+          existingExpenses: const [],
+        ),
+        isScrollControlled: true,
+      );
+      if (result is List<Map<String, dynamic>>) {
+        final enriched = result.map((p) {
+          final map = Map<String, dynamic>.from(p);
+          map['projectId'] = projectId;
+          map['expertId'] = expertId;
+          final amt = map['amount'];
+          if (amt is String) {
+            final v = double.tryParse(amt.trim());
+            if (v != null) map['amount'] = v;
+          }
+          return map;
+        }).toList();
+
+        Get.dialog(
+          const Center(child: CircularProgressIndicator()),
+          barrierDismissible: false,
+        );
+        final ok = await _expenseUseCase.upsertExpenses(enriched);
+        if (Get.isDialogOpen == true) Get.back();
+        if (ok) {
+          Get.snackbar('Expenses', 'Expenses saved successfully');
+        } else {
+          Get.snackbar('Expenses', 'Failed to save expenses');
+        }
+      }
+    }
+  }
+
+  static ExpenseUseCase _ensureExpenseUsecase() {
+    try {
+      return Get.find<ExpenseUseCase>();
+    } catch (_) {
+      return Get.put(ExpenseUseCase(expenseRepository: Get.put(ExpenseRepositoryImpl())));
     }
   }
 
@@ -222,7 +343,7 @@ class MyProjectsController extends GetxController {
       // After loading projects, prefetch FINAL_APPROVED status for invoice button
       await prefetchTimesheetStatuses();
     } catch (e) {
-      error.value = 'Something went wrong';
+      error.value = 'Something went wrong'; 
     } finally {
       loading.value = false;
     }
@@ -253,11 +374,34 @@ class MyProjectsController extends GetxController {
     }
   }
 
+  bool _isFourthWeekNow(DateTime d) {
+    // Week of month: 1..5 using 7-day buckets; 4th week ~ days 22-28
+    final week = ((d.day - 1) ~/ 7) + 1;
+    return week == 4;
+  }
+
   Future<void> openTimesheetBottomSheet({
     required int projectId,
     required String projectName,
   }) async {
     try {
+      // Allow submissions only in 4th week of the month
+      final now = DateTime.now();
+      if (!_isFourthWeekNow(now)) {
+        Get.defaultDialog(
+          title: 'Create Timesheet',
+          content: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Timesheet submissions are only available during the 4th week of each month.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          textConfirm: 'Close',
+          onConfirm: () => Get.back(),
+        );
+        return;
+      }
       // Obtain expertId from profile
       final profile = Get.find<ProfileController>(tag: null);
       final expertId = profile.registeredProfile.value.id ?? 0;
@@ -284,14 +428,18 @@ class MyProjectsController extends GetxController {
       );
     } catch (e) {
       if (Get.isDialogOpen == true) Get.back();
-      // In case of error, still open sheet without data
-      Get.bottomSheet(
-        TimesheetBottomSheet(
-          projectId: projectId,
-          projectName: projectName,
-          existingTimesheets: const [],
+      // Show rule message on failure too
+      Get.defaultDialog(
+        title: 'Create Timesheet',
+        content: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            'Timesheet submissions are only available during the 4th week of each month.',
+            textAlign: TextAlign.center,
+          ),
         ),
-        isScrollControlled: true,
+        textConfirm: 'Close',
+        onConfirm: () => Get.back(),
       );
     }
   }

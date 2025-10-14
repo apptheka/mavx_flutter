@@ -34,6 +34,7 @@ class JobCard extends StatelessWidget {
   final double? projectCost;
   final DateTime? creationDate;
   final VoidCallback? onSchedulePressed;
+  final VoidCallback? onExpensePressed;
   final bool showInvoiceButton;
   final VoidCallback? onInvoicePressed;
 
@@ -59,6 +60,7 @@ class JobCard extends StatelessWidget {
     this.projectCost,
     this.creationDate,
     this.onSchedulePressed,
+    this.onExpensePressed,
     this.showInvoiceButton = false,
     this.onInvoicePressed,
   });
@@ -170,6 +172,20 @@ class JobCard extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            if(status == 'Confirmed')
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
+                                child: GestureDetector(
+                                  onTap: onExpensePressed,
+                                  child: Image.asset(
+                                    IconAssets.expense,
+                                    width: isSmallScreen ? 18 : 24,
+                                    height: isSmallScreen ? 18 : 24,
+                                  ),
+                                ),
+                              ),
                         ],
                       ),
                       const SizedBox(height: 4),

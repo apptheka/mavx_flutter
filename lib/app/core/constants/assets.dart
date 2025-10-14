@@ -37,4 +37,5 @@ class IconAssets{
    static const String saved = "assets/icons/save.png";
    static const String requests = "assets/icons/requests.png"; 
    static const String bankDetails = "assets/icons/bank_details.png";
+   static const String expense = "assets/icons/expense.png";
 }

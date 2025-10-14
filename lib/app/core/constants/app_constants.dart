@@ -40,6 +40,8 @@ class AppConstants {
   static const String getTimesheet = '/timesheet/project/{projectId}/expert/{expertId}';
   static const String invoice = '/invoice';
   static const String bankDetails = '/profile/bank-details';
+  static const String getExpenses= '/expenses/project/{projectId}/expert/{expertId}';
+  static const String upsertExpenses = '/expenses/upsert';
 
   // Storage Keys
   static const String tokenKey = 'token';

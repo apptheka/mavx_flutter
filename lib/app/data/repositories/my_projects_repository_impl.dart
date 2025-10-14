@@ -16,6 +16,7 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
     try {
       final enc = await apiProvider.get(AppConstants.myProjects);
       final decoded = jsonDecode(enc.decrypt());
+      log(decoded.toString());
       final resp = ProjectResponse.fromJson(decoded);
       final list = resp.data?.data ?? <ProjectModel>[];
       return list;

@@ -138,7 +138,7 @@ class ProjectModel {
       projectTitle: json['project_title'],
       projectVisibility: json['project_visibility'],
       projectType: json['project_type'],
-      industry: json['industry'],
+      industry: json['industry']?.toString(),
       requiredExperts: json['required_experts'],
       requiredManager: json['required_manager'],
       duration: json['duration'],
@@ -158,11 +158,7 @@ class ProjectModel {
       projectCost: json['project_cost'],
       budget: json['budget'],
       projectStatus: json['project_status'],
-      skillsJson: json['skills_json'] != null
-          ? List<String>.from(
-              List<dynamic>.from(jsonDecode(json['skills_json'])),
-            )
-          : null,
+      skillsJson: _parseSkills(json['skills_json']),
       ndaUrl: json['nda_url'],
       startDate: json['start_date'] != null
           ? DateTime.tryParse(json['start_date'])
@@ -175,6 +171,32 @@ class ProjectModel {
           ? DateTime.tryParse(json['creation_date'])
           : null,
     );
+  }
+
+  static List<String>? _parseSkills(dynamic value) {
+    if (value == null) return null;
+    try {
+      if (value is List) {
+        return value.map((e) => e.toString()).toList();
+      }
+      if (value is String) {
+        final s = value.trim();
+        if (s.isEmpty) return null;
+        // Try to decode if it's a JSON array string
+        try {
+          final decoded = jsonDecode(s);
+          if (decoded is List) {
+            return decoded.map((e) => e.toString()).toList();
+          }
+        } catch (_) {
+          // Not a JSON array string; fall through to return single-item list
+        }
+        return <String>[s];
+      }
+    } catch (_) {
+      // Swallow parsing issues and return null to avoid breaking UI
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {

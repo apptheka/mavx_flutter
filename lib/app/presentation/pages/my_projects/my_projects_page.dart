@@ -94,6 +94,14 @@ class MyProjectsPage extends StatelessWidget {
                                         projectName: pname,
                                       );
                                     },
+                                    onExpensePressed: () {
+                                      final pid = p.projectId ?? p.id ?? 0;
+                                      final pname = p.projectTitle ?? 'Project';
+                                      controller.openExpensesBottomSheet(
+                                        projectId: pid,
+                                        projectName: pname,
+                                      ); 
+                                    },
                                   ),
                                 );
                               },
