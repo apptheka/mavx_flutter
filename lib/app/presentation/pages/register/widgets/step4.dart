@@ -18,8 +18,12 @@ class RegisterStep4 extends StatelessWidget {
       key: controller.formKeyStep4,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -264,6 +268,9 @@ class RegisterStep4 extends StatelessWidget {
                 controller: controller.achievementsCtrl,
                 keyboardType: TextInputType.multiline,
                 maxLines: 6,
+                focusNode: controller.fnAchievements,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
               ),
 
               const SizedBox(height: 16),

@@ -93,7 +93,7 @@ class JobCard extends StatelessWidget {
     // Responsive sizing
     final cardPadding = isSmallScreen ? 8.0 : 12.0;
     final logoSize = isSmallScreen ? 32.0 : 36.0;
-    final titleFontSize = isSmallScreen ? 14.0 : 16.0;
+    final titleFontSize = isSmallScreen ? 14.0 : 15.0;
     final spacingSmall = isSmallScreen ? 6.0 : 8.0;
     final spacingMedium = isSmallScreen ? 8.0 : 12.0;
     final buttonHeight = compact
@@ -168,7 +168,7 @@ class JobCard extends StatelessWidget {
                                 child: Icon(
                                   Icons.schedule,
                                   color: Colors.black,
-                                  size: isSmallScreen ? 20 : 24,
+                                  size: isSmallScreen ? 18 : 20,
                                 ),
                               ),
                             ),
@@ -181,8 +181,8 @@ class JobCard extends StatelessWidget {
                                   onTap: onExpensePressed,
                                   child: Image.asset(
                                     IconAssets.expense,
-                                    width: isSmallScreen ? 18 : 24,
-                                    height: isSmallScreen ? 18 : 24,
+                                    width: isSmallScreen ? 18 : 20,
+                                    height: isSmallScreen ? 18 : 20,
                                   ),
                                 ),
                               ),
@@ -193,15 +193,15 @@ class JobCard extends StatelessWidget {
                         children: [
                           Image.asset(
                             IconAssets.apartement,
-                            width: isSmallScreen ? 12 : 14,
-                            height: isSmallScreen ? 12 : 14,
+                            width: isSmallScreen ? 10 : 12,
+                            height: isSmallScreen ? 10 : 12,
                             color: Colors.black45,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: CommonText(
                               "Veltrix Global",
-                              fontSize: isSmallScreen ? 12 : 14,
+                              fontSize: isSmallScreen ? 10 : 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.black54,
                               maxLines: 1,
@@ -403,7 +403,7 @@ class JobCard extends StatelessWidget {
                                       ),
                                       child: CommonText(
                                         'Invoice',
-                                        fontSize: isSmallScreen ? 12 : 14,
+                                        fontSize: isSmallScreen ? 10 : 12,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.secondaryColor,
                                       ),

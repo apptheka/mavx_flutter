@@ -43,7 +43,7 @@ class MyProjectsPage extends StatelessWidget {
                                 const SizedBox(height: 200),
                                 Center(
                                   child: CommonText(
-                                    controller.error.value,
+                                    "Something Went Wrong",
                                     color: AppColors.textSecondaryColor,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -69,6 +69,7 @@ class MyProjectsPage extends StatelessWidget {
                                   child: JobCard(  
                                     id: p.projectId ?? p.id ?? 0,
                                     title: p.projectTitle ?? '',
+                                    
                                     description: p.description ?? '',
                                     company: p.projectType ?? '',
                                     tags: [p.projectType ?? ''],
@@ -144,12 +145,11 @@ class _HeaderMyProjects extends StatelessWidget {
               Get.back();
             },
             icon: Icon(Icons.arrow_back, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
+          ), 
           Expanded(
             child: CommonText(
               'My Projects',
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),

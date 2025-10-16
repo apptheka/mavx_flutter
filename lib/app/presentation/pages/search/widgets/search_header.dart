@@ -31,7 +31,7 @@ class SearchHeader extends GetView<search.SearchPageController> {
               Expanded(
                 child: CommonText(
                   'Search Jobs',
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),

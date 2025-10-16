@@ -27,6 +27,9 @@ class ApplyController extends GetxController {
   final ApplyJobUseCase _applyJobUseCase;
   final AuthRepository _authRepository;
   final ProjectsUseCase _projectsUseCase;
+  
+  // Persistent form key to avoid focus loss on rebuilds
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final TextEditingController perHourCostCtrl = TextEditingController();
   final TextEditingController currentCtcCtrl = TextEditingController();

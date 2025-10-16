@@ -13,7 +13,14 @@ class SavedPage extends GetView<SavedController> {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<SavedController>();
-    return Scaffold(
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && Get.isRegistered<HomeController>()) {
+          // Ensure Home tab refreshes even when using system back/gesture
+          Get.find<HomeController>().refreshPage();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Stack(
         children: [
@@ -57,7 +64,7 @@ class SavedPage extends GetView<SavedController> {
                           const Expanded(
                             child: CommonText(
                               'Saved Projects',
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
@@ -128,6 +135,7 @@ class SavedPage extends GetView<SavedController> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

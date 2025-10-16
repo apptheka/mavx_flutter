@@ -48,7 +48,7 @@ class Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonText(
-                (title?.trim().isNotEmpty == true ? title! : 'Project') + '\n' + (company?.trim().isNotEmpty == true ? company! : 'Company'),
+                (title?.trim().isNotEmpty == true ? title! : 'Project'),
                 fontSize: titleSize,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF0B2944), 

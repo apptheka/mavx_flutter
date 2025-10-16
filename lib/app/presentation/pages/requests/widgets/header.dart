@@ -39,7 +39,7 @@ class HeaderRequests extends StatelessWidget {
               const Expanded(
                 child: CommonText(
                   'My Requests',
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),

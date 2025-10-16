@@ -97,7 +97,7 @@ class HeaderWidget extends GetView<HomeController> {
                       CommonText(
                         "Home",
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

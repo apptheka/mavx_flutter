@@ -32,7 +32,7 @@ class ProfileCompletionCard extends StatelessWidget {
 
       return Container(
         margin: EdgeInsets.symmetric(vertical: 12),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: AppColors.black.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(40),
@@ -126,7 +126,7 @@ class ProfileCompletionCard extends StatelessWidget {
                 children: [
                   CommonText(
                     'Your profile is $percent% complete',
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF0B2944),
                   ),  

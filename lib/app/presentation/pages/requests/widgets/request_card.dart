@@ -449,7 +449,7 @@ class _RequestCardState extends State<RequestCard>
                           ),
                           const SizedBox(width: 4),
                           Expanded(
-                            flex: 2,
+                            flex: 3,
                             child: CommonText(
                               widget.request.projectType ?? '-',
                               color: _getProjectTypeColor(
@@ -472,7 +472,7 @@ class _RequestCardState extends State<RequestCard>
                               child: CommonText(
                                 'Duration: ${widget.request.duration} ${widget.request.durationType}',
                                 color: Colors.black87,
-                                fontSize: isSmallScreen ? 12 : 14,
+                                fontSize: isSmallScreen ? 10 : 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

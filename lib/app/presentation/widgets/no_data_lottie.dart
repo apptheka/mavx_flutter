@@ -17,20 +17,21 @@ class NoDataLottie extends StatelessWidget {
           // Use the existing lottie asset filename present in assets/lottie/
           Lottie.asset(
             'assets/lottie/No Search result.json',
-            width: 220,
-            height: 220,
+            width: 200,
+            height: 200,
             repeat: true,
             errorBuilder: (context, error, stack) => const Icon(Icons.hourglass_empty, size: 80, color: Colors.grey),
           ),
           const SizedBox(height: 8),
             CommonText(
             title,
-            fontSize: 20,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
           const SizedBox(height: 12),
           SizedBox(
-            width: MediaQuery.of(context).size.width * 0.7,
+            width: MediaQuery.of(context).size.width * 0.6,
+            height: MediaQuery.of(context).size.height * 0.06,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
@@ -40,7 +41,7 @@ class NoDataLottie extends StatelessWidget {
               onPressed: onPressed,
               child: CommonText(
                 buttonText,
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),

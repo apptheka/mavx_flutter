@@ -20,11 +20,10 @@ class ApplyPage extends GetView<ApplyController> {
     final isSmall = size.width < 340;
     final edge = EdgeInsets.symmetric(horizontal: isSmall ? 16 : 20);
     final fieldSpacing = isSmall ? 14.0 : 16.0;
-    final titleSize = isSmall ? 20.0 : 24.0;
+    final titleSize = isSmall ? 20.0 : 18.0;
     final subtitleSize = isSmall ? 12.0 : 13.0;
     final buttonHeight = isSmall ? 44.0 : 50.0;
 
-    final formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -54,7 +53,7 @@ class ApplyPage extends GetView<ApplyController> {
                   const SizedBox(height: 8),
 
                   Form(
-                    key: formKey,
+                    key: c.formKey,
                     child: Obx(() {
                       final type = (c.project.value?.projectType ?? '').trim().toLowerCase();
                       final isContractLike = type == 'contract' || type == 'contract placement' || type == 'consulting';
@@ -259,7 +258,7 @@ class ApplyPage extends GetView<ApplyController> {
                                         onPressed: c.applying.value
                                             ? null
                                             : () {
-                                                if (!(formKey.currentState?.validate() ?? false)) {
+                                                if (!(c.formKey.currentState?.validate() ?? false)) {
                                                   return;
                                                 }
                                                 

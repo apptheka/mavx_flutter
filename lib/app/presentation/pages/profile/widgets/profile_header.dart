@@ -48,7 +48,7 @@ class ProfileHeader extends StatelessWidget {
                     child: CommonText(
                       'My Profile',
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -58,8 +58,8 @@ class ProfileHeader extends StatelessWidget {
                     },
                     icon: Image.asset(
                       IconAssets.logout,
-                      height: 20,
-                      width: 20,
+                      height: 18,
+                      width: 18,
                       color: Colors.white,
                     ),
                   ),
@@ -299,7 +299,7 @@ class _NameAndStatus extends StatelessWidget {
                   : 'Your Name';
               return CommonText(
                 displayName,
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
               );
@@ -312,8 +312,8 @@ class _NameAndStatus extends StatelessWidget {
               },
               icon: Image.asset(
                 IconAssets.role,
-                height: 25,
-                width: 25,
+                height: 20,
+                width: 20,
                 color: Colors.white,
               ),
             ),

@@ -88,7 +88,7 @@ class HeaderSection extends StatelessWidget {
                       (it?.projectTitle?.isNotEmpty ?? false)
                           ? it!.projectTitle!
                           : 'Project',
-                      fontSize: 18,
+                      fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimaryColor,
                       ), 

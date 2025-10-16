@@ -47,6 +47,13 @@ class RegisterController extends GetxController {
   final dayFocus = FocusNode();
   final monthFocus = FocusNode();
   final yearFocus = FocusNode();
+  // Step 1 ordered focus nodes
+  final fnFirstName = FocusNode();
+  final fnLastName = FocusNode();
+  final fnPassword = FocusNode();
+  final fnDob = FocusNode();
+  final fnCity = FocusNode();
+  final fnCountry = FocusNode();
 
   // Step 2 controllers (examples)
   final continentCtrl = TextEditingController();
@@ -56,6 +63,14 @@ class RegisterController extends GetxController {
   final experienceCtrl = TextEditingController();
   final ctcCtrl = TextEditingController();
   final skillsCtrl = TextEditingController();
+  // Step 2 ordered focus nodes
+  final fnContinent = FocusNode();
+  final fnMobile = FocusNode();
+  final fnPrimaryEmail = FocusNode();
+  final fnAlternateEmail = FocusNode();
+  final fnExperience = FocusNode();
+  final fnCtc = FocusNode();
+  final fnSkills = FocusNode();
 
   // Step 2 country code state
   final RxString dialCode = '+91'.obs; // default India
@@ -72,6 +87,11 @@ class RegisterController extends GetxController {
   final RxList<DropdownMenuItem<String>> primaryFunctionItems = <DropdownMenuItem<String>>[].obs;
   final RxList<DropdownMenuItem<String>> secondaryFunction = <DropdownMenuItem<String>>[].obs;
   final RxList<DropdownMenuItem<String>> industryItems = <DropdownMenuItem<String>>[].obs;
+  // Step 3 ordered focus nodes
+  final fnLinkedIn = FocusNode();
+  final fnOtherPrimaryFunction = FocusNode();
+  final fnOtherIndustry = FocusNode();
+  final fnCurrentEmployer = FocusNode();
   final List<DropdownMenuItem<String>> roleTypeItems = [
     DropdownMenuItem(
       value: 'Peramanent',
@@ -102,6 +122,8 @@ class RegisterController extends GetxController {
   ];
   final secondaryFunctionCtrl = ''.obs;
   final achievementsCtrl = TextEditingController();
+  // Step 4 focus nodes
+  final fnAchievements = FocusNode();
 
   // Upload states and resulting URLs
   final RxBool uploadingResume = false.obs;
@@ -695,12 +717,30 @@ Future<void> _showPendingDialog() async {
     dayFocus.dispose();
     monthFocus.dispose();
     yearFocus.dispose();
+    fnFirstName.dispose();
+    fnLastName.dispose();
+    fnPassword.dispose();
+    fnDob.dispose();
+    fnCity.dispose();
+    fnCountry.dispose();
     continentCtrl.dispose();
     mobileCtrl.dispose();
     primaryEmailCtrl.dispose();
     alternateEmailCtrl.dispose();
     experienceCtrl.dispose();
     ctcCtrl.dispose();
+    fnContinent.dispose();
+    fnMobile.dispose();
+    fnPrimaryEmail.dispose();
+    fnAlternateEmail.dispose();
+    fnExperience.dispose();
+    fnCtc.dispose();
+    fnSkills.dispose();
+    fnLinkedIn.dispose();
+    fnOtherPrimaryFunction.dispose();
+    fnOtherIndustry.dispose();
+    fnCurrentEmployer.dispose();
+    fnAchievements.dispose();
     linkedInCtrl.dispose();  
     achievementsCtrl.dispose(); 
     otherPrimaryFunctionCtrl.dispose();

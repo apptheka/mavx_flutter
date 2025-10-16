@@ -128,7 +128,7 @@ class _HeaderApplications extends StatelessWidget {
               const Expanded(
                 child: CommonText(
                   'My Applications',
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),

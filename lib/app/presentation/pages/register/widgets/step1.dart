@@ -15,7 +15,12 @@ class RegisterStep1 extends StatelessWidget {
       key: c.formKeyStep1,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -29,6 +34,9 @@ class RegisterStep1 extends StatelessWidget {
               AppTextField( 
                 hintText: 'Enter First Name',
                 controller: c.firstNameCtrl,
+                focusNode: c.fnFirstName,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(c.fnLastName),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'First name required'
                     : null,
@@ -43,6 +51,9 @@ class RegisterStep1 extends StatelessWidget {
               AppTextField( 
                 hintText: 'Enter Last Name',
                 controller: c.lastNameCtrl,
+                focusNode: c.fnLastName,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(c.fnPassword),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Last name required'
                     : null,
@@ -55,6 +66,9 @@ class RegisterStep1 extends StatelessWidget {
                   hintText: 'Enter Password',
                   controller: c.passwordCtrl,
                   obscureText: c.isPasswordHidden.value,
+                  focusNode: c.fnPassword,
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(c.fnDob),
                   suffixIcon: IconButton(
                     icon: Icon(
                       c.isPasswordHidden.value
@@ -81,6 +95,9 @@ class RegisterStep1 extends StatelessWidget {
                 controller: c.dobCtrl,
                 hintText: 'DD/MM/YYYY',
                 readOnly: true,
+                focusNode: c.fnDob,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(c.fnCity),
                 onTap: () => c.pickDob(Get.context ?? context),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.calendar_today_rounded),
@@ -109,6 +126,9 @@ class RegisterStep1 extends StatelessWidget {
                           ],
                           hintText: 'City',
                           controller: c.cityCtrl,
+                          focusNode: c.fnCity,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(c.fnCountry),
                           validator: (v) {
                             final value = v?.trim() ?? '';
                             if (value.isEmpty) return 'Required';
@@ -139,6 +159,15 @@ class RegisterStep1 extends StatelessWidget {
                           ],
                           hintText: 'Country',
                           controller: c.countryCtrl,
+                          focusNode: c.fnCountry,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) {
+                            if (Get.find<RegisterController>().validateCurrentStep()) {
+                              Get.find<RegisterController>().nextStep();
+                            } else {
+                              FocusScope.of(context).unfocus();
+                            }
+                          },
                           validator: (v) {
                             final value = v?.trim() ?? '';
                             if (value.isEmpty) return 'Required';
@@ -151,7 +180,7 @@ class RegisterStep1 extends StatelessWidget {
                   ),
                 ],
               ), 
-              const SizedBox(height: 22), // bottom spacer
+              // Extra bottom spacer replaced by keyboard-aware padding above
             ],
           ),
         ),

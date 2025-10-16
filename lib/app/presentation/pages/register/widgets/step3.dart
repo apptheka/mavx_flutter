@@ -15,8 +15,12 @@ class RegisterStep3 extends StatelessWidget {
       key: controller.formKeyStep3,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -30,6 +34,9 @@ class RegisterStep3 extends StatelessWidget {
               AppTextField(
                 hintText: 'Enter URL',
                 keyboardType: TextInputType.url,
+                focusNode: controller.fnLinkedIn,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(controller.fnOtherPrimaryFunction),
                 controller: controller.linkedInCtrl,
                 validator: controller.validateLinkedIn,
               ),
@@ -83,6 +90,9 @@ class RegisterStep3 extends StatelessWidget {
                     child: AppTextField(
                       hintText: 'Other',
                       controller: controller.otherPrimaryFunctionCtrl,
+                      focusNode: controller.fnOtherPrimaryFunction,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(controller.fnOtherIndustry),
                       validator: (v) {
                         final value = v?.trim() ?? '';
                         if (value.isNotEmpty) return 'Other required';
@@ -125,7 +135,10 @@ class RegisterStep3 extends StatelessWidget {
                     child: AppTextField(
                       keyboardType: TextInputType.text,
                       hintText: 'Other',
-                      controller: controller.otherPrimaryFunctionCtrl,
+                      controller: controller.otherPrimaryIndustryCtrl,
+                      focusNode: controller.fnOtherIndustry,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(controller.fnCurrentEmployer),
                       validator: (v) {
                         final value = v?.trim() ?? '';
                         if (value.isNotEmpty) return 'Other required';
@@ -146,6 +159,16 @@ class RegisterStep3 extends StatelessWidget {
                 hintText: 'Enter',
                 keyboardType: TextInputType.text,
                 controller: controller.currentEmployerCtrl,
+                focusNode: controller.fnCurrentEmployer,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) {
+                  final ctrl = Get.find<RegisterController>();
+                  if (ctrl.validateCurrentStep()) {
+                    ctrl.nextStep();
+                  } else {
+                    FocusScope.of(context).unfocus();
+                  }
+                },
                 validator: (v) {
                   final value = v?.trim() ?? '';
                   if (value.isEmpty) return 'Current employer required';

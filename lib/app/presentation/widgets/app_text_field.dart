@@ -18,12 +18,17 @@ class AppTextField extends StatelessWidget {
   final TextCapitalization? textCapitalization;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged; 
+  final void Function(String)? onFieldSubmitted;
   final FocusNode? focusNode;
   final bool readOnly;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? margin;
   final Color? borderColor;
   final TextAlign? textAlign;
+  // Auto-scroll the field into view when it gains focus
+  final bool autoScrollOnFocus;
+  final Duration scrollAnimationDuration;
+  final double scrollAlignment;
 
   const AppTextField({  
     super.key,
@@ -42,12 +47,16 @@ class AppTextField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.sentences,
     this.validator,
     this.onChanged, 
+    this.onFieldSubmitted,
     this.focusNode,
     this.readOnly = false,
     this.onTap,
     this.margin,
     this.borderColor,
     this.textAlign,
+    this.autoScrollOnFocus = true,
+    this.scrollAnimationDuration = const Duration(milliseconds: 220),
+    this.scrollAlignment = 0.3,
   });
 
   @override
@@ -56,9 +65,12 @@ class AppTextField extends StatelessWidget {
     const fillColor = Color(0xFFF2F3F7); // subtle light grey
     final borderRadius = BorderRadius.circular(8);
 
-    return Container(
-      margin: margin,
-      child: TextFormField(
+    BuildContext? _fieldCtx;
+
+    Widget textField = Builder(
+      builder: (ctx) {
+        _fieldCtx = ctx;
+        return TextFormField(
         maxLength: maxLength, 
         textCapitalization: textCapitalization ?? TextCapitalization.none,
         controller: controller,
@@ -72,6 +84,7 @@ class AppTextField extends StatelessWidget {
         readOnly: readOnly,
         maxLines: obscureText ? 1 : maxLines, 
         onChanged: onChanged,
+        onFieldSubmitted: onFieldSubmitted,
         onTap: onTap,
         onTapOutside: (v) => FocusScope.of(context).unfocus(),
         validator: validator,
@@ -131,7 +144,36 @@ class AppTextField extends StatelessWidget {
           ),
         ),
         cursorColor: AppColors.textBlueColor,
-      ),
+      );
+      },
+    );
+
+    // Wrap with a Focus listener to auto-scroll into view on focus
+    if (autoScrollOnFocus) {
+      textField = Focus(
+        onFocusChange: (hasFocus) async {
+          if (hasFocus) {
+            await Future.delayed(const Duration(milliseconds: 50));
+            final ctx = _fieldCtx;
+            if (ctx != null && (focusNode?.hasFocus ?? true)) {
+              try {
+                await Scrollable.ensureVisible(
+                  ctx,
+                  alignment: scrollAlignment,
+                  duration: scrollAnimationDuration,
+                  curve: Curves.easeOut,
+                );
+              } catch (_) {}
+            }
+          }
+        },
+        child: textField,
+      );
+    }
+
+    return Container(
+      margin: margin,
+      child: textField,
     );
   }
 }

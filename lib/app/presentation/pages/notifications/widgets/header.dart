@@ -27,7 +27,7 @@ class Header extends StatelessWidget {
           CommonText(
             'Notifications',
             color: Colors.white,
-            fontSize: 26,
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ],

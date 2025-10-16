@@ -43,7 +43,7 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                         const SizedBox(height: 12),
                         const CommonText(
                           'About the project',
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
                         const SizedBox(height: 12),
@@ -51,7 +51,7 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                         const SizedBox(height: 12),
                         const CommonText(
                           'Timeline & Milestones',
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
                         const SizedBox(height: 12),

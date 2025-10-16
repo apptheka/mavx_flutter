@@ -321,7 +321,7 @@ class SimilarProjectsSection extends StatelessWidget {
               
               // Use intrinsic height instead of fixed height
               return SizedBox(
-                height: 280, // Increased height to accommodate new content
+                height: 230, // Increased height to accommodate new content
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal, 
                   padding: const EdgeInsets.only(right: 16),
