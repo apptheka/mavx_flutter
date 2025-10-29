@@ -23,10 +23,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await NotificationStorageService.init();
   await _initializeHive();
-
-  // Initialize Firebase Messaging service
-  await FirebaseMessagingService().initialize();
-
+ 
+  
   // Initialize storage
   final storage = StorageService();
   await storage.init();

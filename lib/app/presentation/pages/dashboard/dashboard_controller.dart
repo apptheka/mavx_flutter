@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/services/firebase_messaging_service.dart';
 import 'package:mavx_flutter/app/presentation/pages/applications/applications_controller.dart';
 
 class DashboardController extends GetxController {
@@ -6,6 +7,13 @@ class DashboardController extends GetxController {
 
   void changeTab(int index) {
     currentIndex.value = index;
+  }
+
+    @override
+  void onInit() {
+    super.onInit();
+    // Initialize notifications after user reaches dashboard (i.e., post-login)
+    FirebaseMessagingService().initialize();
   }
 
 
