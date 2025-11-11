@@ -377,11 +377,12 @@ class JobCard extends StatelessWidget {
                     );
                   }
                   return Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      if (!(status != null &&
-                          status!.toLowerCase() == 'confirmed'))
-                        _matchBadge(status ?? '92% Match', isSmallScreen),
-                      const Spacer(),
+                      // if (!(status != null &&
+                      //     status!.toLowerCase() == 'confirmed'))
+                      //   _matchBadge(status ?? '92% Match', isSmallScreen),
+                      // const Spacer(),
                       (status != null && status!.toLowerCase() == 'confirmed')
                           ? Row(
                               mainAxisSize: MainAxisSize.min,

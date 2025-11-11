@@ -42,6 +42,7 @@ class AppConstants {
   static const String bankDetails = '/profile/bank-details';
   static const String getExpenses= '/expenses/project/{projectId}/expert/{expertId}';
   static const String upsertExpenses = '/expenses/upsert';
+  static const String notificationsList = '/notifications/list';
 
   // Storage Keys
   static const String tokenKey = 'token';

@@ -23,6 +23,8 @@ import 'package:mavx_flutter/app/domain/repositories/projects_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/request_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/specification_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/file_repository.dart';
+import 'package:mavx_flutter/app/domain/repositories/notification_repository.dart';
+import 'package:mavx_flutter/app/data/repositories/notification_repository_impl.dart';
 import 'package:mavx_flutter/app/domain/usecases/bank_details_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/bookmark_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/delete_bookmark_usecase.dart';
@@ -66,6 +68,7 @@ class DependenceInjection {
     Get.lazyPut<RequestRepository>(() => RequestRepositoryImpl(), fenix: true);
     Get.lazyPut<MyProjectRepository>(() => MyProjectsRepositoryImpl(), fenix: true);
     Get.lazyPut<BankDetailsRepository>(() => BankDetailsRepositoryImpl(), fenix: true);
+    Get.lazyPut<NotificationRepository>(() => NotificationRepositoryImpl(apiProvider: Get.find()), fenix: true);
 
     //Usecases
     Get.lazyPut(() => LoginUseCase(Get.find()), fenix: true);

@@ -55,8 +55,6 @@ class StatsRow extends StatelessWidget {
       padding: padding,
       child: Row(
         children: [
-          Expanded(child: _statBox('54', 'Profile Views', const Color(0xff21A241), ImageAssets.profileView)),
-          const SizedBox(width: 12),
           Expanded(child: Obx(() => InkWell(
             onTap: () => Get.toNamed(AppRoutes.saved),
             child: _statBox(

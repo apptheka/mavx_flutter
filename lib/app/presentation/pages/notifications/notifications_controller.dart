@@ -5,18 +5,22 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:mavx_flutter/app/core/services/notification_storage_service.dart';
 import 'package:mavx_flutter/app/data/models/notification_model.dart';
+import 'package:mavx_flutter/app/domain/repositories/notification_repository.dart';
 
 class NotificationsController extends GetxController {
   final RxString currentFilter = 'all'.obs; // all | unread | read
   final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
   ValueListenable<Box<String>>? _listenable;
   VoidCallback? _listenerDispose;
+  final NotificationRepository _repo = Get.find<NotificationRepository>();
+  final RxBool loading = false.obs;
+  final RxString error = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
     _attachListenable();
-    _load();
+    fetchFromApi();
   }
 
   void _attachListenable() {
@@ -56,22 +60,22 @@ class NotificationsController extends GetxController {
   }
 
   Future<void> markAsRead(String id) async {
-    await NotificationStorageService.markAsRead(id);
+    await _repo.markAsRead(id);
     _load();
   }
 
   Future<void> markAllAsRead() async {
-    await NotificationStorageService.markAllAsRead();
+    await _repo.markAllAsRead();
     _load();
   }
 
   Future<void> delete(String id) async {
-    await NotificationStorageService.delete(id);
+    await _repo.deleteNotification(id);
     _load();
   }
 
   Future<void> refreshList() async {
-    _load();
+    await fetchFromApi();
   }
 
   int unreadCount() => NotificationStorageService.unreadCount();
@@ -80,5 +84,22 @@ class NotificationsController extends GetxController {
   void onClose() {
     _listenerDispose?.call();
     super.onClose();
+  }
+
+  Future<void> fetchFromApi() async {
+    loading.value = true;
+    error.value = '';
+    try {
+      final list = await _repo.getNotifications();
+      // Persist to local storage (upsert by id)
+      for (final n in list) {
+        await NotificationStorageService.save(n);
+      }
+    } catch (e) {
+      error.value = 'Failed to fetch notifications';
+    } finally {
+      loading.value = false;
+      _load();
+    }
   }
 }
