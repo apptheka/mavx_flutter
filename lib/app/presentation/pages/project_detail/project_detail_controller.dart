@@ -22,22 +22,13 @@ class ProjectDetailController extends GetxController {
   final RxSet<int> appliedIds = <int>{}.obs;
   final RxBool loading = false.obs;
   final RxString error = ''.obs;
+  final RxInt currentProjectId = 0.obs;
 
   @override
   void onInit() {
     super.onInit();
     final int id = Get.arguments is int ? Get.arguments as int : 0;
-    fetchProjectById(id).then((_) async {
-      // Load applied IDs to reflect applied state
-      try {
-        final ids = await applyJobRepository.getAppliedProjectIdsForCurrentUser();
-        appliedIds
-          ..clear()
-          ..addAll(ids);
-      } catch (_) {}
-      final currentType = _currentProjectType();
-      fetchSimilarProjects(projectType: currentType);
-    });
+    openProject(id);
   }
 
 
@@ -52,6 +43,22 @@ class ProjectDetailController extends GetxController {
     } finally {
       loading.value = false;
     }
+  }
+
+  Future<void> openProject(int id) async {
+    currentProjectId.value = id;
+    // Fetch main project
+    await fetchProjectById(id);
+    // Refresh applied state
+    try {
+      final ids = await applyJobRepository.getAppliedProjectIdsForCurrentUser();
+      appliedIds
+        ..clear()
+        ..addAll(ids);
+    } catch (_) {}
+    // Fetch similar based on current type
+    final currentType = _currentProjectType();
+    await fetchSimilarProjects(projectType: currentType);
   }
 
   String _currentProjectType() {

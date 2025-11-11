@@ -224,8 +224,9 @@ class ActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ProjectDetailController>();
-    final int projectId = Get.arguments is int ? Get.arguments as int : 0;
+    // Use reactive current project id from controller so page updates in-place
     return Obx(() {
+      final int projectId = controller.currentProjectId.value;
       final bool isApplied = controller.appliedIds.contains(projectId);
       return Column(
       children: [
@@ -347,8 +348,10 @@ class SimilarProjectsSection extends StatelessWidget {
                         projectCost: it.projectCost,
                         creationDate: it.creationDate,
                         onTap: () {
-                          // Replace current detail page with the selected similar project's detail
-                          Get.offNamed(AppRoutes.projectDetail, arguments: it.id);
+                          // Update the current detail in-place without navigating
+                          if (it.id != null) {
+                            controller.openProject(it.id!);
+                          }
                         },
                       ),
                     );

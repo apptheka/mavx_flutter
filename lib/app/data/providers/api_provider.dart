@@ -29,7 +29,7 @@ class ApiProvider {
       'Content-Type': 'application/json', 
       'accept': 'application/json',
       'train' : 'sdlkfj',
-      'area' : 'WEB',
+      'area' : 'ANDROID',
       'x-api-key' : 'mavxsecretkey_admin12335545',
     };
 

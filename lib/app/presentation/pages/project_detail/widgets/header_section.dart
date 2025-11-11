@@ -190,14 +190,6 @@ class HeaderSection extends StatelessWidget {
           Row(
             children: [
               _Badge(text:'Active', color: AppColors.lightGreen.withValues(alpha: 0.4),textColor: AppColors.green,),
-              Spacer(),
-              Row(
-                children: [
-                 Image.asset(IconAssets.badge,height: 16,width: 16,),
-                 const SizedBox(width: 6,),
-                 CommonText('Excellent Fit',color: AppColors.green,fontWeight: FontWeight.w700,fontSize: 13)
-                ]
-              )
             ],
           ),
         ],
@@ -205,15 +197,7 @@ class HeaderSection extends StatelessWidget {
     );
     });
   }
-
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    final local = date.toLocal();
-    return '${months[local.month - 1]} ${local.day}, ${local.year}';
-  }
+ 
 
   List<Widget> _buildSkillChips(String skillsJson) {
     try {

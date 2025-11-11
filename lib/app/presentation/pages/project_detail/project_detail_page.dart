@@ -15,7 +15,6 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
   @override
   Widget build(BuildContext context) {
     // Ensure the controller is available for all child widgets via Get.find
-    final int projectId = Get.arguments is int ? Get.arguments as int : 0;
     final homeCtrl = Get.find<HomeController>();
     final myProjectsCtrl = Get.isRegistered<MyProjectsController>()
         ? Get.find<MyProjectsController>()
@@ -31,7 +30,11 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DetailHeader(isConfirmed: myProjectsCtrl.projects.any((p) => (p.projectId ?? p.id ?? 0) == projectId)),
+                Obx(() {
+                  final id = controller.currentProjectId.value;
+                  final isConfirmed = myProjectsCtrl.projects.any((p) => (p.projectId ?? p.id ?? 0) == id);
+                  return DetailHeader(isConfirmed: isConfirmed);
+                }),
                 const SizedBox(height: 16),
                 Expanded(
                   child: SingleChildScrollView(
@@ -55,27 +58,12 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                           fontWeight: FontWeight.w800,
                         ),
                         const SizedBox(height: 12),
-                        const TimelineSection(),
-                        // const SizedBox(height: 12),
-                        // const CommonText(
-                        //   'Client Overview',
-                        //   fontSize: 20,
-                        //   fontWeight: FontWeight.w800,
-                        // ),
-                        // const SizedBox(height: 12),
-                        // const ClientOverviewSection(),
-                        // const SizedBox(height: 12),
-                        // const CommonText(
-                        //   'Why You\'re a Great Fit',
-                        //   fontSize: 20,
-                        //   fontWeight: FontWeight.w800,
-                        // ),
-                        // const SizedBox(height: 12),
-                        // const GreatFitSection(),
+                        const TimelineSection(), 
                         const SizedBox(height: 20),
                         Obx(() {
+                          final currentId = controller.currentProjectId.value;
                           final isConfirmed = myProjectsCtrl.projects.any(
-                            (p) => (p.projectId ?? p.id ?? 0) == projectId,
+                            (p) => (p.projectId ?? p.id ?? 0) == currentId,
                           );
                           if (isConfirmed) {
                             // Show a non-interactive Confirmed button
@@ -95,11 +83,11 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
                               ),
                             );
                           }
-                          final isBookmarked = homeCtrl.bookmarkedIds.contains(projectId);
+                          final isBookmarked = homeCtrl.bookmarkedIds.contains(currentId);
                           return ActionsSection(
                             text: isBookmarked ? 'Remove from Bookmarks' : 'Save for Later',
                             onTap: () {
-                              homeCtrl.toggleBookmark(projectId);
+                              homeCtrl.toggleBookmark(currentId);
                             },
                           );
                         }),
