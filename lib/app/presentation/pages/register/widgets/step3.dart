@@ -24,23 +24,23 @@ class RegisterStep3 extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // const SizedBox(height: 16),
-              // const CommonText(
-              //   'LinkedIn Profile URL',
-              //   fontSize: 13,
-              //   fontWeight: FontWeight.w600,
-              // ),
-              // const SizedBox(height: 8),
-              // AppTextField(
-              //   hintText: 'Enter URL',
-              //   keyboardType: TextInputType.url,
-              //   focusNode: controller.fnLinkedIn,
-              //   textInputAction: TextInputAction.next,
-              //   onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(controller.fnOtherPrimaryFunction),
-              //   controller: controller.linkedInCtrl,
-              //   validator: controller.validateLinkedIn,
-              // ),
-              // const SizedBox(height: 16),
+              const SizedBox(height: 16),
+              const CommonText(
+                'LinkedIn Profile URL',
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 8),
+              AppTextField(
+                hintText: 'Enter URL',
+                keyboardType: TextInputType.url,
+                focusNode: controller.fnLinkedIn,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(controller.fnOtherPrimaryFunction),
+                controller: controller.linkedInCtrl,
+                validator: controller.validateLinkedIn,
+              ),
+              const SizedBox(height: 16),
               const CommonText(
                 'Role Type',
                 fontSize: 13,
