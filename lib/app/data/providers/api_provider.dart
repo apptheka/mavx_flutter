@@ -53,17 +53,13 @@ class ApiProvider {
         onError: (dio.DioException e, handler) async {
           final statusCode = e.response?.statusCode;
           log("statusCode: $statusCode");
-          // Check for 401 or 403
+          // Always forward the error so the caller can handle it (e.g., show snackbar and stop loading)
+          // Optionally you can trigger navigation here, but do not swallow the error.
           if (statusCode == 401 || statusCode == 403) {
-            if (!_isNavigating) {
-              _isNavigating = true;
-              // await navigateToLogin();
-             
-            }
-            return;
+            // Example: you might want to trigger a one-time navigation. Disabled for now.
+            _isNavigating = false; // keep flag sane
           }
-
-          return handler.next(e);
+          handler.next(e);
         },
       ),
     );

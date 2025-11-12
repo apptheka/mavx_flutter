@@ -69,7 +69,6 @@ class MyProjectsPage extends StatelessWidget {
                                   child: JobCard(  
                                     id: p.projectId ?? p.id ?? 0,
                                     title: p.projectTitle ?? '',
-                                    
                                     description: p.description ?? '',
                                     company: p.projectType ?? '',
                                     tags: [p.projectType ?? ''],

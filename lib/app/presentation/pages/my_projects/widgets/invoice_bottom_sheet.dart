@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
@@ -50,7 +51,53 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     super.initState();
     final today = DateTime.now();
     invoiceDate.text = _fmtDate(today);
+    // Prefill consultant details from profile
+    try {
+      final pc = Get.find<ProfileController>(tag: null);
+      final rp = pc.registeredProfile.value;
+      
+      if ((consultantName.text).trim().isEmpty) {
+        consultantName.text = (rp.fullName ?? '').trim();
+      }
+      if ((consultantPhone.text).trim().isEmpty) {
+        consultantPhone.text = (rp.phone ?? '').trim().replaceAll("91", "");
+      }
+      if ((consultantEmail.text).trim().isEmpty) {
+        consultantEmail.text = (rp.email ?? '').trim();
+      } 
+
+      // Prefill bank details (multiline) if empty
+      if ((bankDetails.text).trim().isEmpty) {
+        final bd = pc.bankDetails.value;
+        String line(String label, String? value) =>
+            (value != null && value.toString().trim().isNotEmpty)
+                ? '$label: ${value.toString().trim()}'
+                : '';
+        final parts = <String>[
+          line('Account Holder', bd.accountHolderName),
+          line('Bank', bd.bankName),
+          line('Account No', bd.accountNumber),
+          line('IFSC', bd.ifsc),
+          line('Branch', bd.branch),
+          line('Address', bd.bankAddress),
+          line('Country', bd.country),
+          line('Currency', bd.currency),
+          line('SWIFT', bd.swift),
+          line('IBAN', bd.iban),
+          line('Routing No', bd.routingNumber),
+          line('Intermediary Bank', bd.intermediaryBank),
+          line('Notes', bd.notes),
+        ].where((e) => e.isNotEmpty).toList();
+        if (parts.isNotEmpty) {
+          bankDetails.text = parts.join('\n');
+        }
+      }
+    } catch (_) {
+      // If ProfileController not available, leave fields empty
+    }
     _attachListeners();
+    // Initialize computed fields
+    _recalc();
   }
 
   @override
@@ -91,11 +138,35 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
 
   Future<void> _pickDate(TextEditingController target) async {
     final now = DateTime.now();
+    // Try to parse the current value to use as initial date
+    DateTime? current;
+    try {
+      if (target.text.trim().isNotEmpty) {
+        current = DateTime.tryParse(target.text.trim());
+      }
+    } catch (_) {
+      current = null;
+    }
+
+    // For dueDate, do not allow selecting past dates
+    final isDue = identical(target, dueDate);
+    final today = DateTime(now.year, now.month, now.day);
+    final first = isDue ? today : DateTime(now.year - 1);
+    final init = () {
+      if (current != null) {
+        // If due date is in the past, default to today
+        if (isDue && current.isBefore(today)) return today;
+        return current;
+      }
+      return isDue ? today : now;
+    }();
+    final last = DateTime(now.year + 2);
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 2),
+      initialDate: init,
+      firstDate: first,
+      lastDate: last,
     );
     if (picked != null) target.text = _fmtDate(picked);
   }
@@ -104,10 +175,18 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     final h = double.tryParse(hoursWorked.text.trim()) ?? 0;
     final r = double.tryParse(hourlyRate.text.trim()) ?? 0;
     final base = h * r;
+    // Subtotal is base amount
     subtotal.text = base.toStringAsFixed(2);
-    final disc = double.tryParse(discount.text.trim()) ?? 0;
-    final tx = double.tryParse(tax.text.trim()) ?? 0;
-    final total = base - disc + tx;
+
+    // Interpret 'tax' as an ABSOLUTE amount and show Total Tax Amount as (Subtotal + Tax)
+    final taxAbsolute = double.tryParse(tax.text.trim()) ?? 0;
+    // 'discount' TextField is labeled as 'Total Tax Amount' in UI
+    // When no tax is entered, Total Tax Amount == Subtotal
+    final totalTaxAmountValue = taxAbsolute > 0 ? (base + taxAbsolute) : base;
+    discount.text = totalTaxAmountValue.toStringAsFixed(2);
+
+    // Total Amount should NOT include tax, per request
+    final total = base;
     totalAmount.text = total.toStringAsFixed(2);
     setState(() {});
   }
@@ -507,7 +586,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: bankDetails,
-                  maxLines: 2,
+                  maxLines:10,
                   decoration: _deco('Bank Details'),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Required' : null,

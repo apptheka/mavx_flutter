@@ -42,9 +42,38 @@ class _ExpensesBottomSheetState extends State<ExpensesBottomSheet> {
     super.initState();
     // Seed entries from existing expenses, or one empty row
     _entries = (widget.existingExpenses.isNotEmpty)
-        ? widget.existingExpenses
-              .map((e) => _ExpenseEntry.fromExpense(e))
-              .toList()
+        ? (() {
+            // Sort by date ascending (yyyy-MM-dd expected) then by id
+            final list = widget.existingExpenses.toList();
+            int _parseDateKey(String? s) {
+              if (s == null || s.trim().isEmpty) return 0;
+              try {
+                final parts = s.trim().split('-');
+                if (parts.length == 3) {
+                  final y = int.tryParse(parts[0]) ?? 0;
+                  final m = int.tryParse(parts[1]) ?? 0;
+                  final d = int.tryParse(parts[2]) ?? 0;
+                  return y * 10000 + m * 100 + d;
+                }
+                final dt = DateTime.tryParse(s);
+                if (dt != null) {
+                  return dt.year * 10000 + dt.month * 100 + dt.day;
+                }
+                return 0;
+              } catch (_) {
+                return 0;
+              }
+            }
+            list.sort((a, b) {
+              final da = _parseDateKey(a.date);
+              final db = _parseDateKey(b.date);
+              if (da != db) return da.compareTo(db);
+              final ida = a.id ?? 0;
+              final idb = b.id ?? 0;
+              return ida.compareTo(idb);
+            });
+            return list.map((e) => _ExpenseEntry.fromExpense(e)).toList();
+          })()
         : [_ExpenseEntry.empty()];
   }
 
@@ -274,10 +303,51 @@ class _ExpenseSection extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: entry.dateCtrl,
+                readOnly: true,
                 decoration: const InputDecoration(
                   labelText: 'Date',
                   border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
+                onTap: () async {
+                  // Prevent keyboard from showing
+                  FocusScope.of(context).requestFocus(FocusNode());
+                  DateTime initialDate;
+                  try {
+                    if (entry.dateCtrl.text.trim().isNotEmpty) {
+                      final parts = entry.dateCtrl.text.trim().split('-');
+                      if (parts.length == 3) {
+                        final y = int.tryParse(parts[0]);
+                        final m = int.tryParse(parts[1]);
+                        final d = int.tryParse(parts[2]);
+                        if (y != null && m != null && d != null) {
+                          initialDate = DateTime(y, m, d);
+                        } else {
+                          initialDate = DateTime.now();
+                        }
+                      } else {
+                        initialDate = DateTime.now();
+                      }
+                    } else {
+                      initialDate = DateTime.now();
+                    }
+                  } catch (_) {
+                    initialDate = DateTime.now();
+                  }
+
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: initialDate,
+                    firstDate: DateTime(2000, 1, 1),
+                    lastDate: DateTime(2100, 12, 31),
+                  );
+                  if (picked != null) {
+                    final y = picked.year.toString().padLeft(4, '0');
+                    final m = picked.month.toString().padLeft(2, '0');
+                    final d = picked.day.toString().padLeft(2, '0');
+                    entry.dateCtrl.text = '$y-$m-$d';
+                  }
+                },
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
             ),

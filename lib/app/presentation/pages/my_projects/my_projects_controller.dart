@@ -171,7 +171,8 @@ class MyProjectsController extends GetxController {
   }) async {
     try {
       final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.registeredProfile.value.id ?? 0;
+      final expertId = profile.preferences.value.userId ?? 0;
+     
       if (expertId == 0) {
         Get.snackbar(
           'Invoice',
@@ -205,11 +206,12 @@ class MyProjectsController extends GetxController {
       final timesheets = await _usecase.getTimesheets(projectId, expertId);
       var approvedId = 0;
       for (final t in timesheets) {
-        if ((t.status).toUpperCase() == 'FINAL_APPROVED') {
+        if ((t.status) == 'final_approved' || (t.status) == 'client_approved') {
           approvedId = t.id;
           break;
         }
       }
+      print("expertId: $expertId");
       if (approvedId == 0) {
         Get.snackbar(
           'Invoice',
@@ -257,7 +259,7 @@ class MyProjectsController extends GetxController {
   }) async {
     // Get expert id
     final profile = Get.find<ProfileController>(tag: null);
-    final expertId = profile.registeredProfile.value.id ?? 0;
+    final expertId = profile.preferences.value.userId ?? 0;
     if (expertId == 0) {
       Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
       return 0;
@@ -361,9 +363,10 @@ class MyProjectsController extends GetxController {
         if (pid == 0) continue;
         try {
           final ts = await _usecase.getTimesheets(pid, expertId);
-          finalApproved[pid] = ts.any(
-            (t) => (t.status).toUpperCase() == 'FINAL_APPROVED',
-          );
+          finalApproved[pid] = ts.any((t) {
+            final s = (t.status).toString().toLowerCase();
+            return s == 'final_approved' || s == 'client_approved';
+          });
         } catch (_) {
           // ignore failures per project
         }
@@ -374,11 +377,11 @@ class MyProjectsController extends GetxController {
     }
   }
 
-  bool _isFourthWeekNow(DateTime d) {
-    // Week of month: 1..5 using 7-day buckets; 4th week ~ days 22-28
-    final week = ((d.day - 1) ~/ 7) + 1;
-    return week == 4;
-  }
+  // bool _isFourthWeekNow(DateTime d) {
+  //   // Week of month: 1..5 using 7-day buckets; 4th week ~ days 22-28
+  //   final week = ((d.day - 1) ~/ 7) + 1;
+  //   return week == 4;
+  // }
 
   Future<void> openTimesheetBottomSheet({
     required int projectId,
@@ -386,23 +389,23 @@ class MyProjectsController extends GetxController {
   }) async {
     try {
       // Allow submissions only in 4th week of the month
-      final now = DateTime.now();
-      if (!_isFourthWeekNow(now)) {
-        Get.defaultDialog(
-          title: 'Create Timesheet',
-          content: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              'Timesheet submissions are only available during the 4th week of each month.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-          textConfirm: 'Close',
-          onConfirm: () => Get.back(),
-        );
-        return;
-      }
-      // Obtain expertId from profile
+      // final now = DateTime.now();
+      // if (!_isFourthWeekNow(now)) {
+      //   Get.defaultDialog(
+      //     title: 'Create Timesheet',
+      //     content: const Padding(
+      //       padding: EdgeInsets.all(8.0),
+      //       child: Text(
+      //         'Timesheet submissions are only available during the 4th week of each month.',
+      //         textAlign: TextAlign.center,
+      //       ),
+      //     ),
+      //     textConfirm: 'Close',
+      //     onConfirm: () => Get.back(),
+      //   );
+      //   return;
+      // } 
+      
       final profile = Get.find<ProfileController>(tag: null);
       final expertId = profile.registeredProfile.value.id ?? 0;
       if (expertId == 0) {

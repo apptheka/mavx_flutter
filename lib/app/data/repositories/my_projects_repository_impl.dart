@@ -7,6 +7,7 @@ import 'package:mavx_flutter/app/data/models/completed_projects_model.dart';
 import 'package:mavx_flutter/app/data/models/timesheet_model.dart';
 import 'package:mavx_flutter/app/data/providers/api_provider.dart';
 import 'package:mavx_flutter/app/domain/repositories/my_project_repository.dart';
+import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 
 class MyProjectsRepositoryImpl extends MyProjectRepository {
   final ApiProvider apiProvider = Get.find<ApiProvider>();
@@ -44,6 +45,7 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
           if (message != null && (message.contains('success') || message.contains('created') || message.contains('uploaded'))) return true;
           if (decoded['data'] != null) return true;
         }
+        log("decrypted: $decrypted");
       } catch (_) {
         try {
           final decoded = jsonDecode(resp);
@@ -51,8 +53,10 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
             final status = decoded['status'] ?? decoded['code'];
             if (status is int && status >= 200 && status < 300) return true;
           }
+          log("decoded: $decoded");
         } catch (_) {}
       }
+      
       return resp.isNotEmpty;
     } catch (e) {
       throw Exception('Invoice upload failed: ${e.toString()}');
@@ -113,10 +117,22 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
   @override
   Future<List<Timesheet>> getTimesheets(int projectId, int expertId) async {
     try {
+      // Prefer expert id from ProfileController if available to avoid stale/incorrect ids
+      var effectiveExpertId = expertId;
+      try {
+        final pc = Get.find<ProfileController>(tag: null);
+        final pid = pc.preferences.value.userId ?? 0;
+        if (pid > 0) {
+          effectiveExpertId = pid;
+        }
+      } catch (_) {
+        // If ProfileController is not available, proceed with provided expertId
+      }
       // Build endpoint: /timesheet/project/{projectId}/expert/{expertId}
       String path = AppConstants.getTimesheet
           .replaceAll('{projectId}', projectId.toString())
-          .replaceAll('{expertId}', expertId.toString());
+          .replaceAll('{expertId}', effectiveExpertId.toString());
+      log('getTimesheets -> projectId=$projectId, expertId=$effectiveExpertId, path=$path');
 
       final enc = await apiProvider.get(path);
 

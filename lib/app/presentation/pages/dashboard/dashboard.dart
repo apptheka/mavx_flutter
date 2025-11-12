@@ -26,7 +26,15 @@ class DashboardPage extends GetView<DashboardController> {
 
     return Obx(() {
       final idx = controller.currentIndex.value;
-      return Scaffold( 
+      return PopScope(
+        canPop: idx == 0,
+        onPopInvokedWithResult: (didPop, result) {
+          // If not on Home tab, consume back and switch to Home (index 0)
+          if (!didPop && idx != 0) {
+            controller.changeTab(0);
+          }
+        },
+        child: Scaffold( 
         backgroundColor: AppColors.backgroundColor,
         body: IndexedStack(
           index: idx,
@@ -71,6 +79,7 @@ class DashboardPage extends GetView<DashboardController> {
             controller.changeTab(i);
           },
         ),
+      ),
       );
     });
   }

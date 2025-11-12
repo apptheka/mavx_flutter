@@ -81,7 +81,7 @@ class LoginController extends GetxController {
       } else {
         isError.value = true;
         log(res.message);
-        final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
+        final msg = (res.message.isNotEmpty) ? res.message : 'Invalid email or password';
         Get.snackbar(
           'Error',
           msg,
@@ -94,14 +94,18 @@ class LoginController extends GetxController {
       isError.value = true;
       final err = e.toString();
       log(err);
-      String uiMsg = 'Login failed';
+      String uiMsg = 'Invalid email or password';
       final lower = err.toLowerCase();
       if (lower.contains('401') || lower.contains('unauthorized')) {
         uiMsg = 'Invalid email or password';
       } else if (lower.contains('timeout')) {
         uiMsg = 'Connection timeout. Please try again.';
       }
-      Get.snackbar('Error', uiMsg);
+      Get.snackbar('Error', uiMsg,
+          colorText: Colors.white,
+          backgroundColor: Colors.red,
+          snackPosition: SnackPosition.BOTTOM,
+          );
     }
     isLoading.value = false;
   }

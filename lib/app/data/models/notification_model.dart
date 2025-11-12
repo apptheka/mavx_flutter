@@ -16,14 +16,33 @@ class NotificationModel {
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    DateTime _parseToLocal(dynamic v) {
+      if (v == null) return DateTime.now();
+      if (v is int) {
+        // assume milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(v).toLocal();
+      }
+      if (v is String && v.isNotEmpty) {
+        // Try ISO first
+        try {
+          return DateTime.parse(v).toLocal();
+        } catch (_) {
+          // Try numeric epoch (ms or s)
+          final num? n = num.tryParse(v);
+          if (n != null) {
+            final ms = n > 2000000000 ? n.toInt() : (n.toInt() * 1000);
+            return DateTime.fromMillisecondsSinceEpoch(ms).toLocal();
+          }
+        }
+      }
+      return DateTime.now();
+    }
     return NotificationModel(
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
       type: json['type'] ?? 'general',
-      createdAt: json['created_at'] != null 
-        ? DateTime.parse(json['created_at']) 
-        : DateTime.now(),
+      createdAt: _parseToLocal(json['created_at'] ?? json['createdAt'] ?? json['createdOn'] ?? json['createdDate']),
       isRead: json['is_read'] ?? false,
     );
   }

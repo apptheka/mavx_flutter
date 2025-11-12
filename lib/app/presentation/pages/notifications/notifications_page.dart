@@ -27,6 +27,11 @@ class NotificationsPage extends StatelessWidget {
                 const FilterTabs(),
                 Expanded(
                   child: Obx(() {
+                    if (controller.loading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
                     final items = controller.notifications;
                     return RefreshIndicator(
                       onRefresh: controller.refreshList,
@@ -59,6 +64,7 @@ class NotificationsPage extends StatelessWidget {
                                   onTap: () => controller.markAsRead(n.id),
                                   onDismissed: () => controller.delete(n.id),
                                 );
+                                
                               },
                             ),
                     );

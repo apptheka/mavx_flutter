@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
@@ -39,9 +40,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
      dynamic decoded;
      try {
        decoded = jsonDecode(respStr);
+       log("hdiushfiushdfsdfsiufhsiufdh$decoded");
      } catch (_) {
        try {
-         decoded = jsonDecode(respStr.decrypt());
+         decoded = jsonDecode(respStr.decrypt()); 
        } catch (__) {
          // If it's neither JSON nor encrypted JSON, fallback to local
          return NotificationStorageService.getAll();
@@ -68,20 +70,37 @@ class NotificationRepositoryImpl implements NotificationRepository {
     DateTime _parseDate(dynamic v) {
       if (v == null) return DateTime.now();
       if (v is int) {
-        // assume milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(v);
+        // If small value, treat as seconds since epoch; otherwise milliseconds
+        final isSeconds = v.abs() < 1000000000000; // ~ Sat Nov 20 33658
+        final ms = isSeconds ? v * 1000 : v;
+        return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toLocal();
       }
       if (v is String && v.isNotEmpty) {
-        try {
-          return DateTime.parse(v);
-        } catch (_) {
-          // try seconds epoch in string
-          final num? n = num.tryParse(v);
-          if (n != null) {
-            final ms = n > 2000000000 ? n.toInt() : (n.toInt() * 1000);
-            return DateTime.fromMillisecondsSinceEpoch(ms);
-          }
+        // Numeric string epoch
+        final num? n = num.tryParse(v);
+        if (n != null) {
+          final isSeconds = n.abs() < 1000000000000;
+          final ms = isSeconds ? n.toInt() * 1000 : n.toInt();
+          return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toLocal();
         }
+        try {
+          final parsed = DateTime.parse(v);
+          // Detect timezone in string: 'Z' or "+HH:MM" suffix
+          final hasTz = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(v);
+          if (hasTz) return parsed.toLocal();
+          // No timezone -> treat as UTC and convert to local
+          final asUtc = DateTime.utc(
+            parsed.year,
+            parsed.month,
+            parsed.day,
+            parsed.hour,
+            parsed.minute,
+            parsed.second,
+            parsed.millisecond,
+            parsed.microsecond,
+          );
+          return asUtc.toLocal();
+        } catch (_) {}
       }
       return DateTime.now();
     }

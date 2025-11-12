@@ -21,6 +21,55 @@ class NotificationStorageService {
     if (!Hive.isBoxOpen(boxName)) {
       await Hive.openBox<String>(boxName);
     }
+    // Run a lightweight migration to normalize legacy timestamps
+    await _normalizeLegacyTimestamps();
+  }
+
+  static Future<void> _normalizeLegacyTimestamps() async {
+    final box = _box();
+    for (final key in box.keys) {
+      final val = box.get(key);
+      if (val == null) continue;
+      try {
+        final map = jsonDecode(val) as Map<String, dynamic>;
+        final ts = map['created_at'];
+        int? utcEpochMs;
+        if (ts is String && ts.isNotEmpty) {
+          // If it looks like an ISO string without timezone, assume it was saved as local and convert to UTC
+          final hasTz = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(ts);
+          final parsed = DateTime.tryParse(ts);
+          if (parsed != null) {
+            if (!hasTz) {
+              // Legacy local naive -> toUtc epoch
+              utcEpochMs = DateTime.utc(
+                parsed.year,
+                parsed.month,
+                parsed.day,
+                parsed.hour,
+                parsed.minute,
+                parsed.second,
+                parsed.millisecond,
+                parsed.microsecond,
+              ).millisecondsSinceEpoch;
+            } else {
+              utcEpochMs = parsed.toUtc().millisecondsSinceEpoch;
+            }
+          }
+        } else if (ts is num) {
+          // seconds vs ms
+          final isSeconds = ts.abs() < 1000000000000;
+          final ms = isSeconds ? ts.toInt() * 1000 : ts.toInt();
+          utcEpochMs = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true)
+              .millisecondsSinceEpoch;
+        }
+        if (utcEpochMs != null) {
+          map['created_at'] = utcEpochMs;
+          await box.put(key, jsonEncode(map));
+        }
+      } catch (_) {
+        // ignore bad rows
+      }
+    }
   }
 
   static List<NotificationModel> getAll() {
@@ -34,7 +83,10 @@ class NotificationStorageService {
 
   static Future<void> save(NotificationModel model) async {
     await ensureOpen();
-    await _box().put(model.id, jsonEncode(model.toJson()));
+    // Persist created_at as UTC epoch milliseconds to avoid tz ambiguity
+    final map = model.toJson();
+    map['created_at'] = model.createdAt.toUtc().millisecondsSinceEpoch;
+    await _box().put(model.id, jsonEncode(map));
   }
 
   static Future<void> saveFromRemoteMessage(RemoteMessage message) async {

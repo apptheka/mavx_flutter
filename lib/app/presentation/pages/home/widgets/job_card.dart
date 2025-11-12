@@ -158,34 +158,6 @@ class JobCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (status == 'Confirmed')
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: GestureDetector(
-                                onTap: onSchedulePressed,
-                                child: Icon(
-                                  Icons.schedule,
-                                  color: Colors.black,
-                                  size: isSmallScreen ? 18 : 20,
-                                ),
-                              ),
-                            ),
-                            if(status == 'Confirmed')
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                ),
-                                child: GestureDetector(
-                                  onTap: onExpensePressed,
-                                  child: Image.asset(
-                                    IconAssets.expense,
-                                    width: isSmallScreen ? 18 : 20,
-                                    height: isSmallScreen ? 18 : 20,
-                                  ),
-                                ),
-                              ),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -213,7 +185,9 @@ class JobCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (showBookmark && !applied && !(status != null && status!.toLowerCase() == 'confirmed'))
+                if (showBookmark &&
+                    !applied &&
+                    !(status != null && status!.toLowerCase() == 'confirmed'))
                   if (bookmarkedOverride != null)
                     IconButton(
                       onPressed:
@@ -387,6 +361,33 @@ class JobCard extends StatelessWidget {
                           ? Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                if (status == 'Confirmed') ...[
+                                  SizedBox(height: compact ? 4 : 6),
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: onSchedulePressed,
+                                        child: Icon(
+                                          Icons.schedule,
+                                          color: Colors.black,
+                                          size: isSmallScreen ? 18 : 22,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      GestureDetector(
+                                        onTap: onExpensePressed,
+                                        child: Image.asset(
+                                          IconAssets.expense,
+                                          width: isSmallScreen ? 18 : 22,
+                                          height: isSmallScreen ? 18 : 22,
+                                        ),
+                                      ),
+                                      if (showInvoiceButton) ...[
+                                        SizedBox(width: 10),
+                                      ],
+                                    ],
+                                  ),
+                                ],
                                 if (showInvoiceButton) ...[
                                   SizedBox(
                                     height: isSmallScreen ? 32 : 35,
