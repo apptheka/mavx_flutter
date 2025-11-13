@@ -260,6 +260,7 @@ class MyProjectsController extends GetxController {
     // Get expert id
     final profile = Get.find<ProfileController>(tag: null);
     final expertId = profile.preferences.value.userId ?? 0;
+    print("expertId: $expertId");
     if (expertId == 0) {
       Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
       return 0;
@@ -407,7 +408,8 @@ class MyProjectsController extends GetxController {
       // } 
       
       final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.registeredProfile.value.id ?? 0;
+      final expertId = profile.preferences.value.userId ?? 0;
+      print("expertId: $expertId");
       if (expertId == 0) {
         Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
         return;
