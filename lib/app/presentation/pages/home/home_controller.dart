@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/data/models/bookmarks_model.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
@@ -114,20 +115,27 @@ Future<void> refreshTopMatches() async {
     final resp = await _projectsUseCase.projects();
     final list = resp.data?.data ?? [];
 
+
+    print("resp>>>>>>>>>>>>> $resp");
+
     final profileController = Get.isRegistered<ProfileController>()
         ? Get.find<ProfileController>()
         : null;
     final roleType = profileController?.registeredProfile.value.roleType?.trim();
-    final primarySector = profileController?.registeredProfile.value.primarySector;
+    final primarySector = profileController?.registeredProfile.value.primarySector; 
+    final skillsCsv = profileController?.registeredProfile.value.skillsCsv?.trim();
+    final userSkills = _parseSkills(skillsCsv);
+    
 
     final filtered = list.where((p) {
       final pType = (p.projectType ?? '');
       final matchRole = (roleType == null || roleType.isEmpty) || (pType.isNotEmpty && pType == roleType);
       final matchSector = (primarySector == null) || (p.industry != null && p.industry == primarySector);
-      return matchRole && matchSector;
-    }).toList();
-
-    topMatches.assignAll(filtered);
+      final projectSkills = _parseSkills(p.skillsJson);
+      final matchSkills = userSkills.isEmpty || projectSkills.any(userSkills.contains);
+      return matchRole || matchSector || matchSkills; 
+    }).toList(); 
+    topMatches.assignAll(filtered);  
   } finally {
     isRefreshingTopMatches.value = false;
   }
@@ -189,10 +197,10 @@ Future<void> refreshTopMatches() async {
     final profileController = Get.isRegistered<ProfileController>()
         ? Get.find<ProfileController>()
         : null;
-    final roleType = profileController?.registeredProfile.value.roleType
-        ?.trim();
-    final primarySector =
-        profileController?.registeredProfile.value.primarySector; 
+    final roleType = profileController?.registeredProfile.value.roleType?.trim();
+    final primarySector = profileController?.registeredProfile.value.primarySector; 
+    final skillsCsv = profileController?.registeredProfile.value.skillsCsv?.trim();
+    final userSkills = _parseSkills(skillsCsv);
  
     final filtered = allProjects.where((p) {
       final pType = (p.projectType ?? '') ;
@@ -205,7 +213,11 @@ Future<void> refreshTopMatches() async {
       final matchSector =
           (primarySector == null) ||
           (p.industry != null && p.industry == primarySector);
-      return matchRole && matchSector;
+      final projectSkills = _parseSkills(p.skillsJson);
+      final matchSkills = userSkills.isEmpty || projectSkills.any(userSkills.contains);
+      print("matchSkills>>>>>>>>>>>>> $matchSkills");
+      // Use same logic as refreshTopMatches(): show if any of role/sector/skills matches
+      return matchRole || matchSector || matchSkills;
     }).toList();
 
     topMatches.assignAll(filtered);
@@ -215,6 +227,30 @@ Future<void> refreshTopMatches() async {
         .where((p) => !topMatches.contains(p))
         .toList();
     otherProjects.assignAll(remaining); 
+  }
+
+  // Parse a CSV or JSON array string of skills into a normalized lowercase set
+  Set<String> _parseSkills(String? raw) {
+    if (raw == null) return <String>{};
+    final s = raw.trim();
+    if (s.isEmpty) return <String>{};
+    // Try JSON array first
+    try {
+      final decoded = jsonDecode(s);
+      if (decoded is List) {
+        return decoded
+            .map((e) => (e?.toString() ?? '').trim().toLowerCase())
+            .where((e) => e.isNotEmpty)
+            .toSet();
+      }
+    } catch (_) {
+      // Not JSON, fall back to CSV parsing below
+    }
+    return s
+        .split(RegExp(r'[;,|/]'))
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
   }
 
   // Apply chip filter to other projects and keep only 3 for display

@@ -41,6 +41,7 @@ class UserData {
   final String roleType;
   final int primarySector;
   final int primaryFunction;
+  final String skills_csv;
   final String status;
 
   UserData({
@@ -52,7 +53,9 @@ class UserData {
     required this.ctc,
     required this.profile,
     required this.roleType,
+    required this.skills_csv,
     required this.primarySector,
+
     required this.primaryFunction,
     required this.status,
   });
@@ -69,6 +72,7 @@ class UserData {
       roleType: json['roleType'],
       primarySector: json['primarySector'],
       primaryFunction: json['primaryFunction'],
+      skills_csv: json['skills_csv'],
       status: json['status'],
     );
   }
@@ -85,6 +89,7 @@ class UserData {
       'roleType': roleType,
       'primarySector': primarySector,
       'primaryFunction': primaryFunction,
+      'skills_csv': skills_csv,
       'status': status,
     };
   }
