@@ -44,6 +44,8 @@ dependencies:
 
 
   #Otp input
+  syncfusion_flutter_pdfviewer: ^31.2.10
+  device_info_plus: ^12.2.0
   encrypt: ^5.0.3
   json_annotation: ^4.9.0
   country_picker: ^2.0.27

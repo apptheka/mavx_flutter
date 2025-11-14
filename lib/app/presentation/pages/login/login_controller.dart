@@ -67,15 +67,7 @@ class LoginController extends GetxController {
           await _showPendingDialog();
           // stay on login; user will be able to access after approval
         } else {
-          Get.offAllNamed(AppRoutes.dashboard);
-          Get.snackbar(
-            'Success',
-            'Login successful',
-            duration: const Duration(seconds: 2),
-            backgroundColor: Colors.green,
-            snackPosition: SnackPosition.BOTTOM,
-            colorText: Colors.white,
-          );
+          Get.offAllNamed(AppRoutes.dashboard); 
         }
         log(res.message);
       } else {

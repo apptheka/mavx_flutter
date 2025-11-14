@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
@@ -9,29 +10,37 @@ import 'package:mavx_flutter/app/presentation/pages/profile/widgets/section_card
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileResume extends StatelessWidget {
   final ProfileController controller;
   const ProfileResume({super.key, required this.controller});
 
+  String prefixBase(String path) {
+    if (path.isEmpty) return path;
+    if (path.startsWith('http')) return path;
+    // Use baseUrlImage and append just the file name or relative path (no 'uploads/' prefix)
+    final base = AppConstants.baseUrlImage.endsWith('/')
+        ? AppConstants.baseUrlImage
+        : '${AppConstants.baseUrlImage}/';
+    String clean = path.trim();
+    if (clean.startsWith('/')) clean = clean.substring(1);
+    final lower = clean.toLowerCase();
+    // Remove any accidental leading public/ or uploads/ from the stored value
+    if (lower.startsWith('public/')) {
+      clean = clean.substring(7);
+    } else if (lower.startsWith('uploads/')) {
+      clean = clean.substring(8);
+    }
+    final full = '$base$clean';
+    // URL-encode to handle spaces and special chars
+    return Uri.encodeFull(full);
+  }
+
   @override
   Widget build(BuildContext context) {
-    String prefixBase(String path) {
-      if (path.isEmpty) return path;
-      if (path.startsWith('http')) return path;
-      // Use baseUrlImage for static file hosting and ensure '/uploads'
-      final base = AppConstants.baseUrlImage.endsWith('/')
-          ? AppConstants.baseUrlImage
-          : '${AppConstants.baseUrlImage}/';
-      String clean = path.trim();
-      if (clean.startsWith('/')) clean = clean.substring(1);
-      if (!clean.startsWith('uploads/')) {
-        clean = 'uploads/$clean';
-      }
-      return '$base$clean';
-    }
-
     String rawResume = controller.registeredProfile.value.resume ?? '';
     String resumeUrl = prefixBase(rawResume);
     return SectionCard(
@@ -106,7 +115,7 @@ class ProfileResume extends StatelessWidget {
                             
       //                         },
       //                         child: const CommonText(
-      //                           'Open',
+      //                           'Update',
       //                           fontSize: 15,
       //                           fontWeight: FontWeight.w600,
       //                         ),
@@ -176,48 +185,15 @@ class ProfileResume extends StatelessWidget {
               const Spacer(),
               InkWell(
                 onTap: () async {
+                  HapticFeedback.lightImpact();
                   final url = resumeUrl.trim();
+                  print("url>>>>>>>>>>>> $url");
                   if (url.isEmpty) {
-                    Get.snackbar(
-                      'Resume',
-                      'No resume found to preview',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.redAccent,
-                      colorText: Colors.white,
-                      duration: const Duration(seconds: 2),
-                    );
+                    Get.snackbar('Resume', 'No resume found to view');
                     return;
                   }
-                  final uri = Uri.tryParse(url);
-                  if (uri == null) {
-                    Get.snackbar(
-                      'Resume',
-                      'Invalid resume link',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.redAccent,
-                      colorText: Colors.white,
-                      duration: const Duration(seconds: 2),
-                    );
-                    return;
-                  }
-                  if (!await canLaunchUrl(uri)) {
-                    Get.snackbar(
-                      'Resume',
-                      'Could not open resume',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.redAccent,
-                      colorText: Colors.white,
-                      duration: const Duration(seconds: 2),
-                    );
-                    return;
-                  }
-                  await launchUrl(
-                    uri,
-                    mode: LaunchMode.inAppWebView,
-                    webViewConfiguration: const WebViewConfiguration(
-                      enableJavaScript: true,
-                    ),
-                  );
+                  await Get.to(() => ResumeViewerPage(url: url));
+                  
                 },
                 child: Icon(Icons.remove_red_eye)
               ),
@@ -225,6 +201,108 @@ class ProfileResume extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+class ResumeViewerPage extends StatelessWidget {
+  final String url;
+  const ResumeViewerPage({super.key, required this.url});
+
+  Future<Uint8List> _loadPdfBytes() async {
+    final encoded = Uri.encodeFull(url);
+    final variants = <String>[encoded, url];
+    final dio = Dio(BaseOptions(
+      responseType: ResponseType.bytes,
+      followRedirects: true,
+      receiveTimeout: const Duration(seconds: 25),
+      connectTimeout: const Duration(seconds: 20),
+      validateStatus: (s) => s != null && s < 500,
+    ));
+    for (final u in variants) {
+      try {
+        debugPrint('[ResumeViewer] fetching: ' + u);
+        final resp = await dio.get<List<int>>(u,
+            options: Options(
+              responseType: ResponseType.bytes,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Mobile; Flutter) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36',
+              },
+            ));
+        if (resp.statusCode == 200 && resp.data != null) {
+          // Basic type check
+          final headers = resp.headers.map.map((k, v) => MapEntry(k.toLowerCase(), v));
+          final ct = (headers['content-type']?.join(',') ?? '').toLowerCase();
+          if (ct.isNotEmpty && !(ct.contains('pdf') || ct.contains('octet-stream'))) {
+            // Try next variant
+            continue;
+          }
+          final bytes = Uint8List.fromList(resp.data!);
+          debugPrint('[ResumeViewer] fetched ${bytes.length} bytes from variant');
+          return bytes;
+        }
+      } catch (e) {
+        // try next variant
+        continue;
+      }
+    }
+    throw Exception('Unable to fetch PDF');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Resume')),
+      body: FutureBuilder<Uint8List>(
+        future: _loadPdfBytes(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            debugPrint('[ResumeViewer] error: ' + snapshot.error.toString());
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 42, color: Colors.redAccent),
+                  const SizedBox(height: 10),
+                  const Text('We couldn\'t open your resume.'),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Get.off(() => ResumeViewerPage(url: url)),
+                        child: const Text('Retry'),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: () async {
+                          final u = Uri.parse(url);
+                          if (await canLaunchUrl(u)) {
+                            await launchUrl(u, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        child: const Text('Open in browser'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+          return SfPdfViewer.memory(
+            snapshot.data!,
+            canShowScrollStatus: true,
+            enableDoubleTapZooming: true,
+            onDocumentLoadFailed: (details) {
+              debugPrint('[ResumeViewer] render failed: ' + details.description);
+              Get.snackbar('Resume', 'Unable to render the PDF. Please try again.');
+            },
+          );
+        },
+      ),
     );
   }
 }
