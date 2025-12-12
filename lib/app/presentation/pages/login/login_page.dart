@@ -46,8 +46,8 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 32),
                     _buildSignInButton(),
                     const SizedBox(height: 100),
-                    // _buildSocialSection(),
-                    // const SizedBox(height: 40),
+                    _buildSocialSection(),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -80,11 +80,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CommonText(
-            "Email",
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          CommonText("Email", fontSize: 15, fontWeight: FontWeight.w600),
           const SizedBox(height: 8),
           AppTextField(
             controller: controller.emailController,
@@ -220,11 +216,15 @@ class _LoginPageState extends State<LoginPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _SocialCircle(icon: IconAssets.google),
+            GestureDetector(
+              onTap: controller.socialLogin,
+              child: _SocialCircle(icon: IconAssets.google),
+            ),
             const SizedBox(width: 24),
-            _SocialCircle(icon: IconAssets.facebook),
-            const SizedBox(width: 24),
-            _SocialCircle(icon: IconAssets.linkedin),
+            GestureDetector(
+              onTap: () {},
+              child: _SocialCircle(icon: IconAssets.linkedin),
+            ),
           ],
         ),
       ],

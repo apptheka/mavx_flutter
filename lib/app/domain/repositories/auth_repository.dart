@@ -2,7 +2,7 @@ import 'package:mavx_flutter/app/data/models/register_model.dart';
 import 'package:mavx_flutter/app/data/models/user_model.dart';
 
 abstract class AuthRepository {
-  Future<UserModel> login(String email, String password);
+  Future<UserModel> login(String email, String password, {bool isSocial = false});
   Future<void> logout();
   Future<void> requestOtp(String email);
   Future<void> changePassword(String email,String newPassword);

@@ -84,6 +84,7 @@ class HomePage extends GetView<HomeController> {
                           ),
                           const _RecommendedList(),
                           const SizedBox(height: 24),
+                          
                         ],
                       ),
                     ),
@@ -93,6 +94,14 @@ class HomePage extends GetView<HomeController> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: "unique_fab_1", // add this
+        backgroundColor: AppColors.primaryColor,
+        onPressed: () {
+           Get.toNamed(AppRoutes.chat);
+        },
+        child: const Icon(Icons.chat, color: Colors.white),
       ),
     );
   }

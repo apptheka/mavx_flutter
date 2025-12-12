@@ -7,8 +7,8 @@ class LoginUseCase {
 
   LoginUseCase(this._authRepository);
 
-  Future<UserModel> call(String email, String password) {
-    return _authRepository.login(email, password);
+  Future<UserModel> call(String email, String password, {bool isSocial = false}) {
+    return _authRepository.login(email, password, isSocial: isSocial);
   }
 }
 

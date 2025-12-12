@@ -16,8 +16,16 @@ class RegisterModel {
     this.data,
   });
 
-  factory RegisterModel.fromJson(Map<String, dynamic> json) =>
-      _$RegisterModelFromJson(json);
+  factory RegisterModel.fromJson(Map<String, dynamic> json) {
+    return RegisterModel(
+      status: _asInt(json['status']),
+      message: json['message']?.toString(),
+      token: json['token']?.toString(),
+      data: json['data'] is Map<String, dynamic>
+          ? RegisterData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => _$RegisterModelToJson(this);
 }
@@ -86,8 +94,54 @@ class RegisterData {
     this.status,
   });
 
-  factory RegisterData.fromJson(Map<String, dynamic> json) =>
-      _$RegisterDataFromJson(json);
+  factory RegisterData.fromJson(Map<String, dynamic> json) {
+    return RegisterData(
+      id: _asInt(json['id']),
+      fullName: json['fullName']?.toString(),
+      lastName: json['lastName']?.toString(),
+      dob: json['dob']?.toString(),
+      location: json['location']?.toString(),
+      country: json['country']?.toString(),
+      continent: json['continent']?.toString(),
+      phone: json['phone']?.toString(),
+      email: json['email']?.toString(),
+      alternateEmail: json['alternateEmail']?.toString(),
+      experience: _asInt(json['experience']),
+      ctc: json['ctc']?.toString(),
+      linkedin: json['linkedin']?.toString(),
+      roleType: json['roleType']?.toString(),
+      primaryFunction: _asInt(json['primaryFunction']),
+      customPrimaryFunction: json['customPrimaryFunction']?.toString(),
+      primarySector: _asInt(json['primarySector']),
+      customPrimarySector: json['customPrimarySector']?.toString(),
+      employer: json['employer']?.toString(),
+      secondaryFunction: _asInt(json['secondaryFunction']),
+      secondarySector: _asInt(json['secondarySector']),
+      achievements: json['achievements']?.toString(),
+      resume: json['resume']?.toString(),
+      idType: json['idType']?.toString(),
+      idFile: json['idFile']?.toString(),
+      profile: json['profile']?.toString(),
+      createdAt: json['createdAt']?.toString(),
+      password: json['password']?.toString(),
+      status: json['status']?.toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$RegisterDataToJson(this);
+}
+
+int? _asInt(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) {
+    final s = v.trim();
+    if (s.isEmpty) return null;
+    final i = int.tryParse(s);
+    if (i != null) return i;
+    final d = double.tryParse(s);
+    if (d != null) return d.toInt();
+  }
+  return null;
 }

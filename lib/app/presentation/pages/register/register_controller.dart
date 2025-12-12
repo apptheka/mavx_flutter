@@ -9,7 +9,6 @@ import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
-import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 class RegisterController extends GetxController {
   final GetAllSpecificationUseCase getAllSpecificationUseCase = Get.find<GetAllSpecificationUseCase>();
@@ -297,6 +296,7 @@ class RegisterController extends GetxController {
       if (result.status == 200) {
         final status = result.data?.status?.toLowerCase();
         if (status == 'pending') {
+          FocusManager.instance.primaryFocus?.unfocus();
           await _showPendingDialog();
           // After acknowledging, send user to login
           Get.offNamed('/login');
@@ -322,6 +322,7 @@ class RegisterController extends GetxController {
   }
 
 Future<void> _showPendingDialog() async {
+  FocusManager.instance.primaryFocus?.unfocus();
   return Get.dialog(
     Dialog(
       shape: RoundedRectangleBorder(
@@ -408,7 +409,7 @@ Future<void> _showPendingDialog() async {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.login),
+                onPressed: () => Get.back(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,

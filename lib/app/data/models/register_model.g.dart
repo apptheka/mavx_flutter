@@ -51,7 +51,7 @@ RegisterData _$RegisterDataFromJson(Map<String, dynamic> json) => RegisterData(
   idType: json['idType'] as String?,
   idFile: json['idFile'] as String?,
   profile: json['profile'] as String?,
-  createdAt: json['created_at'] as String?,
+  createdAt: json['createdAt'] as String?,
   password: json['password'] as String?,
   status: json['status'] as String?,
 );
@@ -84,7 +84,7 @@ Map<String, dynamic> _$RegisterDataToJson(RegisterData instance) =>
       'idType': instance.idType,
       'idFile': instance.idFile,
       'profile': instance.profile,
-      'created_at': instance.createdAt,
+      'createdAt': instance.createdAt,
       'password': instance.password,
       'status': instance.status,
     };

@@ -44,6 +44,9 @@ class AppConstants {
   static const String upsertExpenses = '/expenses/upsert';
   static const String notificationsList = '/notifications/list';
 
+  // Google Sign-In Web client ID (from google-services.json client_type=3)
+  static const String googleServerClientId = '961866680814-op3u2p4ivdh8tvf5g8k50chqbqm5qvbu.apps.googleusercontent.com';
+
   // Storage Keys
   static const String tokenKey = 'token';
   static const String userKey = 'user';

@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mavx_flutter/app/core/constants/app_constants.dart';
-import 'package:mavx_flutter/app/core/services/firebase_messaging_service.dart';
+import 'package:mavx_flutter/app/core/constants/app_constants.dart'; 
 import 'package:mavx_flutter/app/core/services/notification_storage_service.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/di/dependence_injection.dart';
@@ -31,7 +30,7 @@ void main() async {
 
   // Initialize dependencies
   await DependenceInjection.init();
-
+    await Firebase.initializeApp();   // ✔ REQUIRED
   runApp(const MyApp());
 }
 

@@ -16,4 +16,5 @@ class AppRoutes {
   static const otp = '/otp';
   static const changePassword = '/change-password';
   static const myProject = '/my-project';
+  static const chat = '/chat';
 }

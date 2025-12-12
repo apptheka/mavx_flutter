@@ -19,9 +19,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Login
   @override
-  Future<UserModel> login(String email, String password) async {
+  Future<UserModel> login(String email, String password,{bool isSocial = false}) async {
     try {
-      final payload = {"email": email, "password": password};
+      final Map<String, dynamic> payload = isSocial
+          ? {
+              "email": email,
+              "password": "",
+              "isSocial": true,
+            }
+          : {
+              "email": email,
+              "password": password,
+              "isSocial": false,
+            };
       log('login plaintext: ${jsonEncode(payload)}');
 
       // Encrypt request body

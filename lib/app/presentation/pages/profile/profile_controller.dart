@@ -169,6 +169,16 @@ class ProfileController extends GetxController {
     }
   }
 
+  void _closeSheetIfOpen() {
+    try {
+      FocusManager.instance.primaryFocus?.unfocus();
+      if (Get.isBottomSheetOpen == true || Get.isOverlaysOpen == true) {
+        // Force-close any active overlay (bottom sheet/dialog/snackbar)
+        Get.back(closeOverlays: true);
+      }
+    } catch (_) {}
+  }
+
   Future<void> updateProfile() async {
     loading.value = true;
     error.value = '';
@@ -195,6 +205,7 @@ class ProfileController extends GetxController {
 
   // ===== Update helpers (thin wrappers over usecases) =====
   Future<void> saveAboutMe(String description) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateAboutMe({
@@ -202,6 +213,7 @@ class ProfileController extends GetxController {
         'description': description,
       });
       await updateProfile();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'About Me updated',
@@ -232,6 +244,7 @@ class ProfileController extends GetxController {
     required String preferredDurationType,
     required String workType,
   }) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       final payload = {
@@ -250,7 +263,7 @@ class ProfileController extends GetxController {
       };
       await profileUseCase.updatePreferences(payload);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Preferences saved',
@@ -271,11 +284,12 @@ class ProfileController extends GetxController {
 
   // The methods below are kept for completeness and future dialogs
   Future<void> saveBasicDetails(Map<String, dynamic> basicDetails) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateBasicDetails(basicDetails);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Basic details saved',
@@ -295,17 +309,18 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveEducation(Map<String, dynamic> education) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateEducation(education);
-      await updateProfile();
-      Get.back();
       showSnackBar(
         title: 'Updated',
         message: 'Education saved',
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+      _closeSheetIfOpen();
+      await updateProfile();
     } catch (_) {
       showSnackBar(
         title: 'Error',
@@ -319,11 +334,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveExperience(Map<String, dynamic> experience) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateExperience(experience);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Experience saved',
@@ -343,11 +359,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveLanguages(Map<String, dynamic> languages) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateLanguages(languages);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Languages saved',
@@ -397,6 +414,7 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveOnlineProfiles(Map<String, dynamic> onlineProfiles) async {
+    _closeSheetIfOpen();
     final url =
         (onlineProfiles['profile_url'] ?? onlineProfiles['profileUrl'])
             as String?;
@@ -431,7 +449,7 @@ class ProfileController extends GetxController {
       loading.value = true;
       await profileUseCase.updateOnlineProfiles(onlineProfiles);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Online profiles saved',
@@ -451,11 +469,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveSkills(Map<String, dynamic> skills) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateSkills(skills);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Skills saved',
@@ -475,11 +494,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveBankDetails(Map<String, dynamic> bank) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.updateBankDetails(bank);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Updated',
         message: 'Bank details saved',
@@ -499,11 +519,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> deleteExperience(int id) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.deleteExperience(id);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Deleted',
         message: 'Experience deleted',
@@ -523,11 +544,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> deleteEducation(int id) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.deleteEducation(id);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Deleted',
         message: 'Education deleted',
@@ -547,11 +569,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> deleteLanguage(int id) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.deleteLanguage(id);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Deleted',
         message: 'Language deleted',
@@ -571,11 +594,12 @@ class ProfileController extends GetxController {
   }
 
   Future<void> deleteOnlineProfile(int id) async {
+    _closeSheetIfOpen();
     try {
       loading.value = true;
       await profileUseCase.deleteOnlineProfile(id);
       await updateProfile();
-      Get.back();
+      _closeSheetIfOpen();
       showSnackBar(
         title: 'Deleted',
         message: 'Online profile deleted',

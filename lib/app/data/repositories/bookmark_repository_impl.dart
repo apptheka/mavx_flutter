@@ -60,6 +60,7 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
       );
       log('Decrypted Register ${response.toString()}');
       final decriptValue = jsonDecode(response.decrypt()); 
+      log('Decrypted Register ${decriptValue.toString()}');
       return BookmarksResponseModel.fromJson(decriptValue);
     } catch (e) {
       throw Exception('Fetch bookmarks failed: ${e.toString()}');

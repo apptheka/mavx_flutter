@@ -12,7 +12,20 @@
           "package_name": "com.app.mavx"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "961866680814-rhk7fj53v7js81nqk8sni6tc5nbg70db.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.mavx",
+            "certificate_hash": "7adbea115444ae40ff91e586a4a38ce6cc4ef8ae"
+          }
+        },
+        {
+          "client_id": "961866680814-op3u2p4ivdh8tvf5g8k50chqbqm5qvbu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBsL8OX1I4EBk_6nsF9H9oBVqIt7lUn6eQ"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "961866680814-op3u2p4ivdh8tvf5g8k50chqbqm5qvbu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "961866680814-rfbe0jd1kqj1dh6tgchovcm4m4lspuvq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mavxFlutter"
+              }
+            }
+          ]
         }
       }
     }

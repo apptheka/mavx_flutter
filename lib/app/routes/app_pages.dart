@@ -1,5 +1,7 @@
 import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_page.dart';
+import 'package:mavx_flutter/app/presentation/pages/chat/chat_binding.dart';
+import 'package:mavx_flutter/app/presentation/pages/chat/chat_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_binding.dart';
 import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_binding.dart';
@@ -124,6 +126,11 @@ class AppPages {
       name: AppRoutes.myProject,
       page: () => const MyProjectsPage(),
       binding: MyProjectsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.chat,
+      page: () => const ChatPage(),
+      binding: ChatBinding(),
     ),
   ];
 }

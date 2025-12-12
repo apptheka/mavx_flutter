@@ -217,17 +217,18 @@ class ApplyController extends GetxController {
         ok = result.isNotEmpty;
       }
       if (ok) {
-        Get.back(result: true);
-        Get.snackbar(
-          'Applied',
-          "Application submitted successfully",
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        // Small delay to let the user see the success and to ensure navigation happens smoothly
-        await Future.delayed(const Duration(milliseconds: 900));
+        // Show snackbar after the bottom sheet/overlay has closed to avoid GetX snackbar controller race
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.snackbar(
+            'Applied',
+            'Application submitted successfully',
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          _closeActiveOverlay();
+        });
       } else {
         Get.snackbar('Apply Failed', msg);
       }
@@ -236,6 +237,20 @@ class ApplyController extends GetxController {
     } finally {
       applying.value = false;
     }
+  }
+
+  void _closeActiveOverlay() {
+    try {
+      FocusManager.instance.primaryFocus?.unfocus();
+      final ctx = Get.overlayContext ?? Get.context;
+      if (ctx != null) {
+        Navigator.of(ctx, rootNavigator: true).maybePop(true);
+      } else {
+        if (Get.isBottomSheetOpen == true || Get.isOverlaysOpen == true) {
+          Get.back(result: true, closeOverlays: true);
+        }
+      }
+    } catch (_) {}
   }
 
   @override

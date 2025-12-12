@@ -5,10 +5,15 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/domain/usecases/login_usecase.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 
 class LoginController extends GetxController {
   // Form key to validate inputs
   final formKey = GlobalKey<FormState>();
+
+  // One-time init flag for google_sign_in v7 API
+  static bool _googleInited = false;
 
   //usecase
   final LoginUseCase loginUseCase = Get.find<LoginUseCase>();
@@ -60,6 +65,7 @@ class LoginController extends GetxController {
       final res = await loginUseCase.call(
         emailController.text,
         passwordController.text,
+        
       );
       if (res.status == 200) {
         final status = res.data.status.toLowerCase();
@@ -102,6 +108,94 @@ class LoginController extends GetxController {
     isLoading.value = false;
   }
 
+  // Social login: only email is sent to backend with is_social=true
+  Future<void> socialLogin() async {
+    if (isLoading.value) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    try {
+      isError.value = false;
+      isLoading.value = true;
+      if (!_googleInited) {
+        final cid = AppConstants.googleServerClientId;
+        if (cid.isEmpty || cid == 'YOUR_WEB_CLIENT_ID') {
+          final ctx = Get.context;
+          if (ctx != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                const SnackBar(
+                  content: Text('Google Sign-In not configured. Set AppConstants.googleServerClientId'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            });
+          }
+          return;
+        }
+        await GoogleSignIn.instance.initialize(serverClientId: cid);
+        _googleInited = true;
+      }
+      final account = await GoogleSignIn.instance.authenticate(scopeHint: const ['email']);
+      final email = account.email.trim();
+      emailController.text = email; // reflect chosen email in UI
+
+      final res = await loginUseCase.call(
+        email,
+        '',
+        isSocial: true,
+      );
+      if (res.status == 200) {
+        final status = res.data.status.toLowerCase();
+        if (status == 'pending') {
+          await _showPendingDialog();
+        } else {
+          Get.offAllNamed(AppRoutes.dashboard);
+        }
+        log(res.message);
+      } else {
+        isError.value = true;
+        final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
+        final ctx = Get.context;
+        if (ctx != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(content: Text(msg), backgroundColor: Colors.red),
+            );
+          });
+        }
+      }
+    } on GoogleSignInException catch (e) {
+      // Treat user cancel/UI issues silently; surface other errors
+      final code = e.code.name.toLowerCase();
+      if (code.contains('canceled') || code.contains('cancelled') || code.contains('uiunavailable') || code.contains('interrupted')) {
+        return;
+      }
+      isError.value = true;
+      final msg = (e.toString()).toString();
+      log(msg);
+      final ctx = Get.context;
+      if (ctx != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          );
+        });
+      }
+    } catch (e) {
+      isError.value = true;
+      final msg = e.toString().replaceAll('Exception: ', '');
+      log(msg);
+      final ctx = Get.context;
+      if (ctx != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          );
+        });
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
   Future<void> _showPendingDialog() async {
     return Get.dialog(
       AlertDialog(
