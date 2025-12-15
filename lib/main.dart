@@ -30,7 +30,6 @@ void main() async {
 
   // Initialize dependencies
   await DependenceInjection.init();
-    await Firebase.initializeApp();   // ✔ REQUIRED
   runApp(const MyApp());
 }
 

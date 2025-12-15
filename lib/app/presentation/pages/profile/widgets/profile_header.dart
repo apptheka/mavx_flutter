@@ -224,27 +224,35 @@ class ProfileHeader extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                      authRepository.logout();
-                      Get.snackbar(
-                        'Logout',
-                        'You have been logged out successfully',
-                        duration: const Duration(seconds: 3),
-                        icon: const Icon(
-                          Icons.check_circle_outline,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        colorText: Colors.white,
-                        backgroundColor: Colors.green.shade600,
-                        snackPosition: SnackPosition.BOTTOM,
-                        margin: const EdgeInsets.all(16),
-                        borderRadius: 12,
-                        animationDuration: const Duration(milliseconds: 300),
-                      );
+                    onPressed: () async {
+                      Get.back(); // close dialog first
+
+                      await authRepository.logout();
+
+                      // Navigate FIRST
                       Get.offAllNamed(AppRoutes.login);
+
+                      // Show snackbar AFTER navigation
+                      // WidgetsBinding.instance.addPostFrameCallback((_) {
+                      //   if (Get.context != null) {
+                      //     Get.snackbar(
+                      //       'Logout',
+                      //       'You have been logged out successfully',
+                      //       duration: const Duration(seconds: 3),
+                      //       icon: const Icon(
+                      //         Icons.check_circle_outline,
+                      //         color: Colors.white,
+                      //       ),
+                      //       colorText: Colors.white,
+                      //       backgroundColor: Colors.green,
+                      //       snackPosition: SnackPosition.BOTTOM,
+                      //       margin: const EdgeInsets.all(16),
+                      //       borderRadius: 12,
+                      //     );
+                      //   }
+                      // });
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
@@ -271,15 +279,15 @@ class ProfileHeader extends StatelessWidget {
             top: 8,
           ),
         ),
-      ));
-    }
+      ),
+    );
+  }
 }
-
 
 class _NameAndStatus extends StatelessWidget {
   final ProfileController controller;
-    _NameAndStatus({required this.controller});
-  
+  _NameAndStatus({required this.controller});
+
   final AuthRepository authRepository = Get.find<AuthRepository>();
 
   @override
@@ -305,7 +313,7 @@ class _NameAndStatus extends StatelessWidget {
               );
             }),
             const Spacer(),
-            
+
             IconButton(
               onPressed: () {
                 Get.toNamed(AppRoutes.myProject);

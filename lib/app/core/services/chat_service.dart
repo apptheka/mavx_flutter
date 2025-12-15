@@ -8,11 +8,16 @@ class ChatService {
     return _db.collection('chats').doc(chatId).collection('messages');
   }
 
+  Query<Map<String, dynamic>> _messagesQuery(String chatId) {
+    return _messagesRef(chatId).orderBy('createdAt', descending: false);
+  }
+
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> messagesStream(String chatId) {
-    return _messagesRef(chatId)
-        .orderBy('createdAt', descending: false)
-        .snapshots()
-        .map((snap) => snap.docs);
+    return _messagesQuery(chatId).snapshots().map((snap) => snap.docs);
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> messagesSnapshots(String chatId) {
+    return _messagesQuery(chatId).snapshots();
   }
 
   Future<String> addMessage(

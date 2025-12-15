@@ -78,24 +78,24 @@ class AuthRepositoryImpl implements AuthRepository {
           );
 
           // Subscribe user to a default topic via backend
-          try {
-            final uid = parsed.data.id;
-            final payload = {"userId": uid, "topic": "news"};
-            final enc = jsonEncode(payload).encript();
-            final res = await apiProvider.post(
-              AppConstants.topicSubscribe,
-              request: enc,
-            );
-            dynamic body;
-            try {
-              body = jsonDecode(res.decrypt());
-            } catch (_) {
-              body = res;
-            }
-            log('✅ Topic subscribe response: $body');
-          } catch (e, st) {
-            log('❌ Topic subscribe failed', error: e, stackTrace: st);
-          }
+          // try {
+          //   final uid = parsed.data.id;
+          //   final payload = {"userId": uid, "topic": "news"};
+          //   final enc = jsonEncode(payload).encript();
+          //   final res = await apiProvider.post(
+          //     AppConstants.topicSubscribe,
+          //     request: enc,
+          //   );
+          //   dynamic body;
+          //   try {
+          //     body = jsonDecode(res.decrypt());
+          //   } catch (_) {
+          //     body = res;
+          //   }
+          //   log('✅ Topic subscribe response: $body');
+          // } catch (e, st) {
+          //   log('❌ Topic subscribe failed', error: e, stackTrace: st);
+          // }
 
           // Also subscribe this device to the same FCM topic locally
           try {
@@ -241,15 +241,62 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      // Clear all SharedPreferences data
+      // 1) Capture current user and FCM token BEFORE clearing local storage
+      int? uid;
+      try {
+        final user = await getCurrentUser();
+        uid = user?.data.id;
+      } catch (_) {}
+
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        log('logout(): current FCM token = $fcmToken');
+      } catch (e) {
+        log('logout(): failed to get FCM token: $e');
+      }
+
+      // 2) Backend unregister this device token for the user (if available)
+      try {
+        if (uid != null) {
+          final path = AppConstants.fcmUnregister.replaceFirst(':id', uid.toString());
+          await apiProvider.delete(
+            path,
+            queryParameters: fcmToken != null ? {'deviceToken': fcmToken} : null,
+          );
+          log('✅ FCM unregistered on backend for user $uid');
+        }
+      } catch (e, st) {
+        log('❌ Backend FCM unregister failed', error: e, stackTrace: st);
+      }
+
+      // 3) Unsubscribe from local FCM topics
+      // try {
+      //   const topic = 'news';
+      //   await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+      //   log('✅ Unsubscribed device from FCM topic: $topic');
+      // } catch (e, st) {
+      //   log('❌ Local FCM topic unsubscribe failed', error: e, stackTrace: st);
+      // }
+
+      // 4) Delete local FCM token
+      try {
+        await FirebaseMessaging.instance.deleteToken();
+        log('✅ Deleted local FCM token');
+      } catch (e, st) {
+        log('❌ Failed to delete FCM token', error: e, stackTrace: st);
+      }
+
+      // 5) Clear local app storage (prefs + notification cache)
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.tokenKey);
       await prefs.remove(AppConstants.userKey);
       await prefs.remove(AppConstants.isLoggedInKey);
-      // Clear notification Hive storage
       await NotificationStorageService.clearAll();
+
+      // 6) Navigate to login
       navigateToLogin();
-      log('logout: cleared token, user data, and login flag');
+      log('logout: backend unregistered, FCM unsubscribed/deleted, cleared token/user/flag');
     } catch (e) {
       log('Error during logout: $e');
       throw Exception('Logout failed: ${e.toString()}');

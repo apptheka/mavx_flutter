@@ -716,34 +716,34 @@ packages:
     dependency: "direct main"
     description:
       name: linkedin_login
-      sha256: aec7676775fa0a7f0c81bd0fab42bb292f8bc1f9f0bad3243e00c9d9c8b986e1
+      sha256: "417d52fd656124b08fb3b6789b3339045786097d2be9b361bff9f6f5a80f2d41"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.3"
+    version: "3.2.3"
   linkedin_login_android:
     dependency: transitive
     description:
       name: linkedin_login_android
-      sha256: "459d6ea57e257b673f9cb2f6528b369f2922cde4ba10ea0f417d3bad91571641"
+      sha256: dc1a2175626e23190f63728809df7d1ea3c1ee7647658cd9727cb8177cf7a6d4
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "3.2.3"
   linkedin_login_ios:
     dependency: transitive
     description:
       name: linkedin_login_ios
-      sha256: "3d1beb325a7e2e77e6b3c20245158ffa3b83ea3afc5dc81a3bffed08dccef680"
+      sha256: c5eef824567be7a832b639157396368631798c913ec085e0bd980d236b8a44fe
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "3.2.3"
   linkedin_login_platform_interface:
     dependency: transitive
     description:
       name: linkedin_login_platform_interface
-      sha256: c34678d6bd5656371eed2df6b4f51685d832e8ff48d7c99e991f0a373d473200
+      sha256: cb53d803b66ba32a6acc27ad9c15b96fabc2c0731d3dff15b8581a6e889e9368
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "3.2.3"
   lints:
     dependency: transitive
     description:
@@ -1040,6 +1040,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  signin_with_linkedin:
+    dependency: "direct main"
+    description:
+      name: signin_with_linkedin
+      sha256: ee720367e9d8c60506c7a56437f60d8e9388e0393ac5a57b4892ee01c48ebf2b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1393,18 +1401,18 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter
-      sha256: ec81f57aa1611f8ebecf1d2259da4ef052281cb5ad624131c93546c79ccc7736
+      sha256: c3e4fe614b1c814950ad07186007eff2f2e5dd2935eba7b9a9a1af8e5885f1ba
       url: "https://pub.dev"
     source: hosted
-    version: "4.9.0"
+    version: "4.13.0"
   webview_flutter_android:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "47a8da40d02befda5b151a26dba71f47df471cddd91dfdb7802d0a87c5442558"
+      sha256: eeeb3fcd5f0ff9f8446c9f4bbc18a99b809e40297528a3395597d03aafb9f510
       url: "https://pub.dev"
     source: hosted
-    version: "3.16.9"
+    version: "4.10.11"
   webview_flutter_platform_interface:
     dependency: transitive
     description:

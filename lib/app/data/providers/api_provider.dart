@@ -41,7 +41,8 @@ class ApiProvider {
           // Skip auth header for unauthenticated endpoints
           final isLogin = options.path == AppConstants.login;
           final isEncrypt = options.uri.toString().contains('/encrypt');
-          if (!isLogin && !isEncrypt) {
+          final skipAuth = options.extra['skipAuth'] == true;
+          if (!isLogin && !isEncrypt && !skipAuth) {
             final token = await getToken();
             if (token != null) {
               // Backend expects Authorization header to be the raw token (no 'Bearer ' prefix)
@@ -173,6 +174,8 @@ class ApiProvider {
     String path, {
     dynamic request,
     Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    bool skipAuth = false,
   }) async {
     try {
       // If caller passes a String (encrypted), wrap into expected envelope key 'request'
@@ -181,6 +184,15 @@ class ApiProvider {
         path,
         data: body,
         queryParameters: queryParameters,
+        options: dio.Options(
+          headers: {
+            ..._dio.options.headers,
+            if (headers != null) ...headers,
+          },
+          extra: {
+            'skipAuth': skipAuth,
+          },
+        ),
       );
       final resp = response.data;
       if (resp is Map) {

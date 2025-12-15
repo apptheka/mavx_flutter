@@ -7,6 +7,7 @@ import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
+import 'package:signin_with_linkedin/signin_with_linkedin.dart';
 
 class LoginController extends GetxController {
   // Form key to validate inputs
@@ -33,13 +34,138 @@ class LoginController extends GetxController {
     if (v.isEmpty) return 'Please enter email';
 
     // Basic email regex
-    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$'); 
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
     if (!emailRegex.hasMatch(v)) {
       return 'Enter a valid email';
     }
     return null;
   }
+
+  Future<void> linkedInLogin() async {
+      if (isLoading.value) return;
+      FocusManager.instance.primaryFocus?.unfocus();
+      try {
+        isError.value = false;
+        isLoading.value = true;
+
+        final ctx = Get.context;
+        if (ctx == null) {
+          throw Exception('Context not available');
+        }
+
+        final clientId = AppConstants.linkedinClientId;
+        final clientSecret = AppConstants.linkedinClientSecret;
+        final redirectUrl = AppConstants.linkedinRedirectUrl;
+        if (clientId.isEmpty || clientSecret.isEmpty || redirectUrl.isEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final c = Get.context;
+            if (c != null) {
+              ScaffoldMessenger.of(c).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'LinkedIn is not configured. Set linkedinClientId, linkedinClientSecret, linkedinRedirectUrl',
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          });
+          return;
+        }
+
+        final linkedInConfig = LinkedInConfig(
+          clientId: clientId,
+          clientSecret: clientSecret,
+          redirectUrl: redirectUrl,
+          scope: const ['openid', 'profile', 'email'],
+        );
+        final linkedin = SignInWithLinkedIn(config: linkedInConfig);
+
+        final (authCode, authErr) = await linkedin.getAuthorizationCode(
+          context: ctx,
+        );
+        if (authCode == null) {
+          throw Exception(
+            authErr?.toJson().toString() ?? 'LinkedIn authorization cancelled',
+          );
+        }
+
+        final (tokenInfo, tokenErr) = await linkedin.getAccessToken(
+          authorizationCode: authCode,
+        );
+        if (tokenInfo == null) {
+          throw Exception(
+            tokenErr?.toJson().toString() ?? 'LinkedIn token fetch failed',
+          );
+        }
+
+        final (user, userErr) = await linkedin.getUserInfo(
+          tokenInfo: tokenInfo,
+        );
+        if (user == null) {
+          throw Exception(
+            userErr?.toJson().toString() ?? 'LinkedIn user info fetch failed',
+          );
+        }
+
+        final map = user.toJson();
+        var email = '';
+        final e1 = map['email'];
+        final e2 = map['emailAddress'];
+        final e3 = map['email_address'];
+        if (e1 is String && e1.isNotEmpty)
+          email = e1.trim();
+        else if (e2 is String && e2.isNotEmpty)
+          email = e2.trim();
+        else if (e3 is String && e3.isNotEmpty)
+          email = e3.trim();
+
+        if (email.isEmpty) {
+          throw Exception(
+            'LinkedIn account email not available. Ensure email scope is approved.',
+          );
+        }
+
+        emailController.text = email;
+
+        final res = await loginUseCase.call(email, '', isSocial: true);
+        if (res.status == 200) {
+          final status = res.data.status.toLowerCase();
+          if (status == 'pending') {
+            await _showPendingDialog();
+          } else {
+            Get.offAllNamed(AppRoutes.dashboard);
+          }
+          log(res.message);
+        } else {
+          isError.value = true;
+          final msg = (res.message.isNotEmpty) ? res.message : 'Login failed';
+          final c = Get.context;
+          if (c != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(c).showSnackBar(
+                SnackBar(content: Text(msg), backgroundColor: Colors.red),
+              );
+            });
+          }
+        }
+      } catch (e) {
+        isError.value = true;
+        final msg = e.toString().replaceAll('Exception: ', '');
+        log(msg);
+        final c = Get.context;
+        if (c != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(c).showSnackBar(
+              SnackBar(content: Text(msg), backgroundColor: Colors.red),
+            );
+          });
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
   String? validatePassword(String? value) {
     final v = value?.trim() ?? '';
@@ -65,7 +191,6 @@ class LoginController extends GetxController {
       final res = await loginUseCase.call(
         emailController.text,
         passwordController.text,
-        
       );
       if (res.status == 200) {
         final status = res.data.status.toLowerCase();
@@ -73,13 +198,15 @@ class LoginController extends GetxController {
           await _showPendingDialog();
           // stay on login; user will be able to access after approval
         } else {
-          Get.offAllNamed(AppRoutes.dashboard); 
+          Get.offAllNamed(AppRoutes.dashboard);
         }
         log(res.message);
       } else {
         isError.value = true;
         log(res.message);
-        final msg = (res.message.isNotEmpty) ? res.message : 'Invalid email or password';
+        final msg = (res.message.isNotEmpty)
+            ? res.message
+            : 'Invalid email or password';
         Get.snackbar(
           'Error',
           msg,
@@ -99,11 +226,13 @@ class LoginController extends GetxController {
       } else if (lower.contains('timeout')) {
         uiMsg = 'Connection timeout. Please try again.';
       }
-      Get.snackbar('Error', uiMsg,
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
-          snackPosition: SnackPosition.BOTTOM,
-          );
+      Get.snackbar(
+        'Error',
+        uiMsg,
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
     isLoading.value = false;
   }
@@ -123,7 +252,9 @@ class LoginController extends GetxController {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(ctx).showSnackBar(
                 const SnackBar(
-                  content: Text('Google Sign-In not configured. Set AppConstants.googleServerClientId'),
+                  content: Text(
+                    'Google Sign-In not configured. Set AppConstants.googleServerClientId',
+                  ),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -134,15 +265,13 @@ class LoginController extends GetxController {
         await GoogleSignIn.instance.initialize(serverClientId: cid);
         _googleInited = true;
       }
-      final account = await GoogleSignIn.instance.authenticate(scopeHint: const ['email']);
+      final account = await GoogleSignIn.instance.authenticate(
+        scopeHint: const ['email'],
+      );
       final email = account.email.trim();
       emailController.text = email; // reflect chosen email in UI
 
-      final res = await loginUseCase.call(
-        email,
-        '',
-        isSocial: true,
-      );
+      final res = await loginUseCase.call(email, '', isSocial: true);
       if (res.status == 200) {
         final status = res.data.status.toLowerCase();
         if (status == 'pending') {
@@ -166,7 +295,10 @@ class LoginController extends GetxController {
     } on GoogleSignInException catch (e) {
       // Treat user cancel/UI issues silently; surface other errors
       final code = e.code.name.toLowerCase();
-      if (code.contains('canceled') || code.contains('cancelled') || code.contains('uiunavailable') || code.contains('interrupted')) {
+      if (code.contains('canceled') ||
+          code.contains('cancelled') ||
+          code.contains('uiunavailable') ||
+          code.contains('interrupted')) {
         return;
       }
       isError.value = true;
@@ -196,16 +328,28 @@ class LoginController extends GetxController {
       isLoading.value = false;
     }
   }
+
   Future<void> _showPendingDialog() async {
     return Get.dialog(
       AlertDialog(
-        title: const CommonText('Profile Under Review', fontSize: 18, fontWeight: FontWeight.w600),
+        title: const CommonText(
+          'Profile Under Review',
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
         content: const CommonText(
           'Your profile is under review. You will be notified once approved. You can log in after approval.',
           fontSize: 14,
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const CommonText('OK', fontSize: 14, fontWeight: FontWeight.w600)),
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const CommonText(
+              'OK',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
       barrierDismissible: false,

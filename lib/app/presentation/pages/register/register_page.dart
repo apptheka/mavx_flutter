@@ -8,7 +8,8 @@ import 'package:mavx_flutter/app/presentation/pages/register/widgets/step3.dart'
 import 'package:mavx_flutter/app/presentation/pages/register/widgets/step4.dart';
 import 'package:mavx_flutter/app/presentation/pages/register/widgets/step_nav.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
-import 'package:mavx_flutter/app/presentation/widgets/common_text.dart'; 
+import 'package:mavx_flutter/app/core/constants/assets.dart';
+import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 
 class RegisterPage extends GetView<RegisterController> {
   const RegisterPage({super.key});
@@ -66,6 +67,41 @@ class RegisterPage extends GetView<RegisterController> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            GestureDetector(
+                              onTap: () => controller.prefillFromGoogle(),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFF2F3F7),
+                                ),
+                                child: Image.asset(IconAssets.google),
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            GestureDetector(
+                              onTap: () {
+                                final c = Get.context;
+                                if (c != null)
+                                  controller.prefillFromLinkedIn(c);
+                              },
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFFF2F3F7),
+                                ),
+                                child: Image.asset(IconAssets.linkedin),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                             CommonText(
                               'Already have an account?',
                               fontSize: 16,
@@ -77,8 +113,10 @@ class RegisterPage extends GetView<RegisterController> {
                               onTap: () async {
                                 // Release focus before popping to avoid disposed controller callbacks
                                 FocusManager.instance.primaryFocus?.unfocus();
-                                await Future.delayed(const Duration(milliseconds: 10));
-                                Get.back(); // Go back to the previous screen
+                                await Future.delayed(
+                                  const Duration(milliseconds: 10),
+                                );
+                                Get.back(closeOverlays: false);
                               },
                               child: CommonText(
                                 'Sign In',

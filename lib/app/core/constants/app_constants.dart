@@ -34,7 +34,8 @@ class AppConstants {
   static const String skills = '/profile/skills';
   static const String request = '/user/expert-requests';
   static const String fcmRegister = '/notifications/device/register';
-  static const String topicSubscribe = '/notifications/topic/subscribe';
+  static const String fcmUnregister = '/notifications/:id';
+  // static const String topicSubscribe = '/notifications/topic/subscribe';
   static const String myProjects = '/user/expert-hires?status=confirmed';
   static const String timesheet = '/timesheet/upsert';
   static const String getTimesheet = '/timesheet/project/{projectId}/expert/{expertId}';
@@ -43,9 +44,15 @@ class AppConstants {
   static const String getExpenses= '/expenses/project/{projectId}/expert/{expertId}';
   static const String upsertExpenses = '/expenses/upsert';
   static const String notificationsList = '/notifications/list';
+  static const String sendEmail = '/email/send';
 
   // Google Sign-In Web client ID (from google-services.json client_type=3)
   static const String googleServerClientId = '961866680814-op3u2p4ivdh8tvf5g8k50chqbqm5qvbu.apps.googleusercontent.com';
+
+  // LinkedIn OAuth config (set these from your LinkedIn Developer App)
+  static const String linkedinClientId = '862grndqzp05go'; 
+  // static const String linkedinClientSecret = 'WPL_AP1.wB6AUDiP8bZQAttk.ldM5TA=='; 
+  static const String linkedinRedirectUrl = 'https://mavxexpert.web.app/login';
 
   // Storage Keys
   static const String tokenKey = 'token';

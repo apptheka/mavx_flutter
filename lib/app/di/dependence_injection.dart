@@ -25,6 +25,8 @@ import 'package:mavx_flutter/app/domain/repositories/specification_repository.da
 import 'package:mavx_flutter/app/domain/repositories/file_repository.dart';
 import 'package:mavx_flutter/app/domain/repositories/notification_repository.dart';
 import 'package:mavx_flutter/app/data/repositories/notification_repository_impl.dart';
+import 'package:mavx_flutter/app/domain/repositories/email_repository.dart';
+import 'package:mavx_flutter/app/data/repositories/email_repository_impl.dart';
 import 'package:mavx_flutter/app/domain/usecases/bank_details_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/bookmark_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/delete_bookmark_usecase.dart';
@@ -39,8 +41,10 @@ import 'package:mavx_flutter/app/domain/usecases/projects_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/requests_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
+import 'package:mavx_flutter/app/domain/usecases/email_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/apply_job_usecase.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:mavx_flutter/app/presentation/pages/chat/chat_badge_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 
 class DependenceInjection {
@@ -69,6 +73,7 @@ class DependenceInjection {
     Get.lazyPut<MyProjectRepository>(() => MyProjectsRepositoryImpl(), fenix: true);
     Get.lazyPut<BankDetailsRepository>(() => BankDetailsRepositoryImpl(), fenix: true);
     Get.lazyPut<NotificationRepository>(() => NotificationRepositoryImpl(apiProvider: Get.find()), fenix: true);
+    Get.lazyPut<EmailRepository>(() => EmailRepositoryImpl(apiProvider: Get.find()), fenix: true);
 
     //Usecases
     Get.lazyPut(() => LoginUseCase(Get.find()), fenix: true);
@@ -87,5 +92,9 @@ class DependenceInjection {
     Get.lazyPut(()=> OtpRequestUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => MyProjectUsecase(Get.find()), fenix: true);
     Get.lazyPut(() => BankDetailsUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => SendEmailUseCase(Get.find()), fenix: true);
+
+    //controllers
+    Get.lazyPut(() => ChatBadgeController(), fenix: true);
   }
 }

@@ -222,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(width: 24),
             GestureDetector(
-              onTap: () {},
+              onTap: controller.linkedInLogin,
               child: _SocialCircle(icon: IconAssets.linkedin),
             ),
           ],

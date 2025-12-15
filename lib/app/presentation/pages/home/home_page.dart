@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/presentation/pages/chat/chat_badge_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/header_widget.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/widgets/profile_completion_card.dart';
@@ -11,6 +12,10 @@ import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
 import 'package:mavx_flutter/app/data/models/projects_model.dart';
+import 'package:mavx_flutter/app/core/services/chat_service.dart';
+import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
+import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -101,11 +106,102 @@ class HomePage extends GetView<HomeController> {
         onPressed: () {
            Get.toNamed(AppRoutes.chat);
         },
-        child: const Icon(Icons.chat, color: Colors.white),
+        child: const _ChatIconWithBadge(),
       ),
     );
   }
+
+
 }
+class _ChatIconWithBadge extends StatelessWidget {
+  const _ChatIconWithBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<AuthRepository>();
+    final storage = Get.find<StorageService>();
+    final chat = ChatService();
+    final badgeCtrl = Get.find<ChatBadgeController>();
+
+    return Obx(() {
+      // 👇 forces rebuild when coming back from chat
+      badgeCtrl.refreshTick.value;
+
+      return FutureBuilder(
+        future: auth.getCurrentUser(),
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          final uid = user?.data.id?.toString();
+
+          if (uid == null || uid.isEmpty) {
+            return const Icon(Icons.chat, color: Colors.white);
+          }
+
+          final chatId = 'admin1_$uid';
+
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: chat.messagesSnapshots(chatId),
+            builder: (context, snap) {
+              int unread = 0;
+
+              if (snap.hasData) {
+                final lastSeen =
+                    storage.prefs.getInt('chat_last_seen_$chatId') ?? 0;
+
+                for (final d in snap.data!.docs) {
+                  final data = d.data();
+                  final sender = (data['sender'] ?? '').toString();
+                  final ts = data['createdAt'];
+
+                  int ms = 0;
+                  if (ts is Timestamp) ms = ts.millisecondsSinceEpoch;
+
+                  if (ms > lastSeen && sender != 'expert') {
+                    unread++;
+                  }
+                }
+              }
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.chat, color: Colors.white),
+                  if (unread > 0)
+                    Positioned(
+                      right: -12,
+                      top: -10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10)),
+                        ),
+                        constraints: const BoxConstraints(
+                            minWidth: 18, minHeight: 18),
+                        child: Center(
+                          child: Text(
+                            unread > 99 ? '99+' : unread.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    });
+  }
+}
+
 
 class _EmptyState extends StatelessWidget {
   final String title;

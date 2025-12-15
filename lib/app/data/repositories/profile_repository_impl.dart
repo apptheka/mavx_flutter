@@ -14,7 +14,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   final apiProvider = Get.find<ApiProvider>();
   final authRepository = Get.find<AuthRepository>();
 
-  Future<String?> _currentUserId() async =>
+  Future<String?> currentUserId() async =>
       (await authRepository.getCurrentUser())?.data.id.toString();
 
   Future<Map<String, dynamic>> _decode(String encrypted) async =>
@@ -34,7 +34,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<UserProfile> getProfile() async {
-    final id = await _currentUserId();
+    final id = await currentUserId();
 
     final decrypted = await _decode(
       await apiProvider.get("${AppConstants.profile}/$id"),
@@ -59,7 +59,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       _postProfile(
         AppConstants.aboutMe,
         {
-          'user_id': await _currentUserId(),
+          'user_id': await currentUserId(),
           'id': aboutMe['id'],
           'description': aboutMe['description'],
         },
@@ -112,7 +112,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<UserProfile> updateEducation(Map<String, dynamic> education) async =>
       _postProfile(AppConstants.education, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         'id': education['id'],
         'institution_name':
             education['institution_name'] ?? education['institutionName'],
@@ -151,7 +151,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return (s == null || s.isEmpty) ? null : s;
     }
 
-    final uid = await _currentUserId();
+    final uid = await currentUserId();
     final payload = <String, dynamic>{
       'user_id': uid,
       'id': exp['id'],
@@ -180,7 +180,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<UserProfile> updateLanguages(Map<String, dynamic> lang) async =>
       _postProfile(AppConstants.languages, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         'id': lang['id'],
         'language_name': lang['language_name'] ?? lang['languageName'],
         'proficiency_level':
@@ -195,7 +195,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<UserProfile> updateOnlineProfiles(Map<String, dynamic> online) async =>
       _postProfile(AppConstants.onlineProfiles, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         'id': online['id'],
         'platform_type': online['platform_type'] ?? online['platformType'],
         'profile_url': online['profile_url'] ?? online['profileUrl'],
@@ -204,14 +204,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<UserProfile> updatePreferences(Map<String, dynamic> pref) async =>
       _postProfile(AppConstants.preferences, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         ...pref,
       });
 
   @override
   Future<UserProfile> updateSkills(Map<String, dynamic> skills) async =>
       _postProfile(AppConstants.skills, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         'id': skills['id'],
         'skill_category': skills['skill_category'] ?? skills['skillCategory'],
         'skill_name': skills['skill_name'] ?? skills['skillName'],
@@ -263,7 +263,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<UserProfile> updateBankDetails(Map<String, dynamic> bankDetails) async =>
       _postProfile(AppConstants.bankDetails, {
-        'user_id': await _currentUserId(),
+        'user_id': await currentUserId(),
         'id': bankDetails['id'],
         'account_holder_name': bankDetails['account_holder_name'] ?? bankDetails['accountHolderName'],
         'bank_name': bankDetails['bank_name'] ?? bankDetails['bankName'],

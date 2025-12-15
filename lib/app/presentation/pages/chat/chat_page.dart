@@ -8,45 +8,64 @@ class ChatPage extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    // Disable Hero animations on this page to avoid duplicate hero tag conflicts
-    return HeroMode(
-      enabled: false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat'),
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: Colors.white,
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
         ),
-        body: Column(
+        title: const Text('Chat'),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
         children: [
           Expanded(
             child: Obx(() {
               final items = controller.messages;
+
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                controller: controller.scrollController, // 👈 IMPORTANT
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 8),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final m = items[index];
-                  final align = m.from == MsgFrom.me ? Alignment.centerRight : Alignment.centerLeft;
-                  final bubbleColor = m.from == MsgFrom.me ? AppColors.primaryColor : const Color(0xFFF2F3F7);
-                  final textColor = m.from == MsgFrom.me ? Colors.white : Colors.black87;
+                  final isMe = m.from == MsgFrom.me;
+
                   return Align(
-                    alignment: align,
+                    alignment: isMe
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      constraints: BoxConstraints(
+                        maxWidth:
+                            MediaQuery.of(context).size.width * 0.75,
+                      ),
                       decoration: BoxDecoration(
-                        color: bubbleColor,
+                        color: isMe
+                            ? AppColors.primaryColor
+                            : const Color(0xFFF2F3F7),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(m.text, style: TextStyle(color: textColor)),
+                      child: Text(
+                        m.text,
+                        style: TextStyle(
+                          color: isMe
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
+                      ),
                     ),
                   );
                 },
               );
             }),
           ),
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
@@ -61,8 +80,12 @@ class ChatPage extends GetView<ChatController> {
                       onSubmitted: (_) => controller.send(),
                       decoration: const InputDecoration(
                         hintText: 'Type a message',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12)),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                       ),
                     ),
                   ),
@@ -79,7 +102,6 @@ class ChatPage extends GetView<ChatController> {
             ),
           )
         ],
-        ),
       ),
     );
   }

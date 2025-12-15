@@ -8,6 +8,9 @@ import 'package:mavx_flutter/app/domain/usecases/get_all_specification_usecase.d
 import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/register_usecase.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:signin_with_linkedin/signin_with_linkedin.dart';
+import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class RegisterController extends GetxController {
@@ -133,6 +136,8 @@ class RegisterController extends GetxController {
   final RxString idUrl = ''.obs;
   final RxString profileUrl = ''.obs;
 
+  bool _googleInited = false;
+
   bool get isFirstStep => currentStep.value == 1;
   bool get isLastStep => currentStep.value == totalSteps;
 
@@ -140,7 +145,80 @@ class RegisterController extends GetxController {
     if (_validateCurrentStep()) {
       if (!isLastStep) currentStep.value++;
     }
-    
+  }
+
+  Future<void> prefillFromGoogle() async {
+    try {
+      final cid = AppConstants.googleServerClientId;
+      if (cid.isEmpty || cid == 'YOUR_WEB_CLIENT_ID') {
+        Get.snackbar('Error', 'Google Sign-In not configured', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+      if (!_googleInited) {
+        await GoogleSignIn.instance.initialize(serverClientId: cid);
+        _googleInited = true;
+      }
+      final account = await GoogleSignIn.instance.authenticate(scopeHint: const ['email']);
+      final email = account.email.trim();
+      final displayName = (account.displayName ?? '').trim();
+      String first = firstNameCtrl.text.trim();
+      String last = lastNameCtrl.text.trim();
+      if (displayName.isNotEmpty) {
+        final parts = displayName.split(' ');
+        if (first.isEmpty) first = parts.first;
+        if (parts.length > 1 && last.isEmpty) {
+          last = parts.sublist(1).join(' ');
+        }
+      }
+      if (first.isNotEmpty) firstNameCtrl.text = first;
+      if (last.isNotEmpty) lastNameCtrl.text = last;
+      if (email.isNotEmpty) primaryEmailCtrl.text = email;
+    } catch (_) {}
+  }
+
+  Future<void> prefillFromLinkedIn(BuildContext context) async {
+    try {
+      final clientId = AppConstants.linkedinClientId;
+      final clientSecret = AppConstants.linkedinClientSecret;
+      final redirectUrl = AppConstants.linkedinRedirectUrl;
+      if (clientId.isEmpty || clientSecret.isEmpty || redirectUrl.isEmpty) {
+        Get.snackbar('Error', 'LinkedIn not configured', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+      final linkedInConfig = LinkedInConfig(
+        clientId: clientId,
+        clientSecret: clientSecret,
+        redirectUrl: redirectUrl,
+        scope: const ['openid', 'profile', 'email'],
+      );
+      final linkedin = SignInWithLinkedIn(config: linkedInConfig);
+      final (authCode, _) = await linkedin.getAuthorizationCode(context: context);
+      if (authCode == null) return;
+      final (tokenInfo, _) = await linkedin.getAccessToken(authorizationCode: authCode);
+      if (tokenInfo == null) return;
+      final (user, _) = await linkedin.getUserInfo(tokenInfo: tokenInfo);
+      if (user == null) return;
+      final map = user.toJson();
+      String email = '';
+      final e1 = map['email'];
+      final e2 = map['emailAddress'];
+      final e3 = map['email_address'];
+      if (e1 is String && e1.isNotEmpty) email = e1.trim();
+      else if (e2 is String && e2.isNotEmpty) email = e2.trim();
+      else if (e3 is String && e3.isNotEmpty) email = e3.trim();
+      String first = (map['given_name'] ?? map['localizedFirstName'] ?? '').toString().trim();
+      String last = (map['family_name'] ?? map['localizedLastName'] ?? '').toString().trim();
+      if (first.isEmpty && (map['name'] is String)) {
+        final parts = (map['name'] as String).trim().split(' ');
+        if (parts.isNotEmpty) first = parts.first;
+        if (parts.length > 1 && last.isEmpty) last = parts.sublist(1).join(' ');
+      }
+      if (first.isNotEmpty) firstNameCtrl.text = first;
+      if (last.isNotEmpty) lastNameCtrl.text = last;
+      if (email.isNotEmpty) primaryEmailCtrl.text = email;
+      final url = (map['profile'] ?? map['profile_url'] ?? map['url'])?.toString();
+      if (url != null && url.isNotEmpty) linkedInCtrl.text = url;
+    } catch (_) {}
   }
 
   void prevStep() {
