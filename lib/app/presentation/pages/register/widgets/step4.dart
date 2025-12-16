@@ -29,7 +29,7 @@ class RegisterStep4 extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               const CommonText(
-                'Secondary Factor',
+                'Secondary Industry',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -42,7 +42,7 @@ class RegisterStep4 extends StatelessWidget {
                 hintText: 'Select',
                 onChanged: (v) => controller.secondaryFactorCtrl.value = v ?? '',
                 validator: (v) => (v == null || v.isEmpty)
-                    ? 'Secondary factor required'
+                    ? 'Secondary Industry required'
                     : null,
               ),
               const SizedBox(height: 16),

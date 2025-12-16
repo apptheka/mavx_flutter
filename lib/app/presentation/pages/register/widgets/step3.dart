@@ -66,7 +66,7 @@ class RegisterStep3 extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const CommonText(
-                          'Primary Function/Specification',
+                          'Primary Function',
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -111,7 +111,7 @@ class RegisterStep3 extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const CommonText(
-                          'Primary Function/Industry',
+                          'Primary Industry',
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),

@@ -51,7 +51,7 @@ class AppConstants {
 
   // LinkedIn OAuth config (set these from your LinkedIn Developer App)
   static const String linkedinClientId = '862grndqzp05go'; 
-  // static const String linkedinClientSecret = 'WPL_AP1.wB6AUDiP8bZQAttk.ldM5TA=='; 
+  static const String linkedinClientSecret = 'WPL_AP1.wB6AUDiP8bZQAttk.ldM5TA=='; 
   static const String linkedinRedirectUrl = 'https://mavxexpert.web.app/login';
 
   // Storage Keys
