@@ -60,15 +60,7 @@ class LoginController extends GetxController {
         if (clientId.isEmpty || clientSecret.isEmpty || redirectUrl.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final c = Get.context;
-            if (c != null) {
-              ScaffoldMessenger.of(c).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'LinkedIn is not configured. Set linkedinClientId, linkedinClientSecret, linkedinRedirectUrl',
-                  ),
-                  backgroundColor: Colors.red,
-                ),
-              );
+            if (c != null) { 
             }
           });
           return;
@@ -86,9 +78,14 @@ class LoginController extends GetxController {
           context: ctx,
         );
         if (authCode == null) {
-          throw Exception(
-            authErr?.toJson().toString() ?? 'LinkedIn authorization cancelled',
-          );
+          // Check if the authorization was cancelled by user
+          final errMsg = authErr?.toJson().toString() ?? '';
+          if (errMsg.toLowerCase().contains('cancelled') || 
+              errMsg.toLowerCase().contains('canceled')) {
+            // User cancelled - don't show error snackbar
+            return;
+          }
+          throw Exception(errMsg.isEmpty ? 'LinkedIn authorization failed' : errMsg);
         }
 
         final (tokenInfo, tokenErr) = await linkedin.getAccessToken(
