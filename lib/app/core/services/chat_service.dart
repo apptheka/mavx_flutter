@@ -5,7 +5,8 @@ class ChatService {
   ChatService({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> _messagesRef(String chatId) {
-    return _db.collection('chats').doc(chatId).collection('messages');
+    final data = _db.collection('chats').doc(chatId).collection('messages'); 
+    return data;
   }
 
   Query<Map<String, dynamic>> _messagesQuery(String chatId) {
@@ -17,6 +18,7 @@ class ChatService {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> messagesSnapshots(String chatId) {
+    print("Listening to messages snapshots for chat: $chatId");
     return _messagesQuery(chatId).snapshots();
   }
 

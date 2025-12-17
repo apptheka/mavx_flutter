@@ -79,6 +79,7 @@ class MyProjectsController extends GetxController {
       );
       final resp = await _expenseUseCase.getExpenses(projectId, expertId);
       if (Get.isDialogOpen == true) Get.back();
+      
       final result = await Get.bottomSheet(
         ExpensesBottomSheet(
           projectId: projectId,
@@ -389,41 +390,39 @@ class MyProjectsController extends GetxController {
     required String projectName,
   }) async {
     try {
-      // Allow submissions only in 4th week of the month
-      // final now = DateTime.now();
-      // if (!_isFourthWeekNow(now)) {
-      //   Get.defaultDialog(
-      //     title: 'Create Timesheet',
-      //     content: const Padding(
-      //       padding: EdgeInsets.all(8.0),
-      //       child: Text(
-      //         'Timesheet submissions are only available during the 4th week of each month.',
-      //         textAlign: TextAlign.center,
-      //       ),
-      //     ),
-      //     textConfirm: 'Close',
-      //     onConfirm: () => Get.back(),
-      //   );
-      //   return;
-      // } 
-      
-      final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.preferences.value.userId ?? 0;
-      print("expertId: $expertId");
+      int expertId = 0;
+      for (final p in projects) {
+        final pid = p.projectId ?? p.id ?? 0;
+        if (pid == projectId) {
+          expertId = p.expertId ?? 0;
+          break;
+        }
+      }
+
+      if (expertId == 0) {
+        try {
+          final profile = Get.find<ProfileController>(tag: null);
+          expertId = profile.registeredProfile.value.id ??
+              (profile.preferences.value.userId ?? 0);
+        } catch (_) {
+        }
+      }
+
       if (expertId == 0) {
         Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
         return;
       }
-      // Show a quick loading indicator while fetching existing timesheets
+
       Get.dialog(
         const Center(child: CircularProgressIndicator()),
         barrierDismissible: false,
       );
-      // Fetch existing timesheets
+
       final existing = await _usecase.getTimesheets(projectId, expertId);
+
       if (Get.isDialogOpen == true) Get.back();
-      // Open bottom sheet with existing data
-      Get.bottomSheet(
+
+      await Get.bottomSheet(
         TimesheetBottomSheet(
           projectId: projectId,
           projectName: projectName,
@@ -433,18 +432,13 @@ class MyProjectsController extends GetxController {
       );
     } catch (e) {
       if (Get.isDialogOpen == true) Get.back();
-      // Show rule message on failure too
-      Get.defaultDialog(
-        title: 'Create Timesheet',
-        content: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            'Timesheet submissions are only available during the 4th week of each month.',
-            textAlign: TextAlign.center,
-          ),
+      await Get.bottomSheet(
+        TimesheetBottomSheet(
+          projectId: projectId,
+          projectName: projectName,
+          existingTimesheets: const [],
         ),
-        textConfirm: 'Close',
-        onConfirm: () => Get.back(),
+        isScrollControlled: true,
       );
     }
   }

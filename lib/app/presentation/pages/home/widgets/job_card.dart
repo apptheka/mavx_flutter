@@ -159,29 +159,7 @@ class JobCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Image.asset(
-                            IconAssets.apartement,
-                            width: isSmallScreen ? 10 : 12,
-                            height: isSmallScreen ? 10 : 12,
-                            color: Colors.black45,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: CommonText(
-                              "Veltrix Global",
-                              fontSize: isSmallScreen ? 10 : 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black54,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+                      ), 
                     ],
                   ),
                 ),

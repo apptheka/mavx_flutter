@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/services/connectivity_service.dart';
 import 'package:mavx_flutter/app/data/models/bookmarks_model.dart';
 import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
 import 'package:mavx_flutter/app/data/models/user_model.dart';
@@ -93,7 +94,8 @@ class HomeController extends GetxController {
 
   // Fetch projects from API then compute matches
   Future<void> fetchProjects({bool showGlobalLoader = true}) async {
-    try {
+    try { 
+     
       if (showGlobalLoader) isLoadingProjects.value = true;
       final resp = await _projectsUseCase.projects();
       final list = resp.data?.data ?? [];
@@ -321,7 +323,10 @@ Future<void> refreshTopMatches() async {
     return p;
   }
 
-  void refreshPage(){
+  void refreshPage()async{
+      if (!await ConnectivityService().checkConnectivityWithDialog()) {
+        return; // Stop further execution if no internet
+      }
     fetchProjects();
     _initBookmarks();
     refreshAppliedIds();

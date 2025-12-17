@@ -269,7 +269,7 @@ class ActionsSection extends StatelessWidget {
 
 class SimilarProjectsSection extends StatelessWidget {
   const SimilarProjectsSection({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ProjectDetailController>();
@@ -280,7 +280,7 @@ class SimilarProjectsSection extends StatelessWidget {
         Obx(
           () => _SectionHeaderRow(
             title: 'Similar Projects (${controller.similarProjects.length })',
-            action: 'View All',
+            action: '',
           ),
         ),
         const SizedBox(height: 8),

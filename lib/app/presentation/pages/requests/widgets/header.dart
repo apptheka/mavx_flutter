@@ -33,7 +33,11 @@ class HeaderRequests extends StatelessWidget {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  Get.back();
+                  try {
+                    Get.back();
+                  } catch (e) { 
+                    // Ignore back navigation errors
+                  }
                 },
               ), 
               const Expanded(

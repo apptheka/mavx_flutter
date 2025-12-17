@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/core/services/connectivity_service.dart';
 import 'package:mavx_flutter/app/domain/usecases/login_usecase.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
 import 'package:mavx_flutter/app/routes/app_routes.dart';
@@ -26,6 +27,7 @@ class LoginController extends GetxController {
   // State
   final isLoading = false.obs;
   final isError = false.obs;
+  final RxString errorMessage = ''.obs;
   final isPasswordHidden = true.obs;
 
   // Validators
@@ -43,6 +45,10 @@ class LoginController extends GetxController {
   }
 
   Future<void> linkedInLogin() async {
+     if (!await ConnectivityService().checkConnectivityWithDialog()) {
+        return; // Stop further execution if no internet
+      }
+
       if (isLoading.value) return;
       FocusManager.instance.primaryFocus?.unfocus();
       try {
@@ -172,6 +178,10 @@ class LoginController extends GetxController {
   }
 
   void signIn() async {
+     if (!await ConnectivityService().checkConnectivityWithDialog()) {
+        return; // Stop further execution if no internet
+      }
+
     FocusManager.instance.primaryFocus?.unfocus();
     final form = formKey.currentState;
     if (form == null) return;
@@ -184,6 +194,7 @@ class LoginController extends GetxController {
     // Proceed with sign-in
     try {
       isError.value = false;
+      errorMessage.value = '';
       isLoading.value = true;
       final res = await loginUseCase.call(
         emailController.text,
@@ -204,6 +215,7 @@ class LoginController extends GetxController {
         final msg = (res.message.isNotEmpty)
             ? res.message
             : 'Invalid email or password';
+        errorMessage.value = msg;
         Get.snackbar(
           'Error',
           msg,
@@ -223,6 +235,7 @@ class LoginController extends GetxController {
       } else if (lower.contains('timeout')) {
         uiMsg = 'Connection timeout. Please try again.';
       }
+      errorMessage.value = uiMsg;
       Get.snackbar(
         'Error',
         uiMsg,
@@ -236,6 +249,10 @@ class LoginController extends GetxController {
 
   // Social login: only email is sent to backend with is_social=true
   Future<void> socialLogin() async {
+     if (!await ConnectivityService().checkConnectivityWithDialog()) {
+        return; // Stop further execution if no internet
+      }
+
     if (isLoading.value) return;
     FocusManager.instance.primaryFocus?.unfocus();
     try {

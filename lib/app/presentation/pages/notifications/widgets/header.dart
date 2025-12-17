@@ -23,7 +23,16 @@ class Header extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
       child: Row(
         children: [ 
-          IconButton(onPressed: () => Get.back(), icon: Icon(Icons.arrow_back, color: Colors.white)),
+          IconButton(
+            onPressed: () {
+              try {
+                Get.back();
+              } catch (e) { 
+                // Ignore back navigation errors
+              }
+            },
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+          ),
           CommonText(
             'Notifications',
             color: Colors.white,

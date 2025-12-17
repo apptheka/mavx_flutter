@@ -42,20 +42,23 @@ class ChatController extends GetxController {
 
   Future<void> _loadCurrentUser() async {
     expertId = await profileRepository.currentUserId();
+    print("chatId>>>>>>>>>>$chatId");
     if (chatId.isNotEmpty) {
       startListening();
     }
   }
 
   void startListening() {
+    
     if (chatId.isEmpty) return;
+    print("chatId>>>>>>>>>>$chatId");
 
     _sub?.cancel();
     _sub = _chatService.messagesStream(chatId).listen((docs) {
       final list = docs.map((d) {
         final data = d.data();
         final sender = (data['sender'] ?? '').toString();
-        final senderId = (data['senderId'] ?? '').toString();
+        final senderId = (data['senderId'] ?? '').toString(); 
 
         final from =
             sender == 'expert' && senderId == expertId
@@ -63,6 +66,7 @@ class ChatController extends GetxController {
                 : MsgFrom.other;
 
         final ts = data['createdAt'];
+         
         final date =
             ts is Timestamp ? ts.toDate() : DateTime.now();
 

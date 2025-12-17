@@ -209,6 +209,24 @@ class ResumeViewerPage extends StatelessWidget {
   final String url;
   const ResumeViewerPage({super.key, required this.url});
 
+  bool _isImageUrl(String u) {
+    try {
+      final path = Uri.parse(u).path.toLowerCase();
+      return path.endsWith('.jpg') ||
+          path.endsWith('.jpeg') ||
+          path.endsWith('.png') ||
+          path.endsWith('.gif') ||
+          path.endsWith('.webp');
+    } catch (_) {
+      final p = u.toLowerCase().split('?').first;
+      return p.endsWith('.jpg') ||
+          p.endsWith('.jpeg') ||
+          p.endsWith('.png') ||
+          p.endsWith('.gif') ||
+          p.endsWith('.webp');
+    }
+  }
+
   Future<Uint8List> _loadPdfBytes() async {
     final encoded = Uri.encodeFull(url);
     final variants = <String>[encoded, url];
@@ -251,6 +269,48 @@ class ResumeViewerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isImageUrl(url)) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Resume')),
+        body: Center(
+          child: InteractiveViewer(
+            child: Image.network(
+              url,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.broken_image, size: 42, color: Colors.redAccent),
+                    const SizedBox(height: 8),
+                    const Text('Unable to load image.'),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: () async {
+                        final u = Uri.parse(url);
+                        if (await canLaunchUrl(u)) {
+                          await launchUrl(u, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Open in browser'),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Resume')),
       body: FutureBuilder<Uint8List>(
@@ -274,6 +334,10 @@ class ResumeViewerPage extends StatelessWidget {
                     children: [
                       ElevatedButton(
                         onPressed: () => Get.off(() => ResumeViewerPage(url: url)),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 40),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: const Text('Retry'),
                       ),
                       const SizedBox(width: 12),
@@ -284,6 +348,10 @@ class ResumeViewerPage extends StatelessWidget {
                             await launchUrl(u, mode: LaunchMode.externalApplication);
                           }
                         },
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 40),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: const Text('Open in browser'),
                       ),
                     ],

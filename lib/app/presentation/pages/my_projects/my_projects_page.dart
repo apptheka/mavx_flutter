@@ -141,7 +141,11 @@ class _HeaderMyProjects extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () {
-              Get.back();
+              try {
+                Get.back();
+              } catch (e) { 
+                // Ignore back navigation errors
+              }
             },
             icon: Icon(Icons.arrow_back, color: Colors.white),
           ), 
