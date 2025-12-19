@@ -12,12 +12,37 @@ class ProjectResponse {
   });
 
   factory ProjectResponse.fromJson(Map<String, dynamic> json) {
+    final dynamic rawStatus = json['status'];
+    final int? parsedStatus = rawStatus is int
+        ? rawStatus
+        : int.tryParse(rawStatus?.toString() ?? '');
+
+    final String? parsedMessage = json['message']?.toString();
+
+    final dynamic rawData = json['data'];
+    ProjectDataWrapper? wrapper;
+
+    if (rawData == null) {
+      wrapper = null;
+    } else if (rawData is List) {
+      // Some endpoints may return { status, message, data: [ ...projects... ] }
+      wrapper = ProjectDataWrapper(
+        message: parsedMessage,
+        status: parsedStatus,
+        data: rawData
+            .whereType<Map<String, dynamic>>()
+            .map((e) => ProjectModel.fromJson(e))
+            .toList(),
+      );
+    } else if (rawData is Map<String, dynamic>) {
+      // Standard wrapped shape { status, message, data: { message, status, data: [ ... ] } }
+      wrapper = ProjectDataWrapper.fromJson(rawData);
+    }
+
     return ProjectResponse(
-      status: json['status'] as int?,
-      message: json['message'] as String?,
-      data: json['data'] != null
-          ? ProjectDataWrapper.fromJson(json['data'])
-          : null,
+      status: parsedStatus,
+      message: parsedMessage,
+      data: wrapper,
     );
   }
 

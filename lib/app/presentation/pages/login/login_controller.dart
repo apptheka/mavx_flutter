@@ -216,13 +216,17 @@ class LoginController extends GetxController {
             ? res.message
             : 'Invalid email or password';
         errorMessage.value = msg;
-        Get.snackbar(
-          'Error',
-          msg,
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        final ctx = Get.context;
+        if (ctx != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(
+                content: Text(msg),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
+        }
       }
     } catch (e) {
       isError.value = true;
@@ -236,13 +240,17 @@ class LoginController extends GetxController {
         uiMsg = 'Connection timeout. Please try again.';
       }
       errorMessage.value = uiMsg;
-      Get.snackbar(
-        'Error',
-        uiMsg,
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      final ctx = Get.context;
+      if (ctx != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(
+              content: Text(uiMsg),
+              backgroundColor: Colors.red,
+            ),
+          );
+        });
+      }
     }
     isLoading.value = false;
   }
@@ -357,7 +365,15 @@ class LoginController extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () {
+              final ctx = Get.context;
+              if (ctx != null) {
+                final navigator = Navigator.of(ctx);
+                if (navigator.canPop()) {
+                  navigator.pop();
+                }
+              }
+            },
             child: const CommonText(
               'OK',
               fontSize: 14,

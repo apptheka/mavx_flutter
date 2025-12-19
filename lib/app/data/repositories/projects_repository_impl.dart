@@ -1,4 +1,5 @@
-import 'dart:convert'; 
+import 'dart:convert';
+import 'dart:developer'; 
 
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/core/constants/app_constants.dart';
@@ -18,7 +19,7 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
         AppConstants.project,
         queryParameters: params,
       );
-      final decriptValue = jsonDecode(res.decrypt()); 
+      final decriptValue = jsonDecode(res.decrypt());  
       ProjectResponse projectResponse = ProjectResponse.fromJson(decriptValue);
       return projectResponse;
     } catch (e) {

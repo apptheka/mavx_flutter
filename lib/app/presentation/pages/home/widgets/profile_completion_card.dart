@@ -65,7 +65,7 @@ class ProfileCompletionCard extends StatelessWidget {
                      : null,
                  child: Builder(builder: (context) {  
                    if (url == null || url.isEmpty) {
-                     return Image.asset(ImageAssets.userAvatar);
+                     return Icon(Icons.person,color: Colors.grey);
                    }
                    if (url.toLowerCase().endsWith('.svg')) {
                      return ClipOval(
@@ -74,7 +74,7 @@ class ProfileCompletionCard extends StatelessWidget {
                          width: avatarRadius * 3,
                          height: avatarRadius * 3,
                          fit: BoxFit.cover,
-                         placeholderBuilder: (_) => Image.asset(ImageAssets.userAvatar),
+                         placeholderBuilder: (_) => Icon(Icons.person,color: Colors.grey),
                        ),
                      );
                    }

@@ -134,10 +134,7 @@ class JobCard extends StatelessWidget {
                     child: Image.asset(
                       ImageAssets.jobLogo,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
-                        ImageAssets.userAvatar,
-                        fit: BoxFit.cover,
-                      ),
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.person,color: Colors.grey),
                     ),
                   ),
                 ),
@@ -331,68 +328,92 @@ class JobCard extends StatelessWidget {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // if (!(status != null &&
-                      //     status!.toLowerCase() == 'confirmed'))
-                      //   _matchBadge(status ?? '92% Match', isSmallScreen),
-                      // const Spacer(),
                       (status != null && status!.toLowerCase() == 'confirmed')
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (status == 'Confirmed') ...[
-                                  SizedBox(height: compact ? 4 : 6),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: onSchedulePressed,
-                                        child: Icon(
-                                          Icons.schedule,
-                                          color: Colors.black,
-                                          size: isSmallScreen ? 18 : 22,
+                          ? Flexible(
+                              child: Wrap(
+                                alignment: WrapAlignment.end,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 8,
+                                runSpacing: 6,
+                                children: [
+                                  if (status == 'Confirmed') ...[
+                                    GestureDetector(
+                                      onTap: onSchedulePressed,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
                                         ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      GestureDetector(
-                                        onTap: onExpensePressed,
-                                        child: Image.asset(
-                                          IconAssets.expense,
-                                          width: isSmallScreen ? 18 : 22,
-                                          height: isSmallScreen ? 18 : 22,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: Colors.black87,
+                                            width: 1,
+                                          ),
                                         ),
-                                      ),
-                                      if (showInvoiceButton) ...[
-                                        SizedBox(width: 10),
-                                      ],
-                                    ],
-                                  ),
-                                ],
-                                if (showInvoiceButton) ...[
-                                  SizedBox(
-                                    height: isSmallScreen ? 32 : 35,
-                                    child: OutlinedButton(
-                                      onPressed: onInvoicePressed,
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(
-                                          color: AppColors.secondaryColor,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            24,
+                                        child: Text(
+                                          'Timesheet',
+                                          style: TextStyle(
+                                            fontSize:
+                                                isSmallScreen ? 11 : 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ),
-                                      child: CommonText(
-                                        'Invoice',
-                                        fontSize: isSmallScreen ? 10 : 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.secondaryColor,
+                                    ),
+                                    GestureDetector(
+                                      onTap: onExpensePressed,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: Colors.black87,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Expense sheet',
+                                          style: TextStyle(
+                                            fontSize:
+                                                isSmallScreen ? 11 : 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                  ],
+                                  if (showInvoiceButton)
+                                    SizedBox(
+                                      height: isSmallScreen ? 32 : 35,
+                                      child: OutlinedButton(
+                                        onPressed: onInvoicePressed,
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(
+                                            color: AppColors.secondaryColor,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                          ),
+                                        ),
+                                        child: CommonText(
+                                          'Invoice',
+                                          fontSize:
+                                              isSmallScreen ? 10 : 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.secondaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  _confirmedBadge(isSmallScreen),
                                 ],
-                                const SizedBox(width: 8),
-                                _confirmedBadge(isSmallScreen),
-                              ],
+                              ),
                             )
                           : SizedBox(
                               width: isSmallScreen ? 80 : 100,

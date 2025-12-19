@@ -93,7 +93,7 @@ class ProfileHeader extends StatelessWidget {
                       child: Builder(
                         builder: (context) {
                           if (url == null || url.isEmpty) {
-                            return Image.asset(ImageAssets.userAvatar);
+                            return Icon(Icons.person,color: Colors.grey);
                           }
                           if (url.toLowerCase().endsWith('.svg')) {
                             return ClipOval(
@@ -103,7 +103,7 @@ class ProfileHeader extends StatelessWidget {
                                 height: 46,
                                 fit: BoxFit.cover,
                                 placeholderBuilder: (_) =>
-                                    Image.asset(ImageAssets.userAvatar),
+                                    Icon(Icons.person,color: Colors.grey),
                               ),
                             );
                           }
@@ -225,12 +225,28 @@ class ProfileHeader extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      Get.back(); // close dialog first
+                      // Close confirmation dialog first
+                      Get.back();
 
-                      await authRepository.logout();
+                      // Show a blocking loader while logging out
+                      Get.dialog(
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        barrierDismissible: false,
+                      );
 
-                      // Navigate FIRST
-                      Get.offAllNamed(AppRoutes.login);
+                      try {
+                        await authRepository.logout();
+
+                        // Navigate to login after successful logout
+                        Get.offAllNamed(AppRoutes.login);
+                      } finally {
+                        // Ensure loader dialog is closed if still open
+                        if (Get.isDialogOpen == true) {
+                          Get.back();
+                        }
+                      }
 
                       // Show snackbar AFTER navigation
                       // WidgetsBinding.instance.addPostFrameCallback((_) {

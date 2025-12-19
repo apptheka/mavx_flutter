@@ -117,9 +117,6 @@ Future<void> refreshTopMatches() async {
     final resp = await _projectsUseCase.projects();
     final list = resp.data?.data ?? [];
 
-
-    print("resp>>>>>>>>>>>>> $resp");
-
     final profileController = Get.isRegistered<ProfileController>()
         ? Get.find<ProfileController>()
         : null;
@@ -127,17 +124,35 @@ Future<void> refreshTopMatches() async {
     final primarySector = profileController?.registeredProfile.value.primarySector; 
     final skillsCsv = profileController?.registeredProfile.value.skillsCsv?.trim();
     final userSkills = _parseSkills(skillsCsv);
-    
+
+    // If the user has not set any meaningful criteria, do not force every
+    // project into top matches. Let this section stay empty in that case.
+    final bool hasCriteria =
+        ((roleType != null && roleType.isNotEmpty) ||
+            primarySector != null ||
+            userSkills.isNotEmpty);
+
+    if (!hasCriteria) {
+      topMatches.clear();
+      return;
+    }
 
     final filtered = list.where((p) {
       final pType = (p.projectType ?? '');
-      final matchRole = (roleType == null || roleType.isEmpty) || (pType.isNotEmpty && pType == roleType);
-      final matchSector = (primarySector == null) || (p.industry != null && p.industry == primarySector);
+      final matchRole =
+          (roleType == null || roleType.isEmpty) ||
+          (pType.isNotEmpty && pType == roleType);
+      final matchSector =
+          (primarySector == null) ||
+          (p.industry != null && p.industry == primarySector);
       final projectSkills = _parseSkills(p.skillsJson);
-      final matchSkills = userSkills.isEmpty || projectSkills.any(userSkills.contains);
+      final matchSkills =
+          userSkills.isEmpty || projectSkills.any(userSkills.contains);
       return matchRole || matchSector || matchSkills; 
     }).toList(); 
-    topMatches.assignAll(filtered);  
+    // Keep only a limited number of top matches for this section
+    final top = filtered.take(10).toList();
+    topMatches.assignAll(top);  
   } finally {
     isRefreshingTopMatches.value = false;
   }
@@ -203,30 +218,45 @@ Future<void> refreshTopMatches() async {
     final primarySector = profileController?.registeredProfile.value.primarySector; 
     final skillsCsv = profileController?.registeredProfile.value.skillsCsv?.trim();
     final userSkills = _parseSkills(skillsCsv);
- 
+
+    // If there are no profile criteria, treat all projects as "other" and
+    // leave top matches empty so the UI can show projects in the Other
+    // Projects section.
+    final bool hasCriteria =
+        ((roleType != null && roleType.isNotEmpty) ||
+            primarySector != null ||
+            userSkills.isNotEmpty);
+
+    if (!hasCriteria) {
+      topMatches.clear();
+      otherProjects.assignAll(allProjects);
+      return;
+    }
+
     final filtered = allProjects.where((p) {
-      final pType = (p.projectType ?? '') ;
+      final pType = (p.projectType ?? '');
 
       final matchRole =
           (roleType == null || roleType.isEmpty) ||
           (pType.isNotEmpty && pType == roleType); 
 
-          
       final matchSector =
           (primarySector == null) ||
           (p.industry != null && p.industry == primarySector);
       final projectSkills = _parseSkills(p.skillsJson);
-      final matchSkills = userSkills.isEmpty || projectSkills.any(userSkills.contains);
-      print("matchSkills>>>>>>>>>>>>> $matchSkills");
+      final matchSkills =
+          userSkills.isEmpty || projectSkills.any(userSkills.contains);
       // Use same logic as refreshTopMatches(): show if any of role/sector/skills matches
       return matchRole || matchSector || matchSkills;
     }).toList();
 
-    topMatches.assignAll(filtered);
+    // Limit how many projects appear as top matches
+    final top = filtered.take(10).toList();
+    topMatches.assignAll(top);
 
-    // Other projects are remaining ones; cap to 3 by default (filter can change)
+    // Other projects are remaining ones; cap to 3 later via applyFilter
     final remaining = allProjects
-        .where((p) => !topMatches.contains(p))
+        .where((p) => !top.contains(p))
         .toList();
     otherProjects.assignAll(remaining); 
   }

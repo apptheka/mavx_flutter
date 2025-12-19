@@ -61,7 +61,7 @@ class HeaderWidget extends GetView<HomeController> {
                     child: Builder(
                       builder: (context) {
                         if (url == null || url.isEmpty) {
-                          return Image.asset(ImageAssets.userAvatar);
+                          return Icon(Icons.person,color: Colors.grey);
                         }
                         if (url.toLowerCase().endsWith('.svg')) {
                           return ClipOval(
@@ -71,7 +71,7 @@ class HeaderWidget extends GetView<HomeController> {
                               height: 40,
                               fit: BoxFit.cover,
                               placeholderBuilder: (_) =>
-                                  Image.asset(ImageAssets.userAvatar),
+                                  const Icon(Icons.person, color: Colors.grey),
                             ),
                           );
                         } 

@@ -46,6 +46,7 @@ import 'package:mavx_flutter/app/domain/usecases/apply_job_usecase.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
 import 'package:mavx_flutter/app/presentation/pages/chat/chat_badge_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart';
 
 class DependenceInjection {
   static Future<void> init() async {
@@ -96,5 +97,6 @@ class DependenceInjection {
 
     //controllers
     Get.lazyPut(() => ChatBadgeController(), fenix: true);
+    Get.lazyPut(() => SearchPageController(), fenix: true);
   }
 }

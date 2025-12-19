@@ -12,11 +12,30 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final dynamic statusValue = json['status'];
+    final int parsedStatus = statusValue is int
+        ? statusValue
+        : int.tryParse(statusValue?.toString() ?? '') ?? 0;
+
+    final String parsedMessage = json['message']?.toString() ?? '';
+    final String parsedToken = json['token']?.toString() ?? '';
+
+    UserData parsedData;
+    final dynamic rawData = json['data'];
+
+    if (parsedStatus == 200 && rawData is Map<String, dynamic>) {
+      // Successful response with user payload
+      parsedData = UserData.fromJson(rawData);
+    } else {
+      // Error or unexpected payload shape – use a safe empty model
+      parsedData = UserData.empty();
+    }
+
     return UserModel(
-      status: json['status'],
-      message: json['message'],
-      token: json['token'],
-      data: UserData.fromJson(json['data']),
+      status: parsedStatus,
+      message: parsedMessage,
+      token: parsedToken,
+      data: parsedData,
     );
   }
 
@@ -60,20 +79,40 @@ class UserData {
     required this.status,
   });
 
+  UserData.empty()
+      : id = 0,
+        fullName = '',
+        email = '',
+        phone = '',
+        resume = '',
+        ctc = '',
+        profile = '',
+        roleType = '',
+        primarySector = 0,
+        primaryFunction = 0,
+        skills_csv = '',
+        status = '';
+
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-      id: json['id'],
-      fullName: json['fullName'],
-      email: json['email'],
-      phone: json['phone'],
-      resume: json['resume'],
-      ctc: json['ctc'],
-      profile: json['profile'],
-      roleType: json['roleType'],
-      primarySector: json['primarySector'],
-      primaryFunction: json['primaryFunction'],
-      skills_csv: json['skills_csv'],
-      status: json['status'],
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      fullName: json['fullName']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      resume: json['resume']?.toString() ?? '',
+      ctc: json['ctc']?.toString() ?? '',
+      profile: json['profile']?.toString() ?? '',
+      roleType: json['roleType']?.toString() ?? '',
+      primarySector: json['primarySector'] is int
+          ? json['primarySector'] as int
+          : int.tryParse(json['primarySector']?.toString() ?? '') ?? 0,
+      primaryFunction: json['primaryFunction'] is int
+          ? json['primaryFunction'] as int
+          : int.tryParse(json['primaryFunction']?.toString() ?? '') ?? 0,
+      skills_csv: json['skills_csv']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
     );
   }
 

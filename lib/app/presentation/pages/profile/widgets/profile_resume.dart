@@ -146,6 +146,7 @@ class ProfileResume extends StatelessWidget {
         final displayName = rawResume.isNotEmpty
             ? rawResume.split('/').last
             : 'No resume found';
+        final hasResume = rawResume.isNotEmpty && resumeUrl.trim().isNotEmpty;
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -183,20 +184,23 @@ class ProfileResume extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              InkWell(
-                onTap: () async {
-                  HapticFeedback.lightImpact();
-                  final url = resumeUrl.trim();
-                  print("url>>>>>>>>>>>> $url");
-                  if (url.isEmpty) {
-                    Get.snackbar('Resume', 'No resume found to view');
-                    return;
-                  }
-                  await Get.to(() => ResumeViewerPage(url: url));
-                  
-                },
-                child: Icon(Icons.remove_red_eye)
-              ),
+              if (hasResume)
+                InkWell(
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    final url = resumeUrl.trim();
+                    if (url.isEmpty) return;
+                    await Get.to(() => ResumeViewerPage(url: url));
+                  },
+                  child: const Icon(Icons.remove_red_eye),
+                )
+              else
+                const CommonText(
+                  'No resume to open',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondaryColor,
+                ),
             ],
           ),
         );
