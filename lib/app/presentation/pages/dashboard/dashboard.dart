@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/home/home_page.dart';
@@ -11,6 +12,9 @@ import 'package:mavx_flutter/app/presentation/pages/profile/profile_page.dart';
 import 'package:mavx_flutter/app/presentation/pages/dashboard/dashboard_controller.dart';
 import 'package:mavx_flutter/app/presentation/theme/app_colors.dart';
 import 'package:mavx_flutter/app/core/constants/assets.dart';
+import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
+
+DateTime? _lastDashboardBackPress;
 
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({super.key});
@@ -27,12 +31,28 @@ class DashboardPage extends GetView<DashboardController> {
     return Obx(() {
       final idx = controller.currentIndex.value;
       return PopScope(
-        canPop: idx == 0,
+        // Handle back navigation manually for double-back-to-exit behavior
+        canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           // If not on Home tab, consume back and switch to Home (index 0)
-          if (!didPop && idx != 0) {
+          if (idx != 0) {
             controller.changeTab(0);
+            return;
           }
+
+          // On Home tab: require double back within a short interval to exit
+          final now = DateTime.now();
+          if (_lastDashboardBackPress == null ||
+              now.difference(_lastDashboardBackPress!) > const Duration(seconds: 2)) {
+            _lastDashboardBackPress = now;
+            showSnackBar(
+              title: '',
+              message: 'Press back again to exit',
+            );
+            return;
+          }
+
+          SystemNavigator.pop();
         },
         child: Scaffold( 
         backgroundColor: AppColors.backgroundColor,

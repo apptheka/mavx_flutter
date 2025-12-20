@@ -270,7 +270,7 @@ class _RequestCardState extends State<RequestCard>
                             height: 44,
                             child: TextButton(
                               onPressed: () {
-                                Get.back();
+                                Navigator.of(context).pop();
                               },
                               style: TextButton.styleFrom(
                                 shape: RoundedRectangleBorder(
@@ -303,7 +303,7 @@ class _RequestCardState extends State<RequestCard>
                                   isReject ? 'rejected' : 'accepted',
                                   note,
                                 );
-                                Get.back();
+                                Navigator.of(context).pop();
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isReject

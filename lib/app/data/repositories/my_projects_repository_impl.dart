@@ -29,11 +29,22 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
   @override
   Future<bool> uploadInvoice({required Map<String, String> fields, String? filePath}) async {
     try {
+      // Align expertId resolution with timesheet logic: prefer ProfileController preferences
+      try {
+        final pc = Get.find<ProfileController>(tag: null);
+        final prefUserId = pc.preferences.value.userId ?? 0;
+        if (prefUserId > 0) {
+          fields['expertId'] = prefUserId.toString();
+        }
+      } catch (_) {
+        // If ProfileController not available, keep provided expertId
+      }
       final resp = await apiProvider.postMultipart(
         AppConstants.invoice,
         fields: fields,
         files: filePath != null && filePath.isNotEmpty ? {'invoice_file': filePath} : null,
       );
+      log("fields: $fields");
       if (resp.isEmpty) return false;
       try {
         final decrypted = resp.decrypt();

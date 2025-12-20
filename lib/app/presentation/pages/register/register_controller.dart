@@ -382,14 +382,27 @@ class RegisterController extends GetxController {
           // Consider any non-pending as approved
           Get.offNamed('/home');
         }
-      }else if(result.status == 400){
-        Get.snackbar(
-          'Error',
-          'Email and phone number must be unique',
-          snackPosition: SnackPosition.BOTTOM,
+      } else {
+        // Handle common registration errors like duplicate email/phone
+        final rawMessage = result.message?.toString() ?? '';
+        final lower = rawMessage.toLowerCase();
+        String userMessage;
+        if (lower.contains('phone') && lower.contains('exist')) {
+          userMessage = 'Phone number already exists';
+        } else if (lower.contains('email') && lower.contains('exist')) {
+          userMessage = 'Email already exists';
+        } else if (rawMessage.isNotEmpty) {
+          // Fallback to backend message if available
+          userMessage = rawMessage;
+        } else {
+          userMessage = 'Registration failed. Please check your details and try again.';
+        }
+
+        // Use shared snackbar helper so it shows via ScaffoldMessenger
+        showSnackBar(
+          title: 'Error',
+          message: userMessage,
           backgroundColor: Colors.red,
-          barBlur: 20,
-          animationDuration: const Duration(seconds: 2),
           colorText: Colors.white,
         );
       }

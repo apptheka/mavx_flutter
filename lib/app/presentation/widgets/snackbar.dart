@@ -31,19 +31,19 @@ void showSnackBar({
   SnackPosition snackPosition = SnackPosition.BOTTOM,
   Duration duration = const Duration(seconds: 2),
 }) {
-  // Avoid stacking multiple snackbars
-  if (Get.isSnackbarOpen == true) {
-    Get.closeAllSnackbars();
-  }
+  final ctx = Get.context;
+  if (ctx == null) return;
 
-  Get.snackbar(
-    title,
-    message,
-    backgroundColor: backgroundColor,
-    colorText: colorText,
-    snackPosition: snackPosition,
-    duration: duration,
-    margin: const EdgeInsets.all(12),
-    borderRadius: 12,
+  // Avoid stacking multiple snackbars using ScaffoldMessenger only
+  ScaffoldMessenger.of(ctx).hideCurrentSnackBar();
+  ScaffoldMessenger.of(ctx).showSnackBar(
+    SnackBar(
+      content: Text('$title\n$message'),
+      backgroundColor: backgroundColor,
+      duration: duration,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
   );
 }

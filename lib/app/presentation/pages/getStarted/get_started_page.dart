@@ -134,7 +134,7 @@ class GetStartedPage extends GetView<GetStartedController> {
                       lineHeight: 1.25,
                       fontWeight: FontWeight.w400,
                     ),
-                    SizedBox(height: isSmallScreen ? 16 : 24),
+                    SizedBox(height: isSmallScreen ? 12 : 20),
                     const Spacer(),
 
                     // Back + CTA
@@ -206,7 +206,7 @@ class GetStartedPage extends GetView<GetStartedController> {
                           ),
                         ), 
 
-                    SizedBox(height: isSmallScreen ? 12 : 40),
+                    SizedBox(height: isSmallScreen ? 12 : 20),
 
                     // Page indicators
                     Row(

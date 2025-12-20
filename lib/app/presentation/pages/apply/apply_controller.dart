@@ -11,6 +11,7 @@ import 'package:mavx_flutter/app/core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/extensions.dart';
 import 'package:mavx_flutter/app/domain/usecases/projects_usecase.dart';
 import 'package:mavx_flutter/app/data/models/projects_model.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
 
 class ApplyController extends GetxController {
   ApplyController({
@@ -217,8 +218,14 @@ class ApplyController extends GetxController {
         ok = result.isNotEmpty;
       }
       if (ok) {
-        // Show snackbar after the bottom sheet/overlay has closed to avoid GetX snackbar controller race
+        // Show snackbar and refresh home after closing apply overlay
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Refresh home page data if HomeController is available
+          if (Get.isRegistered<HomeController>()) {
+            final home = Get.find<HomeController>();
+            home.refreshPage();
+          }
+
           Get.snackbar(
             'Applied',
             'Application submitted successfully',

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 class InvoiceBottomSheet extends StatefulWidget {
   final int projectId;
@@ -44,7 +45,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
   String? filePath;
   bool attachFile = true;
   bool submitting = false;
-  final RegExp _emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$'); 
+  final RegExp _emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$');
 
   @override
   void initState() {
@@ -55,24 +56,24 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     try {
       final pc = Get.find<ProfileController>(tag: null);
       final rp = pc.registeredProfile.value;
-      
+
       if ((consultantName.text).trim().isEmpty) {
         consultantName.text = (rp.fullName ?? '').trim();
       }
       if ((consultantPhone.text).trim().isEmpty) {
-        consultantPhone.text = (rp.phone ?? '').trim().replaceAll("91", "");
+        consultantPhone.text = normalizePhone(rp.phone ?? '');
       }
       if ((consultantEmail.text).trim().isEmpty) {
         consultantEmail.text = (rp.email ?? '').trim();
-      } 
+      }
 
       // Prefill bank details (multiline) if empty
       if ((bankDetails.text).trim().isEmpty) {
         final bd = pc.bankDetails.value;
         String line(String label, String? value) =>
             (value != null && value.toString().trim().isNotEmpty)
-                ? '$label: ${value.toString().trim()}'
-                : '';
+            ? '$label: ${value.toString().trim()}'
+            : '';
         final parts = <String>[
           line('Account Holder', bd.accountHolderName),
           line('Bank', bd.bankName),
@@ -175,20 +176,29 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     final h = double.tryParse(hoursWorked.text.trim()) ?? 0;
     final r = double.tryParse(hourlyRate.text.trim()) ?? 0;
     final base = h * r;
-    // Subtotal is base amount
-    subtotal.text = base.toStringAsFixed(2);
 
-    // Interpret 'tax' as an ABSOLUTE amount and show Total Tax Amount as (Subtotal + Tax)
-    final taxAbsolute = double.tryParse(tax.text.trim()) ?? 0;
-    // 'discount' TextField is labeled as 'Total Tax Amount' in UI
-    // When no tax is entered, Total Tax Amount == Subtotal
-    final totalTaxAmountValue = taxAbsolute > 0 ? (base + taxAbsolute) : base;
-    discount.text = totalTaxAmountValue.toStringAsFixed(2);
+    // Subtotal
+    final newSubtotal = base.toStringAsFixed(2);
+    if (subtotal.text != newSubtotal) {
+      subtotal.text = newSubtotal;
+    }
 
-    // Total Amount should NOT include tax, per request
-    final total = base;
-    totalAmount.text = total.toStringAsFixed(2);
-    setState(() {});
+    // Tax (absolute)
+    final taxValue = double.tryParse(tax.text.trim()) ?? 0;
+
+    // Total Tax Amount = Subtotal + Tax
+    final totalTaxAmount = taxValue > 0 ? (base + taxValue) : base;
+
+    final newDiscount = totalTaxAmount.toStringAsFixed(2);
+    if (discount.text != newDiscount) {
+      discount.text = newDiscount;
+    }
+
+    // Total Amount (without tax)
+    final newTotal = base.toStringAsFixed(2);
+    if (totalAmount.text != newTotal) {
+      totalAmount.text = newTotal;
+    }
   }
 
   InputDecoration _deco(String hint) => InputDecoration(
@@ -248,15 +258,19 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     ];
     final hasAnyInput = controllers.any((c) => c.text.trim().isNotEmpty);
     if (!hasAnyInput) {
-      Get.snackbar('Invoice', 'Please fill in the form before submitting');
+      showSnackBar(
+        title: 'Invoice',
+        message: 'Please fill in the form before submitting',
+      );
       return;
     }
     if (!_formKey.currentState!.validate()) return;
     if (attachFile && (filePath == null || !File(filePath!).existsSync())) {
-      Get.snackbar('Invoice', 'Please select a PDF file');
+      showSnackBar(title: 'Invoice', message: 'Please select a PDF file');
       return;
     }
     submitting = true;
+    print(submitting);
     setState(() {});
     try {
       final ctrl = Get.find<MyProjectsController>();
@@ -273,9 +287,8 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
         'hoursWorked': (double.tryParse(hoursWorked.text.trim()) ?? 0)
             .toString(),
         'hourlyRate': (double.tryParse(hourlyRate.text.trim()) ?? 0).toString(),
-        'subtotal': (double.tryParse(subtotal.text.trim()) ?? 0).toString(),
-        'discount': (double.tryParse(discount.text.trim()) ?? 0).toString(),
-        'tax': (double.tryParse(tax.text.trim()) ?? 0).toString(),
+        'subtotal': (double.tryParse(subtotal.text.trim()) ?? 0).toString(), 
+        'taxes': (double.tryParse(tax.text.trim()) ?? 0).toString(),
         'totalAmount': (double.tryParse(totalAmount.text.trim()) ?? 0)
             .toString(),
         'paymentTerms': paymentTerms.text.trim(),
@@ -286,29 +299,23 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
       if (ok) {
         Get.back();
         await ctrl.fetchData();
-        Get.snackbar(
-          'Invoice',
-          'Invoice submitted successfully',
-          snackPosition: SnackPosition.BOTTOM,
+        showSnackBar(
+          title: 'Invoice',
+          message: 'Invoice submitted successfully',
           backgroundColor: Colors.green,
-          colorText: Colors.white,
         );
       } else {
-        Get.snackbar(
-          'Invoice',
-          'Failed to submit invoice',
-          snackPosition: SnackPosition.BOTTOM,
+        showSnackBar(
+          title: 'Invoice',
+          message: 'Failed to submit invoice',
           backgroundColor: Colors.red,
-          colorText: Colors.white,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Invoice',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+      showSnackBar(
+        title: 'Invoice',
+        message: e.toString(),
         backgroundColor: Colors.red,
-        colorText: Colors.white,
       );
     } finally {
       submitting = false;
@@ -316,339 +323,357 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
     }
   }
 
+  String normalizePhone(String phone) {
+    phone = phone.trim();
+    if (phone.startsWith('+91')) {
+      return phone.substring(3);
+    }
+    if (phone.startsWith('91') && phone.length > 10) {
+      return phone.substring(2);
+    }
+    return phone;
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        height: 600,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(top: 8, bottom: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE6E9EF),
-                      borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 20,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          height: 600,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(top: 8, bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE6E9EF),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  children: [
-                    const CommonText(
-                      'Create Invoice',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0B2944),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Get.back(),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // First row: Invoice Number and Date
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: invoiceNumber,
-                        decoration: _deco('Invoice Number *'),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  Row(
+                    children: [
+                      const CommonText(
+                        'Create Invoice',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0B2944),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: invoiceDate,
-                        readOnly: true,
-                        onTap: () => _pickDate(invoiceDate),
-                        decoration: _deco('Date *').copyWith(
-                          prefixIcon: const Icon(Icons.calendar_today),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // First row: Invoice Number and Date
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: invoiceNumber,
+                          decoration: _deco('Invoice Number *'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
                         ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Due Date and Consultant Name
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: dueDate,
-                        readOnly: true,
-                        onTap: () => _pickDate(dueDate),
-                        decoration: _deco('Due Date').copyWith(
-                          prefixIcon: const Icon(Icons.calendar_today),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: invoiceDate,
+                          readOnly: true,
+                          onTap: () => _pickDate(invoiceDate),
+                          decoration: _deco('Date *').copyWith(
+                            prefixIcon: const Icon(Icons.calendar_today),
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
                         ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: consultantName,
-                        decoration: _deco('Consultant Name'),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Due Date and Consultant Name
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: dueDate,
+                          readOnly: true,
+                          onTap: () => _pickDate(dueDate),
+                          decoration: _deco('Due Date').copyWith(
+                            prefixIcon: const Icon(Icons.calendar_today),
+                          ),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Address
-                TextFormField(
-                  controller: consultantAddress,
-                  decoration: _deco('Consultant Address'),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 10),
-                // Phone and Email
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: consultantPhone,
-                        decoration: _deco(
-                          'Consultant Phone',
-                        ).copyWith(counterText: ''),
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (v) {
-                          final t = v?.trim() ?? '';
-                          if (t.isEmpty) return 'Phone is required';
-                          final phoneRegex = RegExp(r'^\d{10}$');
-                          if (!phoneRegex.hasMatch(t))
-                            return 'Enter a valid phone number';
-                          return null;
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: consultantName,
+                          decoration: _deco('Consultant Name'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Address
+                  TextFormField(
+                    controller: consultantAddress,
+                    decoration: _deco('Consultant Address'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  // Phone and Email
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: consultantPhone,
+                          decoration: _deco(
+                            'Consultant Phone',
+                          ).copyWith(counterText: ''),
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Phone is required';
+                            final phoneRegex = RegExp(r'^\d{10}$');
+                            if (!phoneRegex.hasMatch(t))
+                              return 'Enter a valid phone number';
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: consultantEmail,
+                          decoration: _deco('Consultant Email'),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Email is required';
+                            if (!_emailRegex.hasMatch(t))
+                              return 'Enter a valid email';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Description
+                  TextFormField(
+                    controller: serviceDescription,
+                    maxLines: 3,
+                    decoration: _deco('Descriptions of Services'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  // Hours and Rate
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: hoursWorked,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: _deco('Hours Worked'),
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Required';
+                            if (double.tryParse(t) == null)
+                              return 'Enter a number';
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: hourlyRate,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: _deco('Hourly Rate'),
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Required';
+                            if (double.tryParse(t) == null)
+                              return 'Enter a number';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Subtotal and Total Amount
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: subtotal,
+                          readOnly: true,
+                          decoration: _deco('Subtotal'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: totalAmount,
+                          readOnly: true,
+                          decoration: _deco('Total Amount'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Required'
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Taxes and Total (we already show totalAmount; keeping optional tax field)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: tax,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: _deco('Taxes (optional)'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: discount,
+                          readOnly: true,
+                          decoration: _deco('Total Tax Amount'),
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Required';
+                            if (double.tryParse(t) == null) {
+                              return 'Enter a number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: paymentTerms,
+                    decoration: _deco('Payment Terms'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: bankDetails,
+                    maxLines: 10,
+                    decoration: _deco('Bank Details'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: upi,
+                    decoration: _deco('UPI / Other'),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: attachFile,
+                        onChanged: (v) {
+                          setState(() {
+                            attachFile = v ?? true;
+                            if (!attachFile) filePath = null;
+                          });
                         },
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: consultantEmail,
-                        decoration: _deco('Consultant Email'),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          final t = v?.trim() ?? '';
-                          if (t.isEmpty) return 'Email is required';
-                          if (!_emailRegex.hasMatch(t))
-                            return 'Enter a valid email';
-                          return null;
-                        },
+                      const CommonText('Attach Invoice File'),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: attachFile ? _pickFile : null,
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('Upload'),
+                      ),
+                    ],
+                  ),
+                  if (filePath != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: CommonText(
+                        File(filePath!).path.split('/').last,
+                        fontSize: 12,
+                        color: Colors.black54,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Description
-                TextFormField(
-                  controller: serviceDescription,
-                  maxLines: 3,
-                  decoration: _deco('Descriptions of Services'),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 10),
-                // Hours and Rate
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: hoursWorked,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: width,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: submitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0B2944),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        decoration: _deco('Hours Worked'),
-                        validator: (v) {
-                          final t = v?.trim() ?? '';
-                          if (t.isEmpty) return 'Required';
-                          if (double.tryParse(t) == null)
-                            return 'Enter a number';
-                          return null;
-                        },
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: hourlyRate,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: _deco('Hourly Rate'),
-                        validator: (v) {
-                          final t = v?.trim() ?? '';
-                          if (t.isEmpty) return 'Required';
-                          if (double.tryParse(t) == null)
-                            return 'Enter a number';
-                          return null;
-                        },
+                      child: CommonText(
+                        submitting ? 'Submitting...' : 'Submit Invoice',
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontSize: 16,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Subtotal and Total Amount
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: subtotal,
-                        readOnly: true,
-                        decoration: _deco('Subtotal'),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: totalAmount,
-                        readOnly: true,
-                        decoration: _deco('Total Amount'),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Taxes and Total (we already show totalAmount; keeping optional tax field)
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: tax,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: _deco('Taxes (optional)'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        controller: discount,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: _deco('Total Tax Amount'),
-                        validator: (v) {
-                          final t = v?.trim() ?? '';
-                          if (t.isEmpty) return 'Required';
-                          if (double.tryParse(t) == null)
-                            return 'Enter a number';
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: paymentTerms,
-                  decoration: _deco('Payment Terms'),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: bankDetails,
-                  maxLines:10,
-                  decoration: _deco('Bank Details'),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: upi,
-                  decoration: _deco('UPI / Other'),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: attachFile,
-                      onChanged: (v) {
-                        setState(() {
-                          attachFile = v ?? true;
-                          if (!attachFile) filePath = null;
-                        });
-                      },
-                    ),
-                    const CommonText('Attach Invoice File'),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: attachFile ? _pickFile : null,
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload'),
-                    ),
-                  ],
-                ),
-                if (filePath != null)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: CommonText(
-                      File(filePath!).path.split('/').last,
-                      fontSize: 12,
-                      color: Colors.black54,
                     ),
                   ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: width,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: submitting ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0B2944),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: CommonText(
-                      submitting ? 'Submitting...' : 'Submit Invoice',
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

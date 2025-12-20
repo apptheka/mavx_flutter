@@ -78,133 +78,135 @@ class ProfilePreferences extends StatelessWidget {
         String workType = normalizeToItem(p.workType, workTypeItems);
 
         Get.bottomSheet(
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.77,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CommonText('Project Preferences', fontSize: 18, fontWeight: FontWeight.w800),
-                      const SizedBox(height: 6),
-                      const CommonText('Set your project and work preferences', color: AppColors.textSecondaryColor),
-                      const SizedBox(height: 12),
-                      
-                      _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
-                      const SizedBox(height: 10),
-                      
-                      Row(children: [
-                        Expanded(child: _LabeledField(label: 'Preferred Budget *', controller: budgetCtrl, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                            label: 'Currency *',
-                            value: currency,
-                            items: currencyItems,
-                            onChanged: (v) => setState(() => currency = v ?? currency),
-                          )),
-                        ),
-                      ]),
-                      const SizedBox(height: 10),
-                      
-                      Row(children: [
-                        Expanded(
-                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                            label: 'Period *',
-                            value: period,
-                            items: periodItems,
-                            onChanged: (v) => setState(() => period = v ?? period),
-                          )),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: _LabeledField(label: 'Availability (Hours per Week)', controller: hoursCtrl, keyboardType: TextInputType.number)),
-                      ]),
-                      const SizedBox(height: 10),
-                      
-                      Row(children: [
-                        Expanded(
-                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                            label: 'Availability Type *',
-                            value: availabilityType,
-                            items: availabilityItems,
-                            onChanged: (v) => setState(() => availabilityType = v ?? availabilityType),
-                          )),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: _LabeledField(label: 'Minimum Duration (Months)', controller: minCtrl, keyboardType: TextInputType.number)),
-                      ]),
-                      const SizedBox(height: 10),
-                      
-                      Row(children: [
-                        Expanded(child: _LabeledField(label: 'Maximum Duration (Months)', controller: maxCtrl, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                            label: 'Duration Type *',
-                            value: durationType,
-                            items: durationTypeItems,
-                            onChanged: (v) => setState(() => durationType = v ?? durationType),
-                          )),
-                        ),
-                      ]),
-                      const SizedBox(height: 10),
-                      
-                      StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
-                        label: 'Work Type *',
-                        value: workType,
-                        items: workTypeItems,
-                        onChanged: (v) => setState(() => workType = v ?? workType),
-                      )),
-                      
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: 160,
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              onPressed: () async {
-                                final looking = lookingForCtrl.text.trim();
-                                final budget = budgetCtrl.text.trim();
-                                if (looking.isEmpty || budget.isEmpty) {
-                                  Get.snackbar('Required', 'Looking For and Budget are required');
-                                  return;
-                                }
-                                Get.back();
-                                await controller.savePreferences(
-                                  lookingFor: looking,
-                                  preferredBudget: budget,
-                                  budgetCurrency: currency ,
-                                  budgetPeriod: period.toLowerCase(),
-                                  availabilityHoursPerWeek: int.tryParse(hoursCtrl.text.trim()) ?? 0,
-                                  availabilityType: availabilityType.toLowerCase(),
-                                  preferredDurationMin: int.tryParse(minCtrl.text.trim()) ?? 0,
-                                  preferredDurationMax: int.tryParse(maxCtrl.text.trim()) ?? 0,
-                                  preferredDurationType: durationType.replaceAll(' ', '_').toLowerCase(),
-                                  workType: workType.toLowerCase(),
-                                );
-                              },
-                              child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
+          SafeArea(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.77,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CommonText('Project Preferences', fontSize: 18, fontWeight: FontWeight.w800),
+                        const SizedBox(height: 6),
+                        const CommonText('Set your project and work preferences', color: AppColors.textSecondaryColor),
+                        const SizedBox(height: 12),
+                        
+                        _LabeledField(label: 'Looking For *', controller: lookingForCtrl),
+                        const SizedBox(height: 10),
+                        
+                        Row(children: [
+                          Expanded(child: _LabeledField(label: 'Preferred Budget *', controller: budgetCtrl, keyboardType: TextInputType.number)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                              label: 'Currency *',
+                              value: currency,
+                              items: currencyItems,
+                              onChanged: (v) => setState(() => currency = v ?? currency),
+                            )),
                           ),
-                        ],
-                      )
-                    ],
+                        ]),
+                        const SizedBox(height: 10),
+                        
+                        Row(children: [
+                          Expanded(
+                            child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                              label: 'Period *',
+                              value: period,
+                              items: periodItems,
+                              onChanged: (v) => setState(() => period = v ?? period),
+                            )),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: _LabeledField(label: 'Availability (Hours per Week)', controller: hoursCtrl, keyboardType: TextInputType.number)),
+                        ]),
+                        const SizedBox(height: 10),
+                        
+                        Row(children: [
+                          Expanded(
+                            child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                              label: 'Availability Type *',
+                              value: availabilityType,
+                              items: availabilityItems,
+                              onChanged: (v) => setState(() => availabilityType = v ?? availabilityType),
+                            )),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: _LabeledField(label: 'Minimum Duration (Months)', controller: minCtrl, keyboardType: TextInputType.number)),
+                        ]),
+                        const SizedBox(height: 10),
+                        
+                        Row(children: [
+                          Expanded(child: _LabeledField(label: 'Maximum Duration (Months)', controller: maxCtrl, keyboardType: TextInputType.number)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                              label: 'Duration Type *',
+                              value: durationType,
+                              items: durationTypeItems,
+                              onChanged: (v) => setState(() => durationType = v ?? durationType),
+                            )),
+                          ),
+                        ]),
+                        const SizedBox(height: 10),
+                        
+                        StatefulBuilder(builder: (context, setState) => _LabeledDropdown(
+                          label: 'Work Type *',
+                          value: workType,
+                          items: workTypeItems,
+                          onChanged: (v) => setState(() => workType = v ?? workType),
+                        )),
+                        
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 160,
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  final looking = lookingForCtrl.text.trim();
+                                  final budget = budgetCtrl.text.trim();
+                                  if (looking.isEmpty || budget.isEmpty) {
+                                    Get.snackbar('Required', 'Looking For and Budget are required');
+                                    return;
+                                  }
+                                  Get.back();
+                                  await controller.savePreferences(
+                                    lookingFor: looking,
+                                    preferredBudget: budget,
+                                    budgetCurrency: currency ,
+                                    budgetPeriod: period.toLowerCase(),
+                                    availabilityHoursPerWeek: int.tryParse(hoursCtrl.text.trim()) ?? 0,
+                                    availabilityType: availabilityType.toLowerCase(),
+                                    preferredDurationMin: int.tryParse(minCtrl.text.trim()) ?? 0,
+                                    preferredDurationMax: int.tryParse(maxCtrl.text.trim()) ?? 0,
+                                    preferredDurationType: durationType.replaceAll(' ', '_').toLowerCase(),
+                                    workType: workType.toLowerCase(),
+                                  );
+                                },
+                                child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -24,7 +24,7 @@ class ChatController extends GetxController {
       Get.find<ProfileRepositoryImpl>();
   String? expertId;
   final String adminId = 'admin1';
-  String get chatId => expertId != null ? '${adminId}_${expertId}' : '';
+  String get chatId => expertId != null ? '${adminId}_$expertId' : '';
 
   // State
   final RxList<_Msg> messages = <_Msg>[].obs;

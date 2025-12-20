@@ -35,122 +35,124 @@ class ProfileBankDetails extends StatelessWidget {
         final currencyItems = const ['INR', 'USD', 'EUR', 'AUD'];
 
         Get.bottomSheet(
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CommonText('Bank Details', fontSize: 18, fontWeight: FontWeight.w800),
-                      const SizedBox(height: 6),
-                      const CommonText('Add or update your bank details', color: AppColors.textSecondaryColor),
-                      const SizedBox(height: 12),
-
-                      _LabeledField(label: 'Account Holder Name *', controller: holderCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Bank Name *', controller: bankNameCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Account Number *', controller: accountNoCtrl, keyboardType: TextInputType.number),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'IFSC *', controller: ifscCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Branch', controller: branchCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Bank Address', controller: addressCtrl),
-                      const SizedBox(height: 10),
-
-                      Row(children: [
-                        Expanded(child: _LabeledField(label: 'Country', controller: countryCtrl)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: StatefulBuilder(
-                            builder: (context, setState) => _LabeledDropdown(
-                              label: 'Currency *',
-                              value: currency,
-                              items: currencyItems,
-                              onChanged: (v) => setState(() => currency = v ?? currency),
-                            ),
-                          ),
-                        ),
-                      ]),
-                      const SizedBox(height: 15),
-                      const CommonText("International Bank Details", fontSize: 22, fontWeight: FontWeight.w600),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'SWIFT', controller: swiftCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'IBAN', controller: ibanCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Routing Number', controller: routingCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Intermediary Bank', controller: intermediaryCtrl),
-                      const SizedBox(height: 10),
-                      _LabeledField(label: 'Notes *', controller: notesCtrl, keyboardType: TextInputType.multiline),
-
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: 160,
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+          SafeArea(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CommonText('Bank Details', fontSize: 18, fontWeight: FontWeight.w800),
+                        const SizedBox(height: 6),
+                        const CommonText('Add or update your bank details', color: AppColors.textSecondaryColor),
+                        const SizedBox(height: 12),
+            
+                        _LabeledField(label: 'Account Holder Name *', controller: holderCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Bank Name *', controller: bankNameCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Account Number *', controller: accountNoCtrl, keyboardType: TextInputType.number),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'IFSC *', controller: ifscCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Branch', controller: branchCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Bank Address', controller: addressCtrl),
+                        const SizedBox(height: 10),
+            
+                        Row(children: [
+                          Expanded(child: _LabeledField(label: 'Country', controller: countryCtrl)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: StatefulBuilder(
+                              builder: (context, setState) => _LabeledDropdown(
+                                label: 'Currency *',
+                                value: currency,
+                                items: currencyItems,
+                                onChanged: (v) => setState(() => currency = v ?? currency),
                               ),
-                              onPressed: () async {
-                                final holder = holderCtrl.text.trim();
-                                final bname = bankNameCtrl.text.trim();
-                                final acc = accountNoCtrl.text.trim();
-                                final ifsc = ifscCtrl.text.trim();
-                                final notes = notesCtrl.text.trim();
-                                
-                                if (holder.isEmpty || bname.isEmpty || acc.isEmpty || ifsc.isEmpty) {
-                                  Get.snackbar('Required', 'Please fill required fields', colorText: AppColors.white,backgroundColor: AppColors.errorColor,snackPosition: SnackPosition.BOTTOM);
-                                  return;
-                                }
-                                
-                                if (notes.isEmpty) {
-                                  Get.snackbar('Required', 'Notes is required', colorText: AppColors.white,backgroundColor: AppColors.errorColor,snackPosition: SnackPosition.BOTTOM);
-                                  return;
-                                }
-
-                                Get.back();
-                                final payload = <String, dynamic>{ 
-                                  'account_holder_name': holder,
-                                  'bank_name': bname,
-                                  'account_number': acc,
-                                  'ifsc': ifsc,
-                                  'branch': branchCtrl.text.trim(),
-                                  'bank_address': addressCtrl.text.trim(),
-                                  'country': countryCtrl.text.trim(),
-                                  'currency': currency,
-                                  'swift': swiftCtrl.text.trim(),
-                                  'iban': ibanCtrl.text.trim().isEmpty ? null : ibanCtrl.text.trim(),
-                                  'routing_number': routingCtrl.text.trim().isEmpty ? null : routingCtrl.text.trim(),
-                                  'intermediary_bank': intermediaryCtrl.text.trim().isEmpty ? null : intermediaryCtrl.text.trim(),
-                                  'notes': notes,
-                                };
-                                if (b.id != null) payload['id'] = b.id;
-                                await controller.saveBankDetails(payload);
-                              },
-                              child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
                             ),
                           ),
-                        ],
-                      )
-                    ],
+                        ]),
+                        const SizedBox(height: 15),
+                        const CommonText("International Bank Details", fontSize: 22, fontWeight: FontWeight.w600),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'SWIFT', controller: swiftCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'IBAN', controller: ibanCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Routing Number', controller: routingCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Intermediary Bank', controller: intermediaryCtrl),
+                        const SizedBox(height: 10),
+                        _LabeledField(label: 'Notes *', controller: notesCtrl, keyboardType: TextInputType.multiline),
+            
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 160,
+                              height: 48,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  final holder = holderCtrl.text.trim();
+                                  final bname = bankNameCtrl.text.trim();
+                                  final acc = accountNoCtrl.text.trim();
+                                  final ifsc = ifscCtrl.text.trim();
+                                  final notes = notesCtrl.text.trim();
+                                  
+                                  if (holder.isEmpty || bname.isEmpty || acc.isEmpty || ifsc.isEmpty) {
+                                    Get.snackbar('Required', 'Please fill required fields', colorText: AppColors.white,backgroundColor: AppColors.errorColor,snackPosition: SnackPosition.BOTTOM);
+                                    return;
+                                  }
+                                  
+                                  if (notes.isEmpty) {
+                                    Get.snackbar('Required', 'Notes is required', colorText: AppColors.white,backgroundColor: AppColors.errorColor,snackPosition: SnackPosition.BOTTOM);
+                                    return;
+                                  }
+            
+                                  Get.back();
+                                  final payload = <String, dynamic>{ 
+                                    'account_holder_name': holder,
+                                    'bank_name': bname,
+                                    'account_number': acc,
+                                    'ifsc': ifsc,
+                                    'branch': branchCtrl.text.trim(),
+                                    'bank_address': addressCtrl.text.trim(),
+                                    'country': countryCtrl.text.trim(),
+                                    'currency': currency,
+                                    'swift': swiftCtrl.text.trim(),
+                                    'iban': ibanCtrl.text.trim().isEmpty ? null : ibanCtrl.text.trim(),
+                                    'routing_number': routingCtrl.text.trim().isEmpty ? null : routingCtrl.text.trim(),
+                                    'intermediary_bank': intermediaryCtrl.text.trim().isEmpty ? null : intermediaryCtrl.text.trim(),
+                                    'notes': notes,
+                                  };
+                                  if (b.id != null) payload['id'] = b.id;
+                                  await controller.saveBankDetails(payload);
+                                },
+                                child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),

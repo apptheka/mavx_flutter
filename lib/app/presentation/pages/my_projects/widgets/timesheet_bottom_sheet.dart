@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mavx_flutter/app/data/models/timesheet_model.dart';
 import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
 import 'package:mavx_flutter/app/presentation/widgets/common_text.dart';
+import 'package:mavx_flutter/app/presentation/widgets/snackbar.dart';
 
 // Controller group for a single timesheet entry form
  
@@ -171,27 +172,24 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet> {
       );
       if (success > 0) {
         Get.back();
-        Get.snackbar(
-          'Timesheet',
-          'Saved ${success}/${_entries.length} entries',
-          snackPosition: SnackPosition.BOTTOM,
+        showSnackBar(
+          title: 'Timesheet',
+          message: 'Saved ${success}/${_entries.length} entries',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
       } else {
-        Get.snackbar(
-          'Timesheet',
-          'Save failed for all entries',
-          snackPosition: SnackPosition.BOTTOM,
+        showSnackBar(
+          title: 'Timesheet',
+          message: 'Save failed for all entries',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Timesheet',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
+      showSnackBar(
+        title: 'Timesheet',
+        message: e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -203,189 +201,191 @@ class _TimesheetBottomSheetState extends State<TimesheetBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SizedBox(
-        height: 600,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 8, bottom: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE6E9EF),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x1A000000),
+              blurRadius: 20,
+              offset: Offset(0, -4),
             ),
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  color: const Color(0xFF0B2944),
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                const CommonText(
-                  'Timesheet Entry',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0B2944),
-                ),
-                const Spacer(),
-                Container(
+          ],
+        ),
+        child: SizedBox(
+          height: 600,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 8, bottom: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F6FA),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: IconButton(
-                    onPressed: () => Get.back(),
-                    icon: const Icon(Icons.close, size: 20),
-                    color: const Color(0xFF0B2944),
+                    color: const Color(0xFFE6E9EF),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFD),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE6E9EF)),
               ),
-              child: Row(
+              Row(
                 children: [
                   Icon(
-                    Icons.work_outline_rounded,
+                    Icons.access_time_rounded,
                     color: const Color(0xFF0B2944),
-                    size: 20,
+                    size: 24,
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: CommonText(
-                      widget.projectName,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                  const CommonText(
+                    'Timesheet Entry',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0B2944),
+                  ),
+                  const Spacer(),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F6FA),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: IconButton(
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.close, size: 20),
                       color: const Color(0xFF0B2944),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            // All entry forms
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: _entries.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
-                        child: CommonText(
-                          'Timesheet ${index + 1}',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0B2944),
-                        ),
-                      ),
-                      _manualForm(context, _entries[index]),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: OutlinedButton.icon(
-                onPressed: _addEmptyEntry,
-                icon: const Icon(Icons.add),
-                label: const Text('Add Entry'),
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: width,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0B2944), Color(0xFF1A3A5C)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF0B2944).withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: _submitting ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFD),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE6E9EF)),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (_submitting) ...[
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
+                    Icon(
+                      Icons.work_outline_rounded,
+                      color: const Color(0xFF0B2944),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: CommonText(
+                        widget.projectName,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0B2944),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 12),
-                    ] else ...[
-                      const Icon(Icons.save_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                    ],
-                    CommonText(
-                      _submitting ? 'Saving Timesheet...' : 'Save Timesheet',
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      fontSize: 16,
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              // All entry forms
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _entries.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
+                          child: CommonText(
+                            'Timesheet ${index + 1}',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0B2944),
+                          ),
+                        ),
+                        _manualForm(context, _entries[index]),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton.icon(
+                  onPressed: _addEmptyEntry,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Entry'),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: width,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0B2944), Color(0xFF1A3A5C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF0B2944).withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _submitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_submitting) ...[
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ] else ...[
+                        const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
+                      ],
+                      CommonText(
+                        _submitting ? 'Saving Timesheet...' : 'Save Timesheet',
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

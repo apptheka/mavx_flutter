@@ -3,7 +3,7 @@ class AppConstants {
 
   // API URLs
   static const String baseUrl = 'https://apis.apptheka.com/mavx/v1/api';
-  // static const String baseUrl = 'http://192.168.1.3:3001/v1/api';
+  // static const String baseUrl = 'http://192.168.1.2:3001/v1/api';
   static const String baseUrlImage = 'https://apis.apptheka.com/mavx/public/';
   static const String fileUploading = 'https://apis.apptheka.com/mavx/file-uploading';
   // Timesheet endpoint for insert - local development server

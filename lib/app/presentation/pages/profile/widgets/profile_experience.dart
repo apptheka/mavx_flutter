@@ -49,248 +49,250 @@ class ProfileExperience extends StatelessWidget {
           });
         }
         Get.bottomSheet(
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-            child: SizedBox(
-              height: rows.isEmpty
-                  ? MediaQuery.of(context).size.height * 0.78
-                  : (rows.length > 1
-                      ? MediaQuery.of(context).size.height * 0.8
-                      : MediaQuery.of(context).size.height * 0.8),
-              child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: StatefulBuilder(
-                builder: (context, setSheetState) {
-                  void addRow() {
-                    setSheetState(() {
-                      rows.add({
-                        'id': null,
-                        'companyName': '',
-                        'role': '',
-                        'employmentType': 'Full Time',
-                        'isRemote': false,
-                        'startDate': null,
-                        'isCurrent': false,
-                        'description': '',
-                        'isNew': true,
+          SafeArea(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: SizedBox(
+                height: rows.isEmpty
+                    ? MediaQuery.of(context).size.height * 0.78
+                    : (rows.length > 1
+                        ? MediaQuery.of(context).size.height * 0.8
+                        : MediaQuery.of(context).size.height * 0.8),
+                child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: StatefulBuilder(
+                  builder: (context, setSheetState) {
+                    void addRow() {
+                      setSheetState(() {
+                        rows.add({
+                          'id': null,
+                          'companyName': '',
+                          'role': '',
+                          'employmentType': 'Full Time',
+                          'isRemote': false,
+                          'startDate': null,
+                          'isCurrent': false,
+                          'description': '',
+                          'isNew': true,
+                        });
                       });
-                    });
-                  }
-             
-                  String fmt(DateTime? d) => d == null
-                      ? 'Select date'
-                      : '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-            
-                  const types = ['Full Time','Part Time','Contract','Internship'];
-            
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CommonText(
-                          'Experience',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ), 
-                        CommonText('Add your professional experience', color: AppColors.textSecondaryColor),
-                        const SizedBox(height: 12),
-            
-                        for (int i = 0; i < rows.length; i++) ...[
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE6E9EF)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: CommonText(
-                                        rows[i]['id'] != null
-                                            ? 'Edit Experience ${i + 1} (ID: ${rows[i]['id']})'
-                                            : 'New Experience ${i + 1}',
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    if (rows[i]['id'] != null)
-                                      IconButton(
-                                        onPressed: () => controller.deleteExperience(rows[i]['id']),
-                                        icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          _label('Company Name *'),
-                                          AppTextField(
-                                            controller: TextEditingController(text: rows[i]['companyName'])
-                                            ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['companyName'] as String).length)),
-                                            hintText: 'Company Name',
-                                            onChanged: (v) => setSheetState(() => rows[i]['companyName'] = v),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          _label('Job Title *'),
-                                          AppTextField(
-                                            controller: TextEditingController(text: rows[i]['role'])
-                                            ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['role'] as String).length)),
-                                            hintText: 'Job Title',
-                                            onChanged: (v) => setSheetState(() => rows[i]['role'] = v),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        initialValue: types.contains(rows[i]['employmentType']) ? rows[i]['employmentType'] : 'Full Time',
-                                        decoration: InputDecoration(
-                                          labelText: 'Employment Type *',
-                                          filled: true,
-                                          fillColor: const Color(0xFFF5F6FA),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                        ),
-                                        items: types.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                                        onChanged: (v) => setSheetState(() => rows[i]['employmentType'] = v ?? 'Full Time'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Checkbox(
-                                          value: rows[i]['isRemote'] as bool,
-                                          onChanged: (v) => setSheetState(() => rows[i]['isRemote'] = v ?? false),
-                                        ),
-                                        const CommonText('Remote Work', fontSize: 14),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _label('Start Date *'),
-                                    DateBox(
-                                      label: fmt(rows[i]['startDate'] as DateTime?),
-                                      onTap: () async {
-                                        final picked = await showDatePicker(
-                                          context: context,
-                                          initialDate: (rows[i]['startDate'] as DateTime?) ?? DateTime.now(),
-                                          firstDate: DateTime(1950),
-                                          lastDate: DateTime(2100),
-                                        );
-                                        if (picked != null) setSheetState(() => rows[i]['startDate'] = picked);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: rows[i]['isCurrent'] as bool,
-                                      onChanged: (v) => setSheetState(() => rows[i]['isCurrent'] = v ?? false),
-                                    ),
-                                    const CommonText('Currently working here', fontSize: 14),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                _label('Job Description *'),
-                                AppTextField(
-                                  controller: TextEditingController(text: rows[i]['description'])
-                                  ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['description'] as String).length)),
-                                  maxLines: 4,
-                                  hintText: 'Job Description',
-                                  onChanged: (v) => setSheetState(() => rows[i]['description'] = v),
-                                ),
-                              ],
-                            ),
-                          ),
+                    }
+               
+                    String fmt(DateTime? d) => d == null
+                        ? 'Select date'
+                        : '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+              
+                    const types = ['Full Time','Part Time','Contract','Internship'];
+              
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CommonText(
+                            'Experience',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ), 
+                          CommonText('Add your professional experience', color: AppColors.textSecondaryColor),
                           const SizedBox(height: 12),
-                        ],
-            
-                        OutlinedButton.icon(
-                          onPressed: addRow,
-                          icon: const Icon(Icons.add),
-                          label: const CommonText('Add experience', fontSize: 14, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [ 
-                            SizedBox(
-                              width: 160,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(40),
+              
+                          for (int i = 0; i < rows.length; i++) ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE6E9EF)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: CommonText(
+                                          rows[i]['id'] != null
+                                              ? 'Edit Experience ${i + 1} (ID: ${rows[i]['id']})'
+                                              : 'New Experience ${i + 1}',
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      if (rows[i]['id'] != null)
+                                        IconButton(
+                                          onPressed: () => controller.deleteExperience(rows[i]['id']),
+                                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                        ),
+                                    ],
                                   ),
-                                ),
-                                onPressed: () async {
-                                  for (final r in rows) {
-                                    final company = (r['companyName'] as String).trim();
-                                    final role = (r['role'] as String).trim();
-                                    final s = r['startDate'] as DateTime?;
-                                    final desc = (r['description'] as String).trim();
-                                    if (company.isEmpty || role.isEmpty || s == null || desc.isEmpty) continue;
-                                    String fmtOut(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                                    // Only create when the row is newly added in this session, or update existing by id
-                                    if (r['id'] != null || (r['isNew'] == true)) {
-                                      await controller.saveExperience({
-                                        'id': r['id'],
-                                        'company_name': company,
-                                        'role': role,
-                                        'employment_type': r['employmentType'],
-                                        'isRemote': (r['isRemote'] as bool) ? 1 : 0,
-                                        'start_date': fmtOut(s),
-                                        'isCurrent': (r['isCurrent'] as bool) ? 1 : 0,
-                                        'description': desc,
-                                      });
-                                    }
-                                  }
-                                  Get.back();
-                                },
-                                child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _label('Company Name *'),
+                                            AppTextField(
+                                              controller: TextEditingController(text: rows[i]['companyName'])
+                                              ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['companyName'] as String).length)),
+                                              hintText: 'Company Name',
+                                              onChanged: (v) => setSheetState(() => rows[i]['companyName'] = v),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            _label('Job Title *'),
+                                            AppTextField(
+                                              controller: TextEditingController(text: rows[i]['role'])
+                                              ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['role'] as String).length)),
+                                              hintText: 'Job Title',
+                                              onChanged: (v) => setSheetState(() => rows[i]['role'] = v),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownButtonFormField<String>(
+                                          isExpanded: true,
+                                          initialValue: types.contains(rows[i]['employmentType']) ? rows[i]['employmentType'] : 'Full Time',
+                                          decoration: InputDecoration(
+                                            labelText: 'Employment Type *',
+                                            filled: true,
+                                            fillColor: const Color(0xFFF5F6FA),
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                          ),
+                                          items: types.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                                          onChanged: (v) => setSheetState(() => rows[i]['employmentType'] = v ?? 'Full Time'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Checkbox(
+                                            value: rows[i]['isRemote'] as bool,
+                                            onChanged: (v) => setSheetState(() => rows[i]['isRemote'] = v ?? false),
+                                          ),
+                                          const CommonText('Remote Work', fontSize: 14),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _label('Start Date *'),
+                                      DateBox(
+                                        label: fmt(rows[i]['startDate'] as DateTime?),
+                                        onTap: () async {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: (rows[i]['startDate'] as DateTime?) ?? DateTime.now(),
+                                            firstDate: DateTime(1950),
+                                            lastDate: DateTime(2100),
+                                          );
+                                          if (picked != null) setSheetState(() => rows[i]['startDate'] = picked);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: rows[i]['isCurrent'] as bool,
+                                        onChanged: (v) => setSheetState(() => rows[i]['isCurrent'] = v ?? false),
+                                      ),
+                                      const CommonText('Currently working here', fontSize: 14),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _label('Job Description *'),
+                                  AppTextField(
+                                    controller: TextEditingController(text: rows[i]['description'])
+                                    ..selection = TextSelection.fromPosition(TextPosition(offset: (rows[i]['description'] as String).length)),
+                                    maxLines: 4,
+                                    hintText: 'Job Description',
+                                    onChanged: (v) => setSheetState(() => rows[i]['description'] = v),
+                                  ),
+                                ],
                               ),
                             ),
+                            const SizedBox(height: 12),
                           ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+              
+                          OutlinedButton.icon(
+                            onPressed: addRow,
+                            icon: const Icon(Icons.add),
+                            label: const CommonText('Add experience', fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [ 
+                              SizedBox(
+                                width: 160,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    for (final r in rows) {
+                                      final company = (r['companyName'] as String).trim();
+                                      final role = (r['role'] as String).trim();
+                                      final s = r['startDate'] as DateTime?;
+                                      final desc = (r['description'] as String).trim();
+                                      if (company.isEmpty || role.isEmpty || s == null || desc.isEmpty) continue;
+                                      String fmtOut(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                                      // Only create when the row is newly added in this session, or update existing by id
+                                      if (r['id'] != null || (r['isNew'] == true)) {
+                                        await controller.saveExperience({
+                                          'id': r['id'],
+                                          'company_name': company,
+                                          'role': role,
+                                          'employment_type': r['employmentType'],
+                                          'isRemote': (r['isRemote'] as bool) ? 1 : 0,
+                                          'start_date': fmtOut(s),
+                                          'isCurrent': (r['isCurrent'] as bool) ? 1 : 0,
+                                          'description': desc,
+                                        });
+                                      }
+                                    }
+                                    Get.back();
+                                  },
+                                  child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
+                    );
+                  },
+                ),
+              ),
+                        ),
+            ),
           ),
           isScrollControlled: true,
         );

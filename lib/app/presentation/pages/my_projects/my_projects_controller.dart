@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mavx_flutter/app/data/repositories/my_projects_repository_impl.dart';
+import 'package:mavx_flutter/app/domain/repositories/auth_repository.dart';
 import 'package:mavx_flutter/app/data/models/completed_projects_model.dart'
     as confirmed;
 import 'package:mavx_flutter/app/domain/usecases/my_project_usecase.dart';
@@ -35,6 +36,7 @@ class MyProjectsController extends GetxController {
   // projectIds for which invoice has been submitted in this session
   final RxSet<int> invoicedProjects = <int>{}.obs;
   int? timesheetId; // holds existing timesheet id for editing
+  int? _currentTimesheetExpertId; // cached expert id for currently open timesheet sheet
   final TextEditingController date = TextEditingController();
   final TextEditingController task = TextEditingController();
   final TextEditingController start = TextEditingController();
@@ -42,6 +44,39 @@ class MyProjectsController extends GetxController {
   final TextEditingController hours = TextEditingController();
   final TextEditingController rate = TextEditingController();
   final TextEditingController amount = TextEditingController();
+
+  Future<int> _resolveExpertId() async {
+    int id = 0;
+
+    // 1) Try ProfileController sources
+    try {
+      final profile = Get.find<ProfileController>(tag: null);
+      final regId = profile.registeredProfile.value.id ?? 0;
+      final prefUserId = profile.preferences.value.userId ?? 0;
+      log('resolveExpertId -> registeredProfile.id=$regId, preferences.userId=$prefUserId');
+      id = regId != 0 ? regId : prefUserId;
+    } catch (e) {
+      log('resolveExpertId -> ProfileController not available: $e');
+    }
+
+    // 2) Fallback to AuthRepository (same source used by login/chat)
+    if (id == 0) {
+      try {
+        final auth = Get.find<AuthRepository>();
+        final user = await auth.getCurrentUser();
+        final fromAuth = user?.data.id ?? 0;
+        log('resolveExpertId -> auth user id=$fromAuth');
+        if (fromAuth > 0) {
+          id = fromAuth;
+        }
+      } catch (e) {
+        log('resolveExpertId -> AuthRepository failed: $e');
+      }
+    }
+
+    log('resolveExpertId -> final id=$id');
+    return id;
+  }
 
   static MyProjectUsecase _ensureUsecase() {
     try {
@@ -73,6 +108,10 @@ class MyProjectsController extends GetxController {
         Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
         return;
       }
+
+      // Cache expert id for this project so saveTimesheetEntries can reuse it
+      _currentTimesheetExpertId = expertId;
+      log('openTimesheetBottomSheet -> using expertId=$_currentTimesheetExpertId for projectId=$projectId');
       Get.dialog(
         const Center(child: CircularProgressIndicator()),
         barrierDismissible: false,
@@ -171,19 +210,7 @@ class MyProjectsController extends GetxController {
     String? filePath,
   }) async {
     try {
-      final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.preferences.value.userId ?? 0;
-     
-      if (expertId == 0) {
-        Get.snackbar(
-          'Invoice',
-          'Expert ID not found. Please relogin.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
-      }
       final payload = Map<String, String>.from(fields);
-      payload['expertId'] = expertId.toString();
       // projectId is expected already in fields from UI. Ensure present
       if ((payload['projectId'] ?? '').isEmpty) {
         Get.snackbar(
@@ -193,6 +220,7 @@ class MyProjectsController extends GetxController {
         );
         return false;
       }
+
       final projectId = int.tryParse(payload['projectId']!.toString()) ?? 0;
       if (projectId == 0) {
         Get.snackbar(
@@ -203,11 +231,37 @@ class MyProjectsController extends GetxController {
         return false;
       }
 
+      // Resolve expertId similar to timesheet flow: prefer project expertId, then fallback
+      int expertId = 0;
+      for (final p in projects) {
+        final pid = p.projectId ?? p.id ?? 0;
+        if (pid == projectId) {
+          expertId = p.expertId ?? 0;
+          break;
+        }
+      }
+      if (expertId == 0) {
+        expertId = await _resolveExpertId();
+      }
+
+      log('uploadInvoice -> resolved expertId=$expertId for projectId=$projectId');
+      if (expertId == 0) {
+        Get.snackbar(
+          'Invoice',
+          'Expert ID not found. Please relogin.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return false;
+      }
+
+      payload['expertId'] = expertId.toString();
+
       // Server requires a timesheet reference. Find a FINAL_APPROVED timesheet for this project.
       final timesheets = await _usecase.getTimesheets(projectId, expertId);
       var approvedId = 0;
       for (final t in timesheets) {
-        if ((t.status) == 'final_approved' || (t.status) == 'client_approved') {
+        final s = (t.status).toString().toLowerCase();
+        if (s == 'final_approved' || s == 'client_approved') {
           approvedId = t.id;
           break;
         }
@@ -258,13 +312,13 @@ class MyProjectsController extends GetxController {
     required String projectName,
     required List<Map<String, dynamic>> entries,
   }) async {
-    // Get expert id
-    final profile = Get.find<ProfileController>(tag: null);
-    final expertId = profile.preferences.value.userId ?? 0;
-    print("expertId: $expertId");
+    // Prefer expert id cached when opening the bottom sheet; fall back to global resolver
+    final resolved = _currentTimesheetExpertId ?? await _resolveExpertId();
+    print("expertId: $resolved");
+    log('saveTimesheetEntries -> cached=$_currentTimesheetExpertId');
+    final expertId = resolved;
     if (expertId == 0) {
-      Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
-      return 0;
+      throw Exception('Expert ID not found. Please relogin.');
     }
 
     int success = 0;
@@ -281,13 +335,11 @@ class MyProjectsController extends GetxController {
         'hourlyRate': double.tryParse(e['hourlyRate']?.toString() ?? '') ?? 0.0,
         'amount': double.tryParse(e['amount']?.toString() ?? '') ?? 0.0,
       };
-      // If editing, pass id so backend updates instead of inserting a duplicate
       final idVal = e['id'];
       if (idVal != null) {
         final idInt = int.tryParse(idVal.toString());
         if (idInt != null && idInt > 0) {
           payload['id'] = idInt;
-          // Also include common variants in case backend expects a different key
           payload['timesheetId'] = idInt;
           payload['timesheet_id'] = idInt;
         }
@@ -295,6 +347,19 @@ class MyProjectsController extends GetxController {
       final ok = await _usecase.createProjectSchedule(payload);
       if (ok) success++;
     }
+
+    if (success > 0) {
+      try {
+        final ts = await _usecase.getTimesheets(projectId, expertId);
+        final hasApproved = ts.any((t) {
+          final s = (t.status).toString().toLowerCase();
+          return s == 'final_approved' || s == 'client_approved';
+        });
+        finalApproved[projectId] = hasApproved;
+        finalApproved.refresh();
+      } catch (_) {}
+    }
+
     return success;
   }
 
@@ -355,8 +420,8 @@ class MyProjectsController extends GetxController {
 
   Future<void> prefetchTimesheetStatuses() async {
     try {
-      final profile = Get.find<ProfileController>(tag: null);
-      final expertId = profile.registeredProfile.value.id ?? 0;
+      final expertId = await _resolveExpertId();
+      log('prefetchTimesheetStatuses -> expertId=$expertId');
       if (expertId == 0) return;
       // Clear previous
       finalApproved.clear();
@@ -365,8 +430,10 @@ class MyProjectsController extends GetxController {
         if (pid == 0) continue;
         try {
           final ts = await _usecase.getTimesheets(pid, expertId);
+          log('prefetchTimesheetStatuses -> projectId=$pid, timesheets=${ts.length}');
           finalApproved[pid] = ts.any((t) {
             final s = (t.status).toString().toLowerCase();
+            log('prefetchTimesheetStatuses -> projectId=$pid, timesheetId=${t.id}, status=$s');
             return s == 'final_approved' || s == 'client_approved';
           });
         } catch (_) {
@@ -390,6 +457,7 @@ class MyProjectsController extends GetxController {
     required String projectName,
   }) async {
     try {
+      // Prefer expert id attached to the project; fall back to global resolver
       int expertId = 0;
       for (final p in projects) {
         final pid = p.projectId ?? p.id ?? 0;
@@ -398,20 +466,21 @@ class MyProjectsController extends GetxController {
           break;
         }
       }
+      log('openTimesheetBottomSheet -> project expertId=$expertId for projectId=$projectId');
 
       if (expertId == 0) {
-        try {
-          final profile = Get.find<ProfileController>(tag: null);
-          expertId = profile.registeredProfile.value.id ??
-              (profile.preferences.value.userId ?? 0);
-        } catch (_) {
-        }
+        expertId = await _resolveExpertId();
+        log('openTimesheetBottomSheet -> fallback resolved expertId=$expertId');
       }
 
       if (expertId == 0) {
         Get.snackbar('Profile', 'Expert ID not found. Please relogin.');
         return;
       }
+
+      // Cache expert id for this sheet session so saveTimesheetEntries can reuse it
+      _currentTimesheetExpertId = expertId;
+      log('openTimesheetBottomSheet -> using expertId=$_currentTimesheetExpertId for projectId=$projectId');
 
       Get.dialog(
         const Center(child: CircularProgressIndicator()),
