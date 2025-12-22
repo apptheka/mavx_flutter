@@ -50,10 +50,10 @@ import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dar
 
 class DependenceInjection {
   static Future<void> init() async {
-    // Initialize storage once at startup to avoid platform channel timing issues
+    // Initialize storage once at startup and register the initialized instance
     final storage = StorageService();
     await storage.init();
-    Get.put<StorageService>(storage, permanent: true);
+    Get.put<StorageService>(storage);
 
     // Core providers/repositories should be recreatable after disposal
     Get.lazyPut(() => ApiProvider(), fenix: true);

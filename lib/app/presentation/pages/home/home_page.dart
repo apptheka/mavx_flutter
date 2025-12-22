@@ -326,9 +326,10 @@ class _TopMatchesList extends StatelessWidget {
                   p.id ?? -1,
                 );
                 // Determine if this project is already confirmed
-                final myCtrl = Get.isRegistered<MyProjectsController>()
-                    ? Get.find<MyProjectsController>()
-                    : Get.put(MyProjectsController(), permanent: true);
+                if (!Get.isRegistered<MyProjectsController>()) {
+                  Get.lazyPut<MyProjectsController>(() => MyProjectsController(), fenix: true);
+                }
+                final myCtrl = Get.find<MyProjectsController>();
                 final isConfirmed = myCtrl.projects.any(
                   (cp) => (cp.projectId ?? cp.id ?? 0) == (p.id ?? -1),
                 );
@@ -459,9 +460,10 @@ class _RecommendedList extends StatelessWidget {
                       for (int i = 0; i < items.length && i < 3; i++) ...[
                         // Determine confirmed for each
                         Builder(builder: (context) {
-                          final myCtrl = Get.isRegistered<MyProjectsController>()
-                              ? Get.find<MyProjectsController>()
-                              : Get.put(MyProjectsController(), permanent: true);
+                          if (!Get.isRegistered<MyProjectsController>()) {
+                            Get.lazyPut<MyProjectsController>(() => MyProjectsController(), fenix: true);
+                          }
+                          final myCtrl = Get.find<MyProjectsController>();
                           final isConfirmed = myCtrl.projects.any(
                             (cp) => (cp.projectId ?? cp.id ?? 0) == (items[i].id ?? -1),
                           );
@@ -508,9 +510,10 @@ class _RecommendedList extends StatelessWidget {
                   ),
                   itemBuilder: (_, i) {
                     final p = items[i];
-                    final myCtrl = Get.isRegistered<MyProjectsController>()
-                        ? Get.find<MyProjectsController>()
-                        : Get.put(MyProjectsController(), permanent: true);
+                    if (!Get.isRegistered<MyProjectsController>()) {
+                      Get.lazyPut<MyProjectsController>(() => MyProjectsController(), fenix: true);
+                    }
+                    final myCtrl = Get.find<MyProjectsController>();
                     final isConfirmed = myCtrl.projects.any(
                       (cp) => (cp.projectId ?? cp.id ?? 0) == (p.id ?? -1),
                     );

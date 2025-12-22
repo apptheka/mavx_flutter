@@ -12,7 +12,10 @@ class MyProjectsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MyProjectsController controller = Get.put(MyProjectsController(), permanent: true);
+    if (!Get.isRegistered<MyProjectsController>()) {
+      Get.lazyPut<MyProjectsController>(() => MyProjectsController(), fenix: true);
+    }
+    final MyProjectsController controller = Get.find<MyProjectsController>();
     final topInset = MediaQuery.of(context).padding.top;
 
     return Scaffold(

@@ -21,9 +21,10 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     // Ensure a single, non-disposed controller instance while app is alive
-    controller = Get.isRegistered<LoginController>()
-        ? Get.find<LoginController>()
-        : Get.put(LoginController(), permanent: true);
+    if (!Get.isRegistered<LoginController>()) {
+      Get.lazyPut<LoginController>(() => LoginController(), fenix: true);
+    }
+    controller = Get.find<LoginController>();
   }
 
   @override

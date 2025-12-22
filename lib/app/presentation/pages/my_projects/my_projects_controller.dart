@@ -91,6 +91,8 @@ class MyProjectsController extends GetxController {
     required String projectName,
   }) async {
     int expertId = 0;
+    BuildContext? _initialLoadDialogContext;
+    BuildContext? _submitDialogContext;
     try {
       for (final p in projects) {
         final pid = p.projectId ?? p.id ?? 0;
@@ -113,11 +115,19 @@ class MyProjectsController extends GetxController {
       _currentTimesheetExpertId = expertId;
       log('openTimesheetBottomSheet -> using expertId=$_currentTimesheetExpertId for projectId=$projectId');
       Get.dialog(
-        const Center(child: CircularProgressIndicator()),
+        Builder(
+          builder: (context) {
+            _initialLoadDialogContext = context;
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
         barrierDismissible: false,
       );
       final resp = await _expenseUseCase.getExpenses(projectId, expertId);
-      if (Get.isDialogOpen == true) Get.back();
+      if (_initialLoadDialogContext != null) {
+        Navigator.of(_initialLoadDialogContext!).pop();
+        _initialLoadDialogContext = null;
+      }
       
       final result = await Get.bottomSheet(
         ExpensesBottomSheet(
@@ -145,11 +155,19 @@ class MyProjectsController extends GetxController {
         }).toList();
 
         Get.dialog(
-          const Center(child: CircularProgressIndicator()),
+          Builder(
+            builder: (context) {
+              _submitDialogContext = context;
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
           barrierDismissible: false,
         );
         final ok = await _expenseUseCase.upsertExpenses(enriched);
-        if (Get.isDialogOpen == true) Get.back();
+        if (_submitDialogContext != null) {
+          Navigator.of(_submitDialogContext!).pop();
+          _submitDialogContext = null;
+        }
         if (ok) {
           // Refresh and optionally show a toast
           final refreshed = await _expenseUseCase.getExpenses(projectId, expertId);
@@ -160,7 +178,14 @@ class MyProjectsController extends GetxController {
         }
       }
     } catch (_) {
-      if (Get.isDialogOpen == true) Get.back();
+      if (_initialLoadDialogContext != null) {
+        Navigator.of(_initialLoadDialogContext!).pop();
+        _initialLoadDialogContext = null;
+      }
+      if (_submitDialogContext != null) {
+        Navigator.of(_submitDialogContext!).pop();
+        _submitDialogContext = null;
+      }
       final result = await Get.bottomSheet(
         ExpensesBottomSheet(
           projectId: projectId,
@@ -187,7 +212,9 @@ class MyProjectsController extends GetxController {
           barrierDismissible: false,
         );
         final ok = await _expenseUseCase.upsertExpenses(enriched);
-        if (Get.isDialogOpen == true) Get.back();
+        if (Get.isDialogOpen == true) {
+          Navigator.of(Get.context!).pop();
+        }
         if (ok) {
           Get.snackbar('Expenses', 'Expenses saved successfully');
         } else {
@@ -456,6 +483,7 @@ class MyProjectsController extends GetxController {
     required int projectId,
     required String projectName,
   }) async {
+    BuildContext? _timesheetDialogContext;
     try {
       // Prefer expert id attached to the project; fall back to global resolver
       int expertId = 0;
@@ -483,13 +511,21 @@ class MyProjectsController extends GetxController {
       log('openTimesheetBottomSheet -> using expertId=$_currentTimesheetExpertId for projectId=$projectId');
 
       Get.dialog(
-        const Center(child: CircularProgressIndicator()),
+        Builder(
+          builder: (context) {
+            _timesheetDialogContext = context;
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
         barrierDismissible: false,
       );
 
       final existing = await _usecase.getTimesheets(projectId, expertId);
 
-      if (Get.isDialogOpen == true) Get.back();
+      if (_timesheetDialogContext != null) {
+        Navigator.of(_timesheetDialogContext!).pop();
+        _timesheetDialogContext = null;
+      }
 
       await Get.bottomSheet(
         TimesheetBottomSheet(
@@ -500,7 +536,10 @@ class MyProjectsController extends GetxController {
         isScrollControlled: true,
       );
     } catch (e) {
-      if (Get.isDialogOpen == true) Get.back();
+      if (_timesheetDialogContext != null) {
+        Navigator.of(_timesheetDialogContext!).pop();
+        _timesheetDialogContext = null;
+      }
       await Get.bottomSheet(
         TimesheetBottomSheet(
           projectId: projectId,

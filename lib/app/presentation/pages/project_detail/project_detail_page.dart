@@ -16,9 +16,10 @@ class ProjectDetailPage extends GetView<ProjectDetailController> {
   Widget build(BuildContext context) {
     // Ensure the controller is available for all child widgets via Get.find
     final homeCtrl = Get.find<HomeController>();
-    final myProjectsCtrl = Get.isRegistered<MyProjectsController>()
-        ? Get.find<MyProjectsController>()
-        : Get.put(MyProjectsController(), permanent: true);
+    if (!Get.isRegistered<MyProjectsController>()) {
+      Get.lazyPut<MyProjectsController>(() => MyProjectsController(), fenix: true);
+    }
+    final myProjectsCtrl = Get.find<MyProjectsController>();
     final topInset = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
