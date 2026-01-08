@@ -18,6 +18,13 @@ class ProfileOnlineProfiles extends StatelessWidget {
       title: 'Online Profiles',
       subtitle: 'Showcase your presence across professional platforms',
       onEdit: () {
+        String? normalizeUrl(String? raw) {
+          final t = raw?.toString().trim();
+          if (t == null || t.isEmpty || t.toLowerCase() == 'null') return null;
+          if (t.startsWith('http://') || t.startsWith('https://')) return t;
+          return 'https://$t';
+        }
+
         final List<Map<String, dynamic>> profiles = controller.onlineProfileList
             .map(
               (p) => {
@@ -42,13 +49,39 @@ class ProfileOnlineProfiles extends StatelessWidget {
             )
             .toList();
 
+        if (profiles.isEmpty) {
+          final rp = controller.registeredProfile.value;
+          final linkedIn = normalizeUrl(rp.linkedin);
+          if (linkedIn != null) {
+            profiles.add({
+              'id': null,
+              'platformType': 'LinkedIn',
+              'profileUrl': linkedIn,
+            });
+          }
+        }
+
+        for (final p in profiles) {
+          if (p['urlController'] == null) {
+            p['urlController'] = TextEditingController(
+              text: (p['profileUrl'] ?? '').toString(),
+            );
+          }
+        }
+
+        final formKey = GlobalKey<FormState>();
+
+        // Dynamic sheet height state (kept outside StatefulBuilder so it doesn't reset)
+        double sheetHeight = profiles.isEmpty
+            ? MediaQuery.of(context).size.height * 0.28
+            : MediaQuery.of(context).size.height * 0.55;
+
         Get.bottomSheet(
           SafeArea(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
               child: StatefulBuilder(
                 builder: (context, setSheetState) {
-                  final formKey = GlobalKey<FormState>();
                   bool isValidForPlatform(String platform, String url) {
                     final u = Uri.tryParse(url.trim());
                     if (u == null ||
@@ -71,20 +104,14 @@ class ProfileOnlineProfiles extends StatelessWidget {
                     // Website/Other allow any domain
                     return true;
                   }
-            
-                  // Dynamic sheet height state
-                  double sheetHeight = profiles.isEmpty
-                      ? MediaQuery.of(context).size.height *
-                            0.28 // Collapsed height
-                      : MediaQuery.of(context).size.height *
-                            0.55; // Expanded height
-            
+
                   void addProfile() {
                     setSheetState(() {
                       profiles.add({
                         'id': null,
                         'platformType': 'GitHub',
                         'profileUrl': '',
+                        'urlController': TextEditingController(text: ''),
                       });
                       // Expand sheet only when adding the first profile
                       if (profiles.length == 1) {
@@ -92,7 +119,7 @@ class ProfileOnlineProfiles extends StatelessWidget {
                       }
                     });
                   }
-            
+
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     height: sheetHeight,
@@ -139,7 +166,7 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 12),
-            
+
                                   // Profile cards
                                   for (int i = 0; i < profiles.length; i++) ...[
                                     Container(
@@ -213,26 +240,24 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 18),
                                           TextFormField(
+                                            onTapOutside: (event){
+                                              FocusScope.of(context).unfocus();
+                                            },
                                             keyboardType: TextInputType.url,
                                             autovalidateMode: AutovalidateMode
                                                 .onUserInteraction,
-                                            onChanged: (v) => setSheetState(() {
+                                            onChanged: (v) {
                                               profiles[i]['profileUrl'] = v;
-                                            }),
+                                            },
                                             controller:
-                                                TextEditingController(
-                                                    text:
-                                                        profiles[i]['profileUrl'],
-                                                  )
-                                                  ..selection =
-                                                      TextSelection.fromPosition(
-                                                        TextPosition(
-                                                          offset:
-                                                              (profiles[i]['profileUrl']
-                                                                      as String)
-                                                                  .length,
-                                                        ),
-                                                      ),
+                                                (profiles[i]['urlController']
+                                                        as TextEditingController?) ??
+                                                    TextEditingController(
+                                                      text: (profiles[i]
+                                                                  ['profileUrl'] ??
+                                                              '')
+                                                          .toString(),
+                                                    ),
                                             decoration: InputDecoration(
                                               labelText: 'Profile URL *',
                                               hintText: 'https://...',
@@ -285,7 +310,7 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 12),
                                   ],
-            
+
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: OutlinedButton(
@@ -302,7 +327,7 @@ class ProfileOnlineProfiles extends StatelessWidget {
                             ),
                           ),
                         ),
-            
+
                         // Fixed footer
                         Container(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -347,13 +372,18 @@ class ProfileOnlineProfiles extends StatelessWidget {
                                       if (plat.isEmpty) continue;
                                       existing[plat] = item.id;
                                     }
-            
+
                                     // Ensure only one entry per platform (last one wins)
                                     final seen = <String>{};
                                     for (final p in profiles) {
                                       final url =
-                                          (p['profileUrl'] as String?)?.trim() ??
-                                          '';
+                                          (p['urlController']
+                                                      as TextEditingController?)
+                                                  ?.text
+                                                  .trim() ??
+                                              (p['profileUrl'] as String?)
+                                                  ?.trim() ??
+                                              '';
                                       if (url.isEmpty) continue;
                                       final platNorm =
                                           ((p['platformType'] as String?) ??
@@ -396,13 +426,15 @@ class ProfileOnlineProfiles extends StatelessWidget {
       },
       child: Obx(() {
         final items = controller.onlineProfileList;
-        // Single source of truth: only backend items are displayed
-        if (items.isEmpty) {
-          return CommonText(
-            'No online profiles added yet.',
-            color: AppColors.textSecondaryColor,
-          );
+        final rp = controller.registeredProfile.value;
+        String? normalizeUrl(String? raw) {
+          final t = raw?.toString().trim();
+          if (t == null || t.isEmpty || t.toLowerCase() == 'null') return null;
+          if (t.startsWith('http://') || t.startsWith('https://')) return t;
+          return 'https://$t';
         }
+
+        final registeredLinkedIn = normalizeUrl(rp.linkedin);
 
         String iconFor(String? platform) {
           final p = (platform ?? '').toLowerCase();
@@ -432,6 +464,17 @@ class ProfileOnlineProfiles extends StatelessWidget {
           return platform ?? 'Profile';
         }
 
+        final hasLinkedInInItems = items.any(
+          (p) => (p.platformType ?? '').toLowerCase().contains('linkedin'),
+        );
+
+        if (items.isEmpty && registeredLinkedIn == null) {
+          return CommonText(
+            'No online profiles added yet.',
+            color: AppColors.textSecondaryColor,
+          );
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -443,6 +486,15 @@ class ProfileOnlineProfiles extends StatelessWidget {
                 icon: iconFor(items[i].platformType),
               ),
               if (i != items.length - 1) const SizedBox(height: 12),
+            ],
+            if (registeredLinkedIn != null && !hasLinkedInInItems) ...[
+              if (items.isNotEmpty) const SizedBox(height: 12),
+              _ProfileItemCard(
+                color: colorFor('linkedin'),
+                label: 'LinkedIn',
+                url: registeredLinkedIn,
+                icon: iconFor('linkedin'),
+              ),
             ],
           ],
         );

@@ -29,6 +29,7 @@ class ProfileExperience extends StatelessWidget {
                   'employmentType': e.employmentType ?? 'Full Time',
                   'isRemote': (e.isRemote ?? 0) == 1,
                   'startDate': e.startDate, // DateTime?
+                  'endDate': e.endDate, // DateTime?
                   'isCurrent': (e.isCurrent ?? 0) == 1,
                   'description': e.description ?? '',
                   'isNew': false,
@@ -43,6 +44,7 @@ class ProfileExperience extends StatelessWidget {
             'employmentType': 'Full Time',
             'isRemote': false,
             'startDate': null,
+            'endDate': null,
             'isCurrent': false,
             'description': '',
             'isNew': true,
@@ -76,6 +78,7 @@ class ProfileExperience extends StatelessWidget {
                           'employmentType': 'Full Time',
                           'isRemote': false,
                           'startDate': null,
+                          'endDate': null,
                           'isCurrent': false,
                           'description': '',
                           'isNew': true,
@@ -193,21 +196,45 @@ class ProfileExperience extends StatelessWidget {
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      _label('Start Date *'),
-                                      DateBox(
-                                        label: fmt(rows[i]['startDate'] as DateTime?),
-                                        onTap: () async {
-                                          final picked = await showDatePicker(
-                                            context: context,
-                                            initialDate: (rows[i]['startDate'] as DateTime?) ?? DateTime.now(),
-                                            firstDate: DateTime(1950),
-                                            lastDate: DateTime(2100),
-                                          );
-                                          if (picked != null) setSheetState(() => rows[i]['startDate'] = picked);
-                                        },
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          _label('Start Date *'),
+                                          DateBox(
+                                            label: fmt(rows[i]['startDate'] as DateTime?),
+                                            onTap: () async {
+                                              final picked = await showDatePicker(
+                                                context: context,
+                                                initialDate: (rows[i]['startDate'] as DateTime?) ?? DateTime.now(),
+                                                firstDate: DateTime(1950),
+                                                lastDate: DateTime(2100),
+                                              );
+                                              if (picked != null) setSheetState(() => rows[i]['startDate'] = picked);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          _label('End Date *'),
+                                          DateBox(
+                                            label: fmt(rows[i]['endDate'] as DateTime?),
+                                            onTap: () async {
+                                              final picked = await showDatePicker(
+                                                context: context,
+                                                initialDate: (rows[i]['endDate'] as DateTime?) ?? DateTime.now(),
+                                                firstDate: DateTime(1950),
+                                                lastDate: DateTime(2100),
+                                              );
+                                              if (picked != null) setSheetState(() => rows[i]['endDate'] = picked);
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -273,6 +300,7 @@ class ProfileExperience extends StatelessWidget {
                                           'employment_type': r['employmentType'],
                                           'isRemote': (r['isRemote'] as bool) ? 1 : 0,
                                           'start_date': fmtOut(s),
+                                          'end_date': fmtOut(r['endDate'] as DateTime),
                                           'isCurrent': (r['isCurrent'] as bool) ? 1 : 0,
                                           'description': desc,
                                         });

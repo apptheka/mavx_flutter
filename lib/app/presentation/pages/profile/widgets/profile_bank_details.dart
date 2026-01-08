@@ -207,6 +207,9 @@ class _LabeledField extends StatelessWidget {
         CommonText(label, fontSize: 14, fontWeight: FontWeight.w700),
         const SizedBox(height: 6),
         TextField(
+          onTapOutside: (event){
+            FocusScope.of(context).unfocus();  
+          },
           controller: controller,
           keyboardType: keyboardType,
           decoration: InputDecoration(
@@ -240,8 +243,8 @@ class _LabeledDropdown extends StatelessWidget {
       children: [
         CommonText(label, fontSize: 14, fontWeight: FontWeight.w700),
         const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          value: value,
+        DropdownButtonFormField<String>( 
+          initialValue: value,
           isExpanded: true,
           decoration: InputDecoration(
             filled: true,

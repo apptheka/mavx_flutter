@@ -28,6 +28,9 @@ class LabeledField extends StatelessWidget {
         SectionTitle(label),
         const SizedBox(height: 8),
         TextFormField(
+          onTapOutside: (event){
+            FocusScope.of(context).unfocus();
+          },  
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,

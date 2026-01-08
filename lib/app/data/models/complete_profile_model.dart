@@ -486,15 +486,16 @@ class BasicDetails {
   });
 
   factory BasicDetails.fromJson(Map<String, dynamic> json) {
+    final dobRaw =
+        json['date_of_birth'] ?? json['dob'] ?? json['dateOfBirth'];
     return BasicDetails(
       id: json['id'],
       userId: json['user_id'],
       email: json['email'],
       phone: json['phone'],
       gender: json['gender'],
-      dateOfBirth: json['date_of_birth'] != null
-          ? DateTime.tryParse(json['date_of_birth'])
-          : null,
+      dateOfBirth:
+          dobRaw != null ? DateTime.tryParse(dobRaw.toString()) : null,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
           : null,

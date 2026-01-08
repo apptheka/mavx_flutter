@@ -302,6 +302,9 @@ class _ExpenseSection extends StatelessWidget {
           children: [
             Expanded(
               child: TextFormField(
+                onTapOutside: (event){
+                  FocusScope.of(context).unfocus();
+                },
                 controller: entry.dateCtrl,
                 readOnly: true,
                 decoration: const InputDecoration(
@@ -452,6 +455,9 @@ class _ExpenseSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextFormField(
+          onTapOutside: (event){
+            FocusScope.of(context).unfocus();
+          },
           controller: entry.descriptionCtrl,
           decoration: const InputDecoration(
             labelText: 'Description',
@@ -463,6 +469,9 @@ class _ExpenseSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextFormField(
+          onTapOutside: (event){
+            FocusScope.of(context).unfocus();
+          },
           controller: entry.amountCtrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: const InputDecoration(

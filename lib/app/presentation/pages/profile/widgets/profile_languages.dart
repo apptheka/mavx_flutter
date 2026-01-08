@@ -57,9 +57,9 @@ class ProfileLanguages extends StatelessWidget {
                             'id': null,
                             'languageName': '',
                             'proficiencyLevel': 'Beginner',
-                            'canRead': true,
+                            'canRead': false,
                             'canWrite': false,
-                            'canSpeak': true,
+                            'canSpeak': false,
                           });
                         });
                       }
@@ -289,7 +289,7 @@ class _LangCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CommonText(
-            title,
+            title.capitalizeFirst.toString(),
             color: AppColors.textPrimaryColor,
             fontWeight: FontWeight.w800,
           ),

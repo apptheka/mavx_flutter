@@ -29,46 +29,65 @@ class MyProjectsRepositoryImpl extends MyProjectRepository {
   @override
   Future<bool> uploadInvoice({required Map<String, String> fields, String? filePath}) async {
     try {
-      // Align expertId resolution with timesheet logic: prefer ProfileController preferences
-      try {
-        final pc = Get.find<ProfileController>(tag: null);
-        final prefUserId = pc.preferences.value.userId ?? 0;
-        if (prefUserId > 0) {
-          fields['expertId'] = prefUserId.toString();
-        }
-      } catch (_) {
-        // If ProfileController not available, keep provided expertId
+      // Ensure expert id is available in both camelCase and snake_case keys.
+      final expertId = (fields['expertId'] ?? fields['expert_id'] ?? '').trim();
+      if (expertId.isNotEmpty) {
+        fields['expertId'] = expertId;
+        fields['expert_id'] = expertId;
       }
+
       final resp = await apiProvider.postMultipart(
         AppConstants.invoice,
         fields: fields,
         files: filePath != null && filePath.isNotEmpty ? {'invoice_file': filePath} : null,
       );
       log("fields: $fields");
-      if (resp.isEmpty) return false;
+      if (resp.isEmpty) {
+        return false;
+      }
+
+      // Quick guard: if server returned HTML (common for 404/500 fallback pages),
+      // fail fast with a clear message.
+      final trimmed = resp.trimLeft();
+      if (trimmed.startsWith('<!DOCTYPE html') || trimmed.startsWith('<html')) {
+        throw Exception('Invoice endpoint returned HTML (likely 404). Please verify AppConstants.baseUrl + AppConstants.invoice');
+      }
+
+      Map<String, dynamic>? decoded;
+      String? decrypted;
       try {
-        final decrypted = resp.decrypt();
-        final decoded = jsonDecode(decrypted);
-        if (decoded is Map<String, dynamic>) {
-          final status = decoded['status'] ?? decoded['code'];
-          final message = decoded['message']?.toString().toLowerCase();
-          if (status is int && status >= 200 && status < 300) return true;
-          if (message != null && (message.contains('success') || message.contains('created') || message.contains('uploaded'))) return true;
-          if (decoded['data'] != null) return true;
-        }
-        log("decrypted: $decrypted");
+        decrypted = resp.decrypt();
+        final d = jsonDecode(decrypted);
+        if (d is Map<String, dynamic>) decoded = d;
       } catch (_) {
         try {
-          final decoded = jsonDecode(resp);
-          if (decoded is Map<String, dynamic>) {
-            final status = decoded['status'] ?? decoded['code'];
-            if (status is int && status >= 200 && status < 300) return true;
-          }
-          log("decoded: $decoded");
-        } catch (_) {}
+          final d = jsonDecode(resp);
+          if (d is Map<String, dynamic>) decoded = d;
+        } catch (_) {
+          decoded = null;
+        }
       }
-      
-      return resp.isNotEmpty;
+
+      if (decoded != null) {
+        final status = decoded['status'] ?? decoded['code'];
+        final message = decoded['message']?.toString();
+        final messageLc = message?.toLowerCase();
+
+        if (status is int && status >= 200 && status < 300) return true;
+        if (messageLc != null &&
+            (messageLc.contains('success') ||
+                messageLc.contains('created') ||
+                messageLc.contains('uploaded'))) {
+          return true;
+        }
+        final data = decoded['data'];
+        if (data != null && data is Map && data.isNotEmpty) return true;
+
+        throw Exception(message ?? 'Invoice upload failed');
+      }
+
+      // If we couldn't parse JSON, treat as failure and surface raw response.
+      throw Exception(resp.toString());
     } catch (e) {
       throw Exception('Invoice upload failed: ${e.toString()}');
     }

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart' as dio; 
 import 'package:get/get.dart';
+import 'package:mavx_flutter/app/routes/app_routes.dart';
 
 import '../../core/constants/app_constants.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
@@ -9,6 +10,33 @@ import 'package:mavx_flutter/app/core/services/storage_service.dart';
 class ApiProvider {
   final dio.Dio _dio;
   static bool _isNavigating = false;
+
+  Future<void> _forceLogoutToLogin() async {
+    if (_isNavigating) return;
+    _isNavigating = true;
+
+    try {
+      final storage = Get.find<StorageService>();
+      await storage.prefs.remove(AppConstants.tokenKey);
+      await storage.prefs.remove(AppConstants.userKey);
+      await storage.prefs.remove(AppConstants.isLoggedInKey);
+    } catch (_) {
+      // ignore
+    }
+
+    try {
+      if (Get.currentRoute != AppRoutes.login) {
+        Get.offAllNamed(AppRoutes.login);
+      }
+    } catch (_) {
+      // ignore
+    } finally {
+      // Prevent loops, but allow future redirects after a short delay.
+      Future.delayed(const Duration(seconds: 1), () {
+        _isNavigating = false;
+      });
+    }
+  }
 
   Future<String?> getToken() async {
     try {
@@ -54,11 +82,10 @@ class ApiProvider {
         onError: (dio.DioException e, handler) async {
           final statusCode = e.response?.statusCode;
           log("statusCode: $statusCode");
-          // Always forward the error so the caller can handle it (e.g., show snackbar and stop loading)
-          // Optionally you can trigger navigation here, but do not swallow the error.
+          // If token is invalid/expired, clear auth and send user back to login.
+          // Do not swallow the error.
           if (statusCode == 401 || statusCode == 403) {
-            // Example: you might want to trigger a one-time navigation. Disabled for now.
-            _isNavigating = false; // keep flag sane
+            await _forceLogoutToLogin();
           }
           handler.next(e);
         },

@@ -44,9 +44,27 @@ import 'package:mavx_flutter/app/domain/usecases/upload_file_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/email_usecase.dart';
 import 'package:mavx_flutter/app/domain/usecases/apply_job_usecase.dart';
 import 'package:mavx_flutter/app/core/services/storage_service.dart';
+import 'package:mavx_flutter/app/presentation/pages/applications/applications_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/apply/apply_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/chat/chat_badge_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/chat/chat_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/change_password/change_pass_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/dashboard/dashboard_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/forget_password/forget_password_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/getStarted/get_started_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/home/home_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/login/login_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/my_projects/my_projects_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/notifications/notifications_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/otp/otp_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/profile/profile_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/project_detail/project_detail_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/register/register_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/requests/requests_badge_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/requests/requests_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/saved/saved_controller.dart';
 import 'package:mavx_flutter/app/presentation/pages/search/search_controller.dart';
+import 'package:mavx_flutter/app/presentation/pages/splash/splash_controller.dart';
 
 class DependenceInjection {
   static Future<void> init() async {
@@ -67,7 +85,8 @@ class DependenceInjection {
     Get.lazyPut<IndustriesRepository>(() => IndustriesRepositoryImpl(), fenix: true);
     Get.lazyPut<FileRepository>(() => FileRepositoryImpl(), fenix: true);
     Get.lazyPut<ProjectsRepository>(() => ProjectsRepositoryImpl(), fenix: true);
-    Get.lazyPut<ProfileRepository>(() => ProfileRepositoryImpl(), fenix: true);
+    Get.lazyPut<ProfileRepositoryImpl>(() => ProfileRepositoryImpl(), fenix: true);
+    Get.lazyPut<ProfileRepository>(() => Get.find<ProfileRepositoryImpl>(), fenix: true);
     Get.lazyPut<BookmarkRepository>(() => BookmarkRepositoryImpl(), fenix: true);
     Get.lazyPut<ApplyJobRepository>(() => ApplyJobRepositoryImpl(), fenix: true);
     Get.lazyPut<RequestRepository>(() => RequestRepositoryImpl(), fenix: true);
@@ -98,5 +117,23 @@ class DependenceInjection {
     //controllers
     Get.lazyPut(() => ChatBadgeController(), fenix: true);
     Get.lazyPut(() => SearchPageController(), fenix: true);
+    Get.lazyPut(() => ApplicationsController(), fenix: true);
+    Get.lazyPut(() => ApplyController(), fenix: true);
+    Get.lazyPut(() => ChangePassController(), fenix: true);
+    Get.lazyPut(() => ChatController(), fenix: true);
+    Get.lazyPut(() => DashboardController(), fenix: true);
+    Get.lazyPut(() => ForgetPasswordController(), fenix: true);
+    Get.lazyPut(() => GetStartedController(), fenix: true);
+    Get.lazyPut(() => HomeController(), fenix: true);
+    Get.lazyPut(() => LoginController(), fenix: true);
+    Get.lazyPut(() => MyProjectsController(), fenix: true);
+    Get.lazyPut(() => NotificationsController(), fenix: true);
+    Get.lazyPut(() => OtpController(), fenix: true);
+    Get.lazyPut(() => ProjectDetailController(), fenix: true);
+    Get.lazyPut(() => RegisterController(), fenix: true);
+    Get.lazyPut(() => RequestsBadgeController(), fenix: true);
+    Get.lazyPut(() => RequestsController(), fenix: true);
+    Get.lazyPut(() => SavedController(), fenix: true);
+    Get.lazyPut(() => SplashController(), fenix: true);
   }
 }

@@ -334,7 +334,12 @@ class ProfileEducation extends StatelessWidget {
                                               'institution_name': inst,
                                               'degree': degree,
                                               'start_date': fmtOut(s),
-                                              'end_Date': r['endDate'] != null
+                                              'end_date': r['endDate'] != null
+                                                  ? fmtOut(
+                                                      r['endDate'] as DateTime,
+                                                    )
+                                                  : '',
+                                              'endDate': r['endDate'] != null
                                                   ? fmtOut(
                                                       r['endDate'] as DateTime,
                                                     )

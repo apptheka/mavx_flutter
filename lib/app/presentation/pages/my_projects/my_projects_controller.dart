@@ -45,6 +45,15 @@ class MyProjectsController extends GetxController {
   final TextEditingController rate = TextEditingController();
   final TextEditingController amount = TextEditingController();
 
+  bool _isTimesheetApprovedStatus(String status) {
+    final s = status.toString().toLowerCase().replaceAll(' ', '_');
+    if (s.isEmpty) return false;
+    if (s.contains('reject')) return false;
+    if (s == 'final_approved' || s == 'client_approved') return true;
+    if (s.contains('approved')) return true;
+    return false;
+  }
+
   Future<int> _resolveExpertId() async {
     int id = 0;
 
@@ -240,22 +249,12 @@ class MyProjectsController extends GetxController {
       final payload = Map<String, String>.from(fields);
       // projectId is expected already in fields from UI. Ensure present
       if ((payload['projectId'] ?? '').isEmpty) {
-        Get.snackbar(
-          'Invoice',
-          'Project ID missing',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
+        throw Exception('Project ID missing');
       }
 
       final projectId = int.tryParse(payload['projectId']!.toString()) ?? 0;
       if (projectId == 0) {
-        Get.snackbar(
-          'Invoice',
-          'Invalid Project ID',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
+        throw Exception('Invalid Project ID');
       }
 
       // Resolve expertId similar to timesheet flow: prefer project expertId, then fallback
@@ -273,38 +272,38 @@ class MyProjectsController extends GetxController {
 
       log('uploadInvoice -> resolved expertId=$expertId for projectId=$projectId');
       if (expertId == 0) {
-        Get.snackbar(
-          'Invoice',
-          'Expert ID not found. Please relogin.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
+        throw Exception('Expert ID not found. Please relogin.');
       }
 
       payload['expertId'] = expertId.toString();
 
       // Server requires a timesheet reference. Find a FINAL_APPROVED timesheet for this project.
       final timesheets = await _usecase.getTimesheets(projectId, expertId);
-      var approvedId = 0;
+      if (timesheets.isEmpty) {
+        throw Exception('No timesheet found for this project. Please submit timesheet before invoice.');
+      }
+
+      var selectedTimesheetId = 0;
       for (final t in timesheets) {
-        final s = (t.status).toString().toLowerCase();
-        if (s == 'final_approved' || s == 'client_approved') {
-          approvedId = t.id;
+        if (_isTimesheetApprovedStatus(t.status)) {
+          selectedTimesheetId = t.id;
           break;
         }
       }
-      print("expertId: $expertId");
-      if (approvedId == 0) {
-        Get.snackbar(
-          'Invoice',
-          'No FINAL_APPROVED timesheet found for this project. Please get a timesheet approved before submitting an invoice.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return false;
+      if (selectedTimesheetId == 0) {
+        // Fallback: still attempt invoice upload with the latest timesheet id
+        // (backend will validate status requirements and return proper message).
+        selectedTimesheetId = timesheets
+            .map((e) => e.id)
+            .fold<int>(0, (prev, id) => id > prev ? id : prev);
       }
+      if (selectedTimesheetId == 0) {
+        throw Exception('Timesheet ID missing for this project.');
+      }
+
       // Attach both variants to be safe
-      payload['timesheet_id'] = approvedId.toString();
-      payload['timesheetId'] = approvedId.toString();
+      payload['timesheet_id'] = selectedTimesheetId.toString();
+      payload['timesheetId'] = selectedTimesheetId.toString();
 
       // filePath is optional; UI enforces requirement when checkbox is checked
       final ok = await _usecase.uploadInvoice(fields: payload, filePath: filePath);
@@ -316,12 +315,7 @@ class MyProjectsController extends GetxController {
       }
       return ok;
     } catch (e) {
-      Get.snackbar(
-        'Invoice',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return false;
+      rethrow;
     }
   }
 
@@ -459,9 +453,9 @@ class MyProjectsController extends GetxController {
           final ts = await _usecase.getTimesheets(pid, expertId);
           log('prefetchTimesheetStatuses -> projectId=$pid, timesheets=${ts.length}');
           finalApproved[pid] = ts.any((t) {
-            final s = (t.status).toString().toLowerCase();
-            log('prefetchTimesheetStatuses -> projectId=$pid, timesheetId=${t.id}, status=$s');
-            return s == 'final_approved' || s == 'client_approved';
+            final raw = (t.status).toString();
+            log('prefetchTimesheetStatuses -> projectId=$pid, timesheetId=${t.id}, status=${raw.toLowerCase()}');
+            return _isTimesheetApprovedStatus(raw);
           });
         } catch (_) {
           // ignore failures per project

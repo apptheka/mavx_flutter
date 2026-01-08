@@ -12,7 +12,7 @@ class DateBox extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration( 
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE6E9EF)),
@@ -21,6 +21,7 @@ class DateBox extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             CommonText(label),
+            const SizedBox(width: 12),
             const Icon(Icons.calendar_today, size: 18, color: Colors.black54),
           ],
         ),

@@ -29,20 +29,30 @@ class ProfileBasicDetails extends StatelessWidget {
           );
           return match;
         })();
+        String? _normalizedYmd(String? raw) {
+          if (raw == null) return null;
+          final t = raw.trim();
+          if (t.isEmpty || t.toLowerCase() == 'null') return null;
+          final parsed = DateTime.tryParse(t);
+          if (parsed != null) return parsed.toIso8601String().substring(0, 10);
+          // If it's already YYYY-MM-DD (or any other format), keep as-is.
+          return t;
+        }
+
         final dobCtrl = TextEditingController(
-          text: basic.dateOfBirth != null
+          text: (basic.dateOfBirth != null)
               ? basic.dateOfBirth!.toIso8601String().substring(0, 10)
-              : '',
+              : (_normalizedYmd(registered.dob) ?? ''),
         );
         final phoneCtrl = TextEditingController(
-          text: (basic.phone?.isNotEmpty == true)
-              ? basic.phone!
-              : (registered.phone ?? ''),
+          text: (basic.phone?.trim().isNotEmpty == true)
+              ? basic.phone!.trim()
+              : ((registered.phone ?? '').toString().trim().replaceAll("+91", '')),
         );
         final emailCtrl = TextEditingController(
-          text: (basic.email?.isNotEmpty == true)
-              ? basic.email!
-              : (registered.email ?? ''),
+          text: (basic.email?.trim().isNotEmpty == true)
+              ? basic.email!.trim()
+              : ((registered.email ?? '').toString().trim()),
         );
 
         Get.bottomSheet(
@@ -187,12 +197,46 @@ class ProfileBasicDetails extends StatelessWidget {
       },
       child: Obx(() {
         final basic = controller.basicDetailsList.value;
+        final registered = controller.registeredProfile.value;
         final gender = basic.gender?.isNotEmpty == true ? basic.gender! : '-';
-        final dob = basic.dateOfBirth != null
-            ? basic.dateOfBirth!.toIso8601String().substring(0, 10)
-            : '-';
-        final phone = basic.phone?.isNotEmpty == true ? basic.phone! : '-';
-        final email = basic.email?.isNotEmpty == true ? basic.email! : '-';
+        final dob = (() {
+          if (basic.dateOfBirth != null) {
+            return basic.dateOfBirth!.toIso8601String().substring(0, 10);
+          }
+          final raw = registered.dob?.toString().trim();
+          if (raw == null || raw.isEmpty || raw.toLowerCase() == 'null') {
+            return '-';
+          }
+          // If API returns an ISO string, normalize it to YYYY-MM-DD.
+          final parsed = DateTime.tryParse(raw);
+          if (parsed != null) {
+            return parsed.toIso8601String().substring(0, 10);
+          }
+          // Otherwise, show raw (in case it's already YYYY-MM-DD)
+          return raw;
+        })();
+        final phone = (() {
+          final b = basic.phone?.toString().trim();
+          if (b != null && b.isNotEmpty && b.toLowerCase() != 'null') {
+            return b.replaceAll('+', '');
+          }
+          final r = registered.phone?.toString().trim();
+          if (r != null && r.isNotEmpty && r.toLowerCase() != 'null') {
+            return r.replaceAll('+', '');
+          }
+          return '-';
+        })();
+        final email = (() {
+          final b = basic.email?.toString().trim();
+          if (b != null && b.isNotEmpty && b.toLowerCase() != 'null') {
+            return b;
+          }
+          final r = registered.email?.toString().trim();
+          if (r != null && r.isNotEmpty && r.toLowerCase() != 'null') {
+            return r;
+          }
+          return '-';
+        })();
         return Column(
           children: [
             const SizedBox(height: 4),

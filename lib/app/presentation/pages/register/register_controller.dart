@@ -500,7 +500,9 @@ Future<void> _showPendingDialog() async {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.back(),
+                onPressed: () {
+                  Navigator.pop(Get.context!);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,

@@ -76,11 +76,7 @@ class ApplyController extends GetxController {
       if ((pref.preferredBudget ?? '').isNotEmpty) {
         currentCtcCtrl.text = _stripZeroDecimals(pref.preferredBudget!);
         expectedCtcCtrl.clear();
-      }
-      final about = pc.aboutMeList.value;
-      if ((about.description ?? '').isNotEmpty) {
-        aboutYouCtrl.text = about.description!;
-      }
+      } 
     }
   }
 

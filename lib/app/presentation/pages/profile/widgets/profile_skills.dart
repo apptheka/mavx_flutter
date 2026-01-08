@@ -96,209 +96,215 @@ class ProfileSkills extends StatelessWidget {
                       addTokens(raw, setSheetState);
                     }
 
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        Row(
+                    return ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.75,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
+                            // Header
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      CommonText(
+                                        'Skills',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      SizedBox(height: 4),
+                                      CommonText(
+                                        'Add your professional skills - separate multiple skills with commas',
+                                        color: AppColors.textSecondaryColor,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: Get.back,
+                                  icon: const Icon(Icons.close),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Input + Add button
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F6FA),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFE6E9EF),
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   CommonText(
-                                    'Skills',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
+                                    'Skill Names *',
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                  SizedBox(height: 4),
-                                  CommonText(
-                                    'Add your professional skills - separate multiple skills with commas',
-                                    color: AppColors.textSecondaryColor,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: Get.back,
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Input + Add button
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6FA),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE6E9EF)),
-                          ),
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CommonText(
-                                'Skill Names *',
-                                fontWeight: FontWeight.w700,
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: inputCtrl,
-                                      textInputAction: TextInputAction.done,
-                                      // ENTER -> add remaining buffer
-                                      onSubmitted: (_) => flushInput(),
-                                      // COMMA -> turn tokens before the last comma into chips
-                                      onChanged: (val) {
-                                        if (val.contains(',')) {
-                                          final chunks = val.split(',');
-                                          final tail = chunks.removeLast();
-                                          addTokens(
-                                            chunks.join(','),
-                                            setSheetState,
-                                          );
-                                          // keep the last fragment in the field
-                                          inputCtrl
-                                            ..text = tail.trimLeft()
-                                            ..selection =
-                                                TextSelection.fromPosition(
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: inputCtrl,
+                                          textInputAction: TextInputAction.done,
+                                          // ENTER -> add remaining buffer
+                                          onSubmitted: (_) => flushInput(),
+                                          // COMMA -> turn tokens before the last comma into chips
+                                          onChanged: (val) {
+                                            if (val.contains(',')) {
+                                              final chunks = val.split(',');
+                                              final tail = chunks.removeLast();
+                                              addTokens(
+                                                chunks.join(','),
+                                                setSheetState,
+                                              );
+                                              // keep the last fragment in the field
+                                              inputCtrl
+                                                ..text = tail.trimLeft()
+                                                ..selection =
+                                                    TextSelection.fromPosition(
                                                   TextPosition(
-                                                    offset:
-                                                        inputCtrl.text.length,
+                                                    offset: inputCtrl
+                                                        .text.length,
                                                   ),
                                                 );
-                                        }
-                                      },
-                                      inputFormatters: [
-                                        // prevent actual newlines in the field; we handle Enter via onSubmitted
-                                        FilteringTextInputFormatter.deny(
-                                          RegExp(r'\n'),
-                                        ),
-                                      ],
-                                      decoration: InputDecoration(
-                                        hintText: 'e.g., JavaScript, React',
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
+                                            }
+                                          },
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(
+                                              RegExp(r'\n'),
+                                            ),
+                                          ],
+                                          decoration: InputDecoration(
+                                            hintText: 'e.g., JavaScript, React',
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide.none,
+                                            ),
                                           ),
-                                          borderSide: BorderSide.none,
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      OutlinedButton(
+                                        onPressed: flushInput,
+                                        child: const Text('Add Skill'),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  OutlinedButton(
-                                    onPressed: flushInput,
-                                    child: const Text('Add Skill'),
+                                  const SizedBox(height: 10),
+
+                                  // Chips with delete
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      for (int i = 0; i < skills.length; i++)
+                                        Chip(
+                                          label: Text(skills[i]),
+                                          onDeleted: () => setSheetState(() {
+                                            skills.removeAt(i);
+                                          }),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  CommonText(
+                                    'Tip: Type a skill and press comma or Enter to add it. You can also paste a list separated by commas.',
+                                    color: AppColors.textSecondaryColor,
+                                    fontSize: 12,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                            ),
 
-                              // Chips with delete
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  for (int i = 0; i < skills.length; i++)
-                                    Chip(
-                                      label: Text(skills[i]),
-                                      onDeleted: () => setSheetState(() {
-                                        skills.removeAt(i);
-                                      }),
+                            const SizedBox(height: 12),
+                            CommonText(
+                              'Skill Category *',
+                              fontWeight: FontWeight.w700,
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F6FA),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: DropdownButton<String>(
+                                value: category,
+                                isExpanded: true,
+                                underline: const SizedBox.shrink(),
+                                items: const ['Technical', 'Soft', 'Other']
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) => setSheetState(() {
+                                  category = v ?? category;
+                                }),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryColor,
+                                    minimumSize: const Size(160, 44),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              CommonText(
-                                'Tip: Type a skill and press comma or Enter to add it. You can also paste a list separated by commas.',
-                                color: AppColors.textSecondaryColor,
-                                fontSize: 12,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
-                        CommonText(
-                          'Skill Category *',
-                          fontWeight: FontWeight.w700,
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F6FA),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: DropdownButton<String>(
-                            value: category,
-                            isExpanded: true,
-                            underline: const SizedBox.shrink(),
-                            items: const ['Technical', 'Soft', 'Other']
-                                .map(
-                                  (e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e),
                                   ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setSheetState(() {
-                              category = v ?? category;
-                            }),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        Row( 
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [ 
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                minimumSize: const Size(160, 44),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                                  onPressed: () async {
+                                    flushInput();
+                                    if (skills.isEmpty) {
+                                      Get.snackbar(
+                                        'Required',
+                                        'Please enter at least one skill',
+                                      );
+                                      return;
+                                    }
+                                    final existingId =
+                                        controller.skillList.isNotEmpty
+                                            ? controller.skillList.first.id
+                                            : null;
+                                    await controller.saveSkills({
+                                      'id': existingId,
+                                      'skill_category': category,
+                                      'skill_name': skills.join(', '),
+                                    });
+                                    Get.back();
+                                  },
+                                  child: const CommonText(
+                                    'Save',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                              onPressed: () async {
-                                flushInput(); // capture anything left in the field
-                                if (skills.isEmpty) {
-                                  Get.snackbar(
-                                    'Required',
-                                    'Please enter at least one skill',
-                                  );
-                                  return;
-                                }
-                                // Merge into an existing record if present
-                                final existingId =
-                                    controller.skillList.isNotEmpty
-                                    ? controller.skillList.first.id
-                                    : null;
-                                await controller.saveSkills({
-                                  'id': existingId,
-                                  'skill_category': category,
-                                  // Send as a single comma-separated string to update same row
-                                  'skill_name': skills.join(', '),
-                                  // Do NOT send the bulk list to prevent new rows
-                                });
-                                Get.back();
-                              },
-                              child: const CommonText(
-                                'Save',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     );
                   },
                 ),

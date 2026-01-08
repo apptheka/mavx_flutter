@@ -276,23 +276,41 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
       final ctrl = Get.find<MyProjectsController>();
       final fields = <String, String>{
         'projectId': widget.projectId.toString(),
+        'project_id': widget.projectId.toString(),
         'invoiceNumber': invoiceNumber.text.trim(),
+        'invoice_number': invoiceNumber.text.trim(),
         'invoiceDate': invoiceDate.text.trim(),
+        'invoice_date': invoiceDate.text.trim(),
         'dueDate': dueDate.text.trim(),
+        'due_date': dueDate.text.trim(),
         'consultantName': consultantName.text.trim(),
+        'consultant_name': consultantName.text.trim(),
         'consultantAddress': consultantAddress.text.trim(),
+        'consultant_address': consultantAddress.text.trim(),
         'consultantPhone': consultantPhone.text.trim(),
+        'consultant_phone': consultantPhone.text.trim(),
         'consultantEmail': consultantEmail.text.trim(),
+        'consultant_email': consultantEmail.text.trim(),
         'serviceDescription': serviceDescription.text.trim(),
+        'service_description': serviceDescription.text.trim(),
         'hoursWorked': (double.tryParse(hoursWorked.text.trim()) ?? 0)
             .toString(),
+        'hours_worked': (double.tryParse(hoursWorked.text.trim()) ?? 0)
+            .toString(),
         'hourlyRate': (double.tryParse(hourlyRate.text.trim()) ?? 0).toString(),
+        'hourly_rate': (double.tryParse(hourlyRate.text.trim()) ?? 0).toString(),
         'subtotal': (double.tryParse(subtotal.text.trim()) ?? 0).toString(), 
+        'sub_total': (double.tryParse(subtotal.text.trim()) ?? 0).toString(),
         'taxes': (double.tryParse(tax.text.trim()) ?? 0).toString(),
+        'tax': (double.tryParse(tax.text.trim()) ?? 0).toString(),
         'totalAmount': (double.tryParse(totalAmount.text.trim()) ?? 0)
             .toString(),
+        'total_amount': (double.tryParse(totalAmount.text.trim()) ?? 0)
+            .toString(),
         'paymentTerms': paymentTerms.text.trim(),
+        'payment_terms': paymentTerms.text.trim(),
         'bankDetails': bankDetails.text.trim(),
+        'bank_details': bankDetails.text.trim(),
         'upi': upi.text.trim(),
       };
       final ok = await ctrl.uploadInvoice(fields: fields, filePath: filePath);
@@ -392,6 +410,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: invoiceNumber,
                           decoration: _deco('Invoice Number *'),
                           validator: (v) => (v == null || v.trim().isEmpty)
@@ -402,6 +423,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: invoiceDate,
                           readOnly: true,
                           onTap: () => _pickDate(invoiceDate),
@@ -421,6 +445,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: dueDate,
                           readOnly: true,
                           onTap: () => _pickDate(dueDate),
@@ -435,6 +462,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: consultantName,
                           decoration: _deco('Consultant Name'),
                           validator: (v) => (v == null || v.trim().isEmpty)
@@ -447,6 +477,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                   const SizedBox(height: 10),
                   // Address
                   TextFormField(
+                    onTapOutside: (event){
+                      FocusScope.of(context).unfocus();
+                    },
                     controller: consultantAddress,
                     decoration: _deco('Consultant Address'),
                     validator: (v) =>
@@ -458,6 +491,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: consultantPhone,
                           decoration: _deco(
                             'Consultant Phone',
@@ -480,6 +516,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: consultantEmail,
                           decoration: _deco('Consultant Email'),
                           keyboardType: TextInputType.emailAddress,
@@ -497,6 +536,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                   const SizedBox(height: 10),
                   // Description
                   TextFormField(
+                    onTapOutside: (event){
+                      FocusScope.of(context).unfocus();
+                    },
                     controller: serviceDescription,
                     maxLines: 3,
                     decoration: _deco('Descriptions of Services'),
@@ -509,6 +551,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: hoursWorked,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
@@ -526,6 +571,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: hourlyRate,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
@@ -548,6 +596,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: subtotal,
                           readOnly: true,
                           decoration: _deco('Subtotal'),
@@ -559,6 +610,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: totalAmount,
                           readOnly: true,
                           decoration: _deco('Total Amount'),
@@ -575,6 +629,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: tax,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
@@ -585,6 +642,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          onTapOutside: (event){
+                            FocusScope.of(context).unfocus();
+                          },
                           controller: discount,
                           readOnly: true,
                           decoration: _deco('Total Tax Amount'),
@@ -602,6 +662,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
+                    onTapOutside: (event){
+                      FocusScope.of(context).unfocus();
+                    },
                     controller: paymentTerms,
                     decoration: _deco('Payment Terms'),
                     validator: (v) =>
@@ -609,6 +672,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
+                    onTapOutside: (event){
+                      FocusScope.of(context).unfocus();
+                    },
                     controller: bankDetails,
                     maxLines: 10,
                     decoration: _deco('Bank Details'),
@@ -617,6 +683,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
+                    onTapOutside: (event){
+                      FocusScope.of(context).unfocus();
+                    },
                     controller: upi,
                     decoration: _deco('UPI / Other'),
                     validator: (v) =>
