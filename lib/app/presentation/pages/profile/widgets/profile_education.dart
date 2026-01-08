@@ -301,60 +301,58 @@ class ProfileEducation extends StatelessWidget {
                                 SizedBox(
                                   width: 160,
                                   height: 48,
-                                  child: Expanded(
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            40,
-                                          ),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primaryColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          40,
                                         ),
                                       ),
-                                      onPressed: () async {
-                                        for (final r in rows) {
-                                          final inst =
-                                              (r['institutionName'] as String)
-                                                  .trim();
-                                          final degree = (r['degree'] as String)
-                                              .trim();
-                                          final s = r['startDate'] as DateTime?;
-                                          if (inst.isEmpty ||
-                                              degree.isEmpty ||
-                                              s == null) {
-                                            continue;
-                                          }
-                                          String fmtOut(DateTime d) =>
-                                              '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                                          // Only create new when explicitly added in this session
-                                          if (r['id'] != null ||
-                                              (r['isNew'] == true)) {
-                                            await controller.saveEducation({
-                                              'id': r['id'],
-                                              'institution_name': inst,
-                                              'degree': degree,
-                                              'start_date': fmtOut(s),
-                                              'end_date': r['endDate'] != null
-                                                  ? fmtOut(
-                                                      r['endDate'] as DateTime,
-                                                    )
-                                                  : '',
-                                              'endDate': r['endDate'] != null
-                                                  ? fmtOut(
-                                                      r['endDate'] as DateTime,
-                                                    )
-                                                  : '',
-                                              'isCurrent':
-                                                  (r['isCurrent'] as bool)
-                                                  ? 1
-                                                  : 0,
-                                            });
-                                          }
-                                        }
-                                        Get.back();
-                                      },
-                                      child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
                                     ),
+                                    onPressed: () async {
+                                      for (final r in rows) {
+                                        final inst =
+                                            (r['institutionName'] as String)
+                                                .trim();
+                                        final degree = (r['degree'] as String)
+                                            .trim();
+                                        final s = r['startDate'] as DateTime?;
+                                        if (inst.isEmpty ||
+                                            degree.isEmpty ||
+                                            s == null) {
+                                          continue;
+                                        }
+                                        String fmtOut(DateTime d) =>
+                                            '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                                        // Only create new when explicitly added in this session
+                                        if (r['id'] != null ||
+                                            (r['isNew'] == true)) {
+                                          await controller.saveEducation({
+                                            'id': r['id'],
+                                            'institution_name': inst,
+                                            'degree': degree,
+                                            'start_date': fmtOut(s),
+                                            'end_date': r['endDate'] != null
+                                                ? fmtOut(
+                                                    r['endDate'] as DateTime,
+                                                  )
+                                                : '',
+                                            'endDate': r['endDate'] != null
+                                                ? fmtOut(
+                                                    r['endDate'] as DateTime,
+                                                  )
+                                                : '',
+                                            'isCurrent':
+                                                (r['isCurrent'] as bool)
+                                                ? 1
+                                                : 0,
+                                          });
+                                        }
+                                      }
+                                      Get.back();
+                                    },
+                                    child: const CommonText('Save', fontSize: 16, fontWeight: FontWeight.w600),
                                   ),
                                 ),
                               ],
