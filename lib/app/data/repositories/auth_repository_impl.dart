@@ -19,19 +19,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   //Login
   @override
-  Future<UserModel> login(String email, String password,{bool isSocial = false}) async {
+  Future<UserModel> login(
+    String email,
+    String password, {
+    bool isSocial = false,
+  }) async {
     try {
       final Map<String, dynamic> payload = isSocial
-          ? {
-              "email": email,
-              "password": "",
-              "isSocial": true,
-            }
-          : {
-              "email": email,
-              "password": password,
-              "isSocial": false,
-            };
+          ? {"email": email, "password": "", "isSocial": true}
+          : {"email": email, "password": password, "isSocial": false};
       log('login plaintext: ${jsonEncode(payload)}');
 
       // Encrypt request body
@@ -66,92 +62,80 @@ class AuthRepositoryImpl implements AuthRepository {
       print("parsed.status ${parsed.status}");
       if (parsed.status == 200) {
         try {
-          final prefs = await SharedPreferences.getInstance();
-          // Save token
-          final token = parsed.token.toString();
-          await prefs.setString(AppConstants.tokenKey, token);
-          // Save user JSON
-          await prefs.setString(AppConstants.userKey, jsonEncode(parsed.data));
-          await prefs.setBool(AppConstants.isLoggedInKey, true);
-          log(
-            'login persisted -> token: ${token.isNotEmpty}, user saved, flag set',
-          );
-
-          // Subscribe user to a default topic via backend
-          // try {
-          //   final uid = parsed.data.id;
-          //   final payload = {"userId": uid, "topic": "news"};
-          //   final enc = jsonEncode(payload).encript();
-          //   final res = await apiProvider.post(
-          //     AppConstants.topicSubscribe,
-          //     request: enc,
-          //   );
-          //   dynamic body;
-          //   try {
-          //     body = jsonDecode(res.decrypt());
-          //   } catch (_) {
-          //     body = res;
-          //   }
-          //   log('✅ Topic subscribe response: $body');
-          // } catch (e, st) {
-          //   log('❌ Topic subscribe failed', error: e, stackTrace: st);
-          // }
-
-          // Also subscribe this device to the same FCM topic locally
-          try {
-            const topic = 'news';
-            await FirebaseMessaging.instance.subscribeToTopic(topic);
-            log('✅ Subscribed device to FCM topic: $topic');
-          } catch (e, st) {
-            log(
-              '❌ Local FCM topic subscription failed',
-              error: e,
-              stackTrace: st,
+          // Check if status is pending - if so, DO NOT store token or login state
+          if (parsed.data.status.toLowerCase() != 'pending') {
+            final prefs = await SharedPreferences.getInstance();
+            // Save token
+            final token = parsed.token.toString();
+            await prefs.setString(AppConstants.tokenKey, token);
+            // Save user JSON
+            await prefs.setString(
+              AppConstants.userKey,
+              jsonEncode(parsed.data),
             );
-          }
-
-          // ✅ Step: Get FCM Token
-          String? fcmToken;
-          try {
-            fcmToken = await FirebaseMessaging.instance.getToken();
-            log("FCM Token: $fcmToken");
-          } catch (e) {
-            log("❌ Failed to get FCM token: $e");
-          }
-
-          // ✅ Step: Send FCM Token to Backend
-          if (fcmToken != null) {
-            final fcmPayload = {
-              "userId": parsed.data.id,
-              "deviceToken": fcmToken,
-              "platform": "android",
-            };
-            log("FCM Payload: $fcmPayload");
-            final encryptedPayload = jsonEncode(fcmPayload).encript();
-
+            await prefs.setBool(AppConstants.isLoggedInKey, true);
+            log(
+              'login persisted -> token: ${token.isNotEmpty}, user saved, flag set',
+            );
             try {
-              final fcmRes = await apiProvider.post(
-                AppConstants.fcmRegister,
-                request: encryptedPayload,
+              const topic = 'news';
+              await FirebaseMessaging.instance.subscribeToTopic(topic);
+              log('✅ Subscribed device to FCM topic: $topic');
+            } catch (e, st) {
+              log(
+                '❌ Local FCM topic subscription failed',
+                error: e,
+                stackTrace: st,
               );
-              // The server may return either encrypted or plain JSON/text (especially on errors)
-              dynamic parsedBody;
-              try {
-                // Try to decrypt as base64
-                final decryptedFcm = fcmRes.decrypt();
-                parsedBody = jsonDecode(decryptedFcm);
-              } catch (_) {
-                // Not encrypted or not JSON – attempt direct JSON parse, else keep raw string
-                try {
-                  parsedBody = jsonDecode(fcmRes);
-                } catch (__) {
-                  parsedBody = fcmRes; // raw text/HTML (e.g., 404 page)
-                }
-              }
-              log("✅ FCM register response: $parsedBody");
-            } catch (e) {
-              log("❌ Failed to send FCM token: $e");
             }
+
+            // ✅ Step: Get FCM Token
+            String? fcmToken;
+            try {
+              fcmToken = await FirebaseMessaging.instance.getToken();
+              log("FCM Token: $fcmToken");
+            } catch (e) {
+              log("❌ Failed to get FCM token: $e");
+            }
+
+            // ✅ Step: Send FCM Token to Backend
+            if (fcmToken != null) {
+              final fcmPayload = {
+                "userId": parsed.data.id,
+                "deviceToken": fcmToken,
+                "platform": "android",
+              };
+              log("FCM Payload: $fcmPayload");
+              final encryptedPayload = jsonEncode(fcmPayload).encript();
+
+              try {
+                final fcmRes = await apiProvider.post(
+                  AppConstants.fcmRegister,
+                  request: encryptedPayload,
+                );
+                // The server may return either encrypted or plain JSON/text (especially on errors)
+                dynamic parsedBody;
+                try {
+                  // Try to decrypt as base64
+                  final decryptedFcm = fcmRes.decrypt();
+                  parsedBody = jsonDecode(decryptedFcm);
+                } catch (_) {
+                  // Not encrypted or not JSON – attempt direct JSON parse, else keep raw string
+                  try {
+                    parsedBody = jsonDecode(fcmRes);
+                  } catch (__) {
+                    parsedBody = fcmRes; // raw text/HTML (e.g., 404 page)
+                  }
+                }
+                log("✅ FCM register response: $parsedBody");
+              } catch (e) {
+                log("❌ Failed to send FCM token: $e");
+              }
+            }
+          } else {
+            log(
+              'login success but status is pending -> NOT storing token/user',
+            );
           }
         } catch (e, st) {
           log('login persistence failed: $e', stackTrace: st);
@@ -228,10 +212,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final request = {"email": email, "newPassword": newPassword};
       final enc = jsonEncode(request).encript();
-      await apiProvider.post(
-        AppConstants.changePassword,
-        request: enc,
-      );
+      await apiProvider.post(AppConstants.changePassword, request: enc);
       return;
     } catch (e) {
       throw Exception('Change Password failed: ${e.toString()}');
@@ -259,10 +240,15 @@ class AuthRepositoryImpl implements AuthRepository {
       // 2) Backend unregister this device token for the user (if available)
       try {
         if (uid != null) {
-          final path = AppConstants.fcmUnregister.replaceFirst(':id', uid.toString());
+          final path = AppConstants.fcmUnregister.replaceFirst(
+            ':id',
+            uid.toString(),
+          );
           await apiProvider.delete(
             path,
-            queryParameters: fcmToken != null ? {'deviceToken': fcmToken} : null,
+            queryParameters: fcmToken != null
+                ? {'deviceToken': fcmToken}
+                : null,
           );
           log('✅ FCM unregistered on backend for user $uid');
         }
@@ -296,7 +282,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // 6) Navigate to login
       navigateToLogin();
-      log('logout: backend unregistered, FCM unsubscribed/deleted, cleared token/user/flag');
+      log(
+        'logout: backend unregistered, FCM unsubscribed/deleted, cleared token/user/flag',
+      );
     } catch (e) {
       log('Error during logout: $e');
       throw Exception('Logout failed: ${e.toString()}');
